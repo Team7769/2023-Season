@@ -94,6 +94,11 @@ public final class Falcon500DriveControllerFactoryBuilder {
             this.motor = motor;
             this.sensorVelocityCoefficient = sensorVelocityCoefficient;
         }
+        
+        @Override
+        public double getDistance() {
+            return motor.getSelectedSensorPosition();
+        }
 
         @Override
         public void setReferenceVoltage(double voltage) {

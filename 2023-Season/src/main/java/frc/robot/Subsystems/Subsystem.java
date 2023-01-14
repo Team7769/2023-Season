@@ -1,7 +1,9 @@
 package frc.robot.Subsystems;
 
 public abstract class Subsystem {
-    public void ReadDashboardData() { }
+    public void readDashboardData() { }
 
-    public void LogTelemetry() { }
+    public void logTelemetry() { }
+
+    public void zeroSensors() { }
 }

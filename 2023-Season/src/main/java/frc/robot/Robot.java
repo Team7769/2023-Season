@@ -4,7 +4,13 @@
 
 package frc.robot;
 
+import java.util.List;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.Configuration.Constants;
+import frc.robot.Subsystems.Drivetrain;
+import frc.robot.Subsystems.Subsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -17,14 +23,33 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
-  @Override
-  public void robotInit() {}
+
+   private static Drivetrain _drivetrain;
+   private XboxController _driverController;
+
+   private List<Subsystem> _subsystems;
 
   @Override
-  public void robotPeriodic() {}
+  public void robotInit() {
+    _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
+    _drivetrain = Drivetrain.getInstance();
+    _subsystems.add(_drivetrain);
+  }
 
   @Override
-  public void autonomousInit() {}
+  public void robotPeriodic() {
+    for (var x : _subsystems) {
+      x.logTelemetry();
+      x.readDashboardData();
+    }
+
+    _drivetrain.updateOdomery();
+  }
+
+  @Override
+  public void autonomousInit() {
+    _drivetrain.resetOdometry();
+  }
 
   @Override
   public void autonomousPeriodic() {}
@@ -33,10 +58,14 @@ public class Robot extends TimedRobot {
   public void teleopInit() {}
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    teleopDrive();
+  }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    _drivetrain.drive(0.0, 0.0, 0.0);
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -52,4 +81,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {}
+
+  private void teleopDrive() {
+    var translationX = _driverController.getLeftX();
+    var translationY = _driverController.getLeftY();
+    var rotationZ = _driverController.getRightX();
+
+    _drivetrain.teleopDrive(translationX, translationY, rotationZ);
+  }
 }

@@ -76,6 +76,11 @@ public final class NeoDriveControllerFactoryBuilder {
         }
 
         @Override
+        public double getDistance() {
+            return this.encoder.getPosition();
+        }
+
+        @Override
         public void setReferenceVoltage(double voltage) {
             motor.setVoltage(voltage);
         }

@@ -46,6 +46,11 @@ public class SwerveModuleFactory<DriveConfiguration, SteerConfiguration> {
             this.driveController = driveController;
             this.steerController = steerController;
         }
+        
+        @Override
+        public double getPosition() {
+            return driveController.getDistance();
+        }
 
         @Override
         public double getDriveVelocity() {
