@@ -8,6 +8,7 @@ import java.util.List;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Subsystem;
@@ -99,6 +100,11 @@ public class Robot extends TimedRobot {
     // if (Math.abs(rotationZ) <= Constants.kDeadband) {
     //   rotationZ = 0;
     // }
+
+    SmartDashboard.putNumber("driveControllerTranslationX", translationX);
+    SmartDashboard.putNumber("driveControllerTranslationY", translationY);
+    SmartDashboard.putNumber("driveControllerRotationZ", rotationZ);
+    
 
     _drivetrain.teleopDrive(translationX, translationY, rotationZ);
   }
