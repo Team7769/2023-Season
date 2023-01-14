@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Configuration.Constants;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Subsystem;
+import frc.robot.util.OneDimensionalLookup;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -83,9 +84,21 @@ public class Robot extends TimedRobot {
   public void simulationPeriodic() {}
 
   private void teleopDrive() {
-    var translationX = _driverController.getLeftX();
-    var translationY = _driverController.getLeftY();
-    var rotationZ = _driverController.getRightX();
+    //var translationX = _driverController.getLeftX();
+    //var translationY = _driverController.getLeftY();
+    //var rotationZ = _driverController.getRightX();
+
+    var translationX = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints, Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    var translationY = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints, Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    var rotationZ = OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable, _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+    // if (Math.abs(translationX) <= Constants.kDeadband && Math.abs(translationY) <= Constants.kDeadband)
+    // {
+    //   translationX = 0;
+    //   translationY = 0;
+    // }
+    // if (Math.abs(rotationZ) <= Constants.kDeadband) {
+    //   rotationZ = 0;
+    // }
 
     _drivetrain.teleopDrive(translationX, translationY, rotationZ);
   }
