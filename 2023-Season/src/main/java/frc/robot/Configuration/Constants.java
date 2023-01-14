@@ -1,6 +1,6 @@
 package frc.robot.Configuration;
 
-public class Constants {
+public final class Constants {
     
     // Usb Slots
     public static final int kDriverControllerUsbSlot = 0;
