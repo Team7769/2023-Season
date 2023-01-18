@@ -30,7 +30,7 @@ public class Drivetrain extends Subsystem {
     private static final double DRIVETRAIN_WHEELBASE_METERS = 0;
 
     private SwerveDriveKinematics _kinematics;
-    private Gyro _gyro;
+    private AHRS _gyro;
 
     private SwerveModule _frontLeftModule;
     private SwerveModule _frontRightModule;
@@ -150,12 +150,20 @@ public class Drivetrain extends Subsystem {
     }
 
     public void resetGyro() {
-        _gyro.reset();
+        _gyro.zeroYaw();
         _gyroOffset = 0.0;
     }
     
     public Rotation2d getGyroscopeRotation() {
-        return _gyro.getRotation2d();
+        if (_gyro.isMagnetometerCalibrated()) {
+            // We will only get valid fused headings if the magnetometer is calibrated
+            return Rotation2d.fromDegrees(_gyro.getFusedHeading());
+        }
+
+        // We have to invert the angle of the NavX so that rotating the robot
+        // counter-clockwise makes the angle increase.
+        return Rotation2d.fromDegrees(360.0 - _gyro.getYaw());
+        //return _gyro.getRotation2d();
     }
 
     public void updateOdomery() {
@@ -171,6 +179,8 @@ public class Drivetrain extends Subsystem {
         translationX = translationX * Constants.MAX_VELOCITY_METERS_PER_SECOND;
         translationY = translationY * Constants.MAX_VELOCITY_METERS_PER_SECOND;
         rotationZ = rotationZ * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+
+        drive(translationX, translationY, rotationZ);
     }
 
     public void drive(double translationX, double translationY, double rotationZ) {
