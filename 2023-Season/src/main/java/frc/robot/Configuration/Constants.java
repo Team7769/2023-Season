@@ -2,6 +2,8 @@ package frc.robot.Configuration;
 
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 
+import edu.wpi.first.math.util.Units;
+
 public final class Constants {
     
     // Usb Slots
@@ -26,16 +28,18 @@ public final class Constants {
     public static final int kBackRightSteerEncoderId = 13;
 
     // Swerve Encoder Offsets
-    public static final double kFrontLeftEncoderOffset = 0.0;
-    public static final double kFrontRightEncoderOffset = 0.0;
-    public static final double kBackLeftEncoderOffset = 0.0;
-    public static final double kBackRightEncoderOffset = 0.0;
+    public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.909 + 180);
+    public static final double kFrontRightEncoderOffset = -Math.toRadians(238.746 + 180);
+    public static final double kBackLeftEncoderOffset = -Math.toRadians(22.324 + 180);
+    public static final double kBackRightEncoderOffset = -Math.toRadians(145.321 + 180);
 
     // Swerve Properties
     public static final double MAX_VOLTAGE = 12.0;
     public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
     SdsModuleConfigurations.MK4_L2.getDriveReduction() *
     SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI;
+    private static final double DRIVETRAIN_TRACK_WIDTH_METERS = Units.inchesToMeters(19.5);
+    private static final double DRIVETRAIN_WHEELBASE_METERS = Units.inchesToMeters(19.5);
     public static final double MAX_ANGULAR_VELOCITY_PER_SECOND = 3 * Math.PI;
 
     // Deadband

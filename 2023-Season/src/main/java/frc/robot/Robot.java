@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -35,6 +36,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
     _drivetrain = Drivetrain.getInstance();
+    _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
   }
 
@@ -66,6 +68,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
+    _drivetrain.resetGyro();
     _drivetrain.drive(0.0, 0.0, 0.0);
   }
 
