@@ -71,7 +71,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     teleopDrive();
 
-    if ( _driverController.getStartButtonPressed() && _driverController.getRightBumperPressed() ) {
+    if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed() ) {
       _drivetrain.resetGyro();
     }
   }
@@ -79,7 +79,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     _drivetrain.resetGyro();
-    _drivetrain.drive(0.0, 0.0, 0.0);
+    _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
   }
 
   @Override
@@ -103,9 +103,6 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopDrive() {
-    // var translationX = _driverController.getLeftX();
-    // var translationY = _driverController.getLeftY();
-    // var rotationZ = _driverController.getRightX();
 
     var translationX = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
         Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
@@ -113,22 +110,13 @@ public class Robot extends TimedRobot {
         Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
     var rotationZ = OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable,
         _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
-    // if (Math.abs(translationX) <= Constants.kDeadband && Math.abs(translationY)
-    // <= Constants.kDeadband)
-    // {
-    // translationX = 0;
-    // translationY = 0;
-    // }
-    // if (Math.abs(rotationZ) <= Constants.kDeadband) {
-    // rotationZ = 0;
-    // }
 
     if (_driverController.getLeftBumperPressed()) {
       // Robot orientated speed
-      _drivetrain.robotOrientatedDrive(translationX, translationY, rotationZ);
+      _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
     } else {
       // Field orientated speed
-      _drivetrain.fieldOrientatedDrive( translationX, translationY, rotationZ, Math.abs(rotationZ) <= Constants.kDeadband );
+      _drivetrain.fieldOrientedDrive(translationX, translationY, rotationZ);
     }
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);

@@ -35,12 +35,16 @@ public final class Constants {
 
     // Swerve Properties
     public static final double MAX_VOLTAGE = 12.0;
+    public static final double DRIVE_ENCODER_CONVERSION_FACTOR = SdsModuleConfigurations.MK4_L2.getDriveReduction() *
+    SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI;
+    public static final double DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 2048;
     public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
     SdsModuleConfigurations.MK4_L2.getDriveReduction() *
     SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI;
     private static final double DRIVETRAIN_TRACK_WIDTH_METERS = Units.inchesToMeters(19.5);
     private static final double DRIVETRAIN_WHEELBASE_METERS = Units.inchesToMeters(19.5);
     public static final double MAX_ANGULAR_VELOCITY_PER_SECOND = 3 * Math.PI;
+    
 
     // Deadband
     public static final double kDeadband = 0.15;

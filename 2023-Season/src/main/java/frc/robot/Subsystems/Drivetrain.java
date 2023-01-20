@@ -182,38 +182,25 @@ public class Drivetrain extends Subsystem {
 
     public void updateOdomery() {
         _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(_frontLeftModule.getPosition(), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_frontRightModule.getPosition(), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getPosition(), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getPosition(), new Rotation2d(_backLeftModule.getSteerAngle()))
+            new SwerveModulePosition(_frontLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle()))
         });
     }
 
-    public void robotOrientatedDrive(double translationX, double translationY, double rotationZ) {
-        //translationX = translationX * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-        //translationY = translationY * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-        //rotationZ = rotationZ * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
-
-        drive(translationX, translationY, rotationZ);
-    }
-
-    public void fieldOrientatedDrive( double translationX, double translationY, double rotationZ, boolean reAngleWheels ) {
-        if ( reAngleWheels ) {
-            _chassisSpeeds = new ChassisSpeeds(translationX, translationY, _frontLeftModule.getSteerAngle() - 90 );
-        }else {
-            _chassisSpeeds = new ChassisSpeeds(translationX, translationY, rotationZ);
-        }
-
-        var moduleStates = _kinematics.toSwerveModuleStates(_chassisSpeeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, Constants.MAX_VELOCITY_METERS_PER_SECOND);
-
-        setModuleStates(moduleStates);
-        _moduleStates = moduleStates;
-    }
-
-    public void drive(double translationX, double translationY, double rotationZ) {
+    public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {
         _chassisSpeeds = new ChassisSpeeds(translationX, translationY, rotationZ);
+        drive(_chassisSpeeds);
+    }
 
+    public void fieldOrientedDrive( double translationX, double translationY, double rotationZ) {
+        _chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(translationX, translationY, rotationZ, getGyroscopeRotation());
+
+        drive(_chassisSpeeds);
+    }
+
+    public void drive(ChassisSpeeds chassisSpeeds) {
         var moduleStates = _kinematics.toSwerveModuleStates(_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, Constants.MAX_VELOCITY_METERS_PER_SECOND);
 
