@@ -189,12 +189,26 @@ public class Drivetrain extends Subsystem {
         });
     }
 
-    public void teleopDrive(double translationX, double translationY, double rotationZ) {
+    public void robotOrientatedDrive(double translationX, double translationY, double rotationZ) {
         //translationX = translationX * Constants.MAX_VELOCITY_METERS_PER_SECOND;
         //translationY = translationY * Constants.MAX_VELOCITY_METERS_PER_SECOND;
         //rotationZ = rotationZ * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
 
         drive(translationX, translationY, rotationZ);
+    }
+
+    public void fieldOrientatedDrive( double translationX, double translationY, double rotationZ, boolean reAngleWheels ) {
+        if ( reAngleWheels ) {
+            _chassisSpeeds = new ChassisSpeeds(translationX, translationY, _frontLeftModule.getSteerAngle() - 90 );
+        }else {
+            _chassisSpeeds = new ChassisSpeeds(translationX, translationY, rotationZ);
+        }
+
+        var moduleStates = _kinematics.toSwerveModuleStates(_chassisSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, Constants.MAX_VELOCITY_METERS_PER_SECOND);
+
+        setModuleStates(moduleStates);
+        _moduleStates = moduleStates;
     }
 
     public void drive(double translationX, double translationY, double rotationZ) {
