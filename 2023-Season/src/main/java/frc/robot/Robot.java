@@ -4,52 +4,123 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Configuration.Constants;
+import frc.robot.Subsystems.Drivetrain;
+import frc.robot.Subsystems.Subsystem;
+import frc.robot.util.OneDimensionalLookup;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the
+ * name of this class or
+ * the package after creating this project, you must also update the
+ * build.gradle file in the
  * project.
  */
 public class Robot extends TimedRobot {
   /**
-   * This function is run when the robot is first started up and should be used for any
+   * This function is run when the robot is first started up and should be used
+   * for any
    * initialization code.
    */
-  @Override
-  public void robotInit() {}
+
+  private static Drivetrain _drivetrain;
+  private XboxController _driverController;
+
+  private List<Subsystem> _subsystems;
 
   @Override
-  public void robotPeriodic() {}
+  public void robotInit() {
+    _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
+    _drivetrain = Drivetrain.getInstance();
+    _subsystems = new ArrayList<Subsystem>();
+    _subsystems.add(_drivetrain);
+  }
 
   @Override
-  public void autonomousInit() {}
+  public void robotPeriodic() {
+    for (var x : _subsystems) {
+      x.logTelemetry();
+      x.readDashboardData();
+    }
+
+    _drivetrain.updateOdomery();
+  }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousInit() {
+    _drivetrain.resetOdometry();
+  }
 
   @Override
-  public void teleopInit() {}
+  public void autonomousPeriodic() {
+  }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopInit() {
+  }
 
   @Override
-  public void disabledInit() {}
+  public void teleopPeriodic() {
+    teleopDrive();
+
+    if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed() ) {
+      _drivetrain.resetGyro();
+    }
+  }
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledInit() {
+    _drivetrain.resetGyro();
+    _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+  }
 
   @Override
-  public void testInit() {}
+  public void disabledPeriodic() {
+  }
 
   @Override
-  public void testPeriodic() {}
+  public void testInit() {
+  }
 
   @Override
-  public void simulationInit() {}
+  public void testPeriodic() {
+  }
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationInit() {
+  }
+
+  @Override
+  public void simulationPeriodic() {
+  }
+
+  private void teleopDrive() {
+
+    var translationX = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
+        Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    var translationY = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
+        Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    var rotationZ = OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable,
+        _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+
+    if (_driverController.getLeftBumperPressed()) {
+      // Robot orientated speed
+      _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
+    } else {
+      // Field orientated speed
+      _drivetrain.fieldOrientedDrive(translationX, translationY, rotationZ);
+    }
+
+    SmartDashboard.putNumber("driveControllerTranslationX", translationX);
+    SmartDashboard.putNumber("driveControllerTranslationY", translationY);
+    SmartDashboard.putNumber("driveControllerRotationZ", rotationZ); 
+  }
 }
