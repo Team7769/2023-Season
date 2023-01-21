@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
 
@@ -42,8 +43,10 @@ public class Drivetrain extends Subsystem {
 
     private double _gyroOffset = 0.0;
     private ChassisSpeeds _chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0);
-
+    private final Field2d m_field = new Field2d();
+    
     Drivetrain() {
+        SmartDashboard.putData("Field", m_field);
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
         _kinematics = new SwerveDriveKinematics(
             // Front Left
@@ -125,6 +128,7 @@ public class Drivetrain extends Subsystem {
 
     @Override
     public void logTelemetry() {
+        m_field.setRobotPose(_odometry.getPoseMeters());
         SmartDashboard.putNumber("gryoAngle", getGyroscopeRotation().getDegrees());
         SmartDashboard.putNumber("drivetrainChassisSpeedsVx", _chassisSpeeds.vxMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
