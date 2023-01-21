@@ -130,16 +130,16 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsWz", _chassisSpeeds.omegaRadiansPerSecond);
 
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleDistance", _frontLeftModule.getPosition());
+        SmartDashboard.putNumber("drivetrainFrontLeftModuleDistance", _frontLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR));
         SmartDashboard.putNumber("drivetrainFrontLeftModuleVelocity", _frontLeftModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainFrontLeftModuleAngle", Math.toDegrees(_frontLeftModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainFrontRightModuleDistance", _frontRightModule.getPosition());
+        SmartDashboard.putNumber("drivetrainFrontRightModuleDistance", _frontRightModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR));
         SmartDashboard.putNumber("drivetrainFrontRightModuleVelocity", _frontRightModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainFrontRightModuleAngle", Math.toDegrees(_frontRightModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainBackLeftModuleDistance", _backLeftModule.getPosition());
+        SmartDashboard.putNumber("drivetrainBackLeftModuleDistance", _backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR));
         SmartDashboard.putNumber("drivetrainBackLeftModuleVelocity", _backLeftModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainBackLeftModuleAngle", Math.toDegrees(_backLeftModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainBackRightModuleDistance", _backRightModule.getPosition());
+        SmartDashboard.putNumber("drivetrainBackRightModuleDistance", _backRightModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR));
         SmartDashboard.putNumber("drivetrainBackRightModuleVelocity", _backRightModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainBackRightModuleAngle", Math.toDegrees(_backRightModule.getSteerAngle()));
 

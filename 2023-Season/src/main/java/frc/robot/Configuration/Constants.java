@@ -37,7 +37,7 @@ public final class Constants {
     public static final double MAX_VOLTAGE = 12.0;
     public static final double DRIVE_ENCODER_CONVERSION_FACTOR = SdsModuleConfigurations.MK4_L2.getDriveReduction() *
     SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI;
-    public static final double DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 2048;
+    public static final double DRIVE_ENCODER_COUNTS_PER_REVOLUTION = 2048 * 467;
     public static final double MAX_VELOCITY_METERS_PER_SECOND = 6380.0 / 60.0 *
     SdsModuleConfigurations.MK4_L2.getDriveReduction() *
     SdsModuleConfigurations.MK4_L2.getWheelDiameter() * Math.PI;
