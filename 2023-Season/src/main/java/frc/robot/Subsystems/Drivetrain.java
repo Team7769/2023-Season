@@ -186,10 +186,10 @@ public class Drivetrain extends Subsystem {
 
     public void updateOdomery() {
         _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(_frontLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_frontRightModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle()))
+            new SwerveModulePosition(-_frontLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(-_frontRightModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(-_backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(-_backLeftModule.getPosition() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle()))
         });
     }
 
