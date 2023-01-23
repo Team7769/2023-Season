@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Subsystem;
+import frc.robot.Utilities.Limelight;
 import frc.robot.util.OneDimensionalLookup;
 
 /**
@@ -34,6 +35,8 @@ public class Robot extends TimedRobot {
   private static Drivetrain _drivetrain;
   private XboxController _driverController;
 
+  private static Limelight _limelight;
+
   private List<Subsystem> _subsystems;
 
   @Override
@@ -42,6 +45,7 @@ public class Robot extends TimedRobot {
     _drivetrain = Drivetrain.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
+    _limelight = Limelight.getInstance();
   }
 
   @Override
@@ -103,7 +107,6 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopDrive() {
-
     var translationX = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
         Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
     var translationY = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
@@ -116,7 +119,7 @@ public class Robot extends TimedRobot {
       _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
     } else {
       // Field orientated speed
-      _drivetrain.fieldOrientedDrive(translationX, translationY, rotationZ);
+      _drivetrain.fieldOrientedDrive(translationX/1.25, translationY/1.25, rotationZ/1.25);
     }
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);

@@ -27,11 +27,7 @@ public class Drivetrain extends Subsystem {
 
     private static Drivetrain _instance = null;
 
-    // TODO: Move to Constants
-    private static final double DRIVETRAIN_TRACK_WIDTH_METERS = Units.inchesToMeters(19.5);
-    private static final double DRIVETRAIN_WHEELBASE_METERS = Units.inchesToMeters(19.5);
-
-    private SwerveDriveKinematics _kinematics;
+    //private SwerveDriveKinematics _kinematics;
     private AHRS _gyro;
 
     private SwerveModule _frontLeftModule;
@@ -48,19 +44,6 @@ public class Drivetrain extends Subsystem {
     Drivetrain() {
         SmartDashboard.putData("Field", m_field);
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
-        _kinematics = new SwerveDriveKinematics(
-            // Front Left
-            new Translation2d(DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
-    
-            //Front Right
-            new Translation2d(DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0),
-    
-            //Back Left
-            new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
-    
-            //Back Right
-            new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
-        );
 
         _gyro = new AHRS(Port.kMXP);
 
@@ -104,8 +87,8 @@ public class Drivetrain extends Subsystem {
                Constants.kBackRightSteerEncoderId, 
                Constants.kBackRightEncoderOffset);
 
-        _moduleStates = _kinematics.toSwerveModuleStates(new ChassisSpeeds(0.0, 0.0, 0.0));
-        _odometry = new SwerveDriveOdometry(_kinematics, Rotation2d.fromDegrees(0.0), new SwerveModulePosition[] {
+        _moduleStates = Constants._kinematics.toSwerveModuleStates(new ChassisSpeeds(0.0, 0.0, 0.0));
+        _odometry = new SwerveDriveOdometry(Constants._kinematics, Rotation2d.fromDegrees(0.0), new SwerveModulePosition[] {
             new SwerveModulePosition(),
             new SwerveModulePosition(),
             new SwerveModulePosition(),
@@ -205,7 +188,7 @@ public class Drivetrain extends Subsystem {
     }
 
     public void drive(ChassisSpeeds chassisSpeeds) {
-        var moduleStates = _kinematics.toSwerveModuleStates(_chassisSpeeds);
+        var moduleStates = Constants._kinematics.toSwerveModuleStates(_chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, Constants.MAX_VELOCITY_METERS_PER_SECOND);
 
         setModuleStates(moduleStates);
