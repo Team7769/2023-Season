@@ -14,6 +14,7 @@ import frc.robot.Configuration.Constants;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
+import frc.robot.Utilities.PathFollower;
 import frc.robot.util.OneDimensionalLookup;
 
 /**
@@ -33,16 +34,19 @@ public class Robot extends TimedRobot {
    */
 
   private static Drivetrain _drivetrain;
+  private static PathFollower _pathFollower;
   private XboxController _driverController;
 
   private static Limelight _limelight;
 
   private List<Subsystem> _subsystems;
+  private int _autonomousCase = 0;
 
   @Override
   public void robotInit() {
     _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
     _drivetrain = Drivetrain.getInstance();
+    _pathFollower = PathFollower.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
     _limelight = Limelight.getInstance();
@@ -61,10 +65,32 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     _drivetrain.resetOdometry();
+    _drivetrain.initAutonPosition();
   }
 
   @Override
   public void autonomousPeriodic() {
+    blueSideTwoConeAuto();
+  }
+
+  public void blueSideTwoConeAuto()
+  {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _autonomousCase = 7769;
+          break;
+        }
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
   }
 
   @Override
@@ -84,6 +110,8 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     _drivetrain.resetGyro();
     _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+    _pathFollower.setBlueSideTwoConeAutonomous();
+    _drivetrain.initAutonPosition();
   }
 
   @Override

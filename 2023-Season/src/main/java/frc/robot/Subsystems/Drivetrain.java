@@ -22,10 +22,12 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
+import frc.robot.Utilities.PathFollower;
 
 public class Drivetrain extends Subsystem {
 
     private static Drivetrain _instance = null;
+    private static PathFollower _pathFollower;
 
     //private SwerveDriveKinematics _kinematics;
     private AHRS _gyro;
@@ -94,6 +96,8 @@ public class Drivetrain extends Subsystem {
             new SwerveModulePosition(),
             new SwerveModulePosition()
         });
+
+        _pathFollower = PathFollower.getInstance();
     }
 
     public static Drivetrain getInstance() {
@@ -194,6 +198,24 @@ public class Drivetrain extends Subsystem {
         setModuleStates(moduleStates);
         _moduleStates = moduleStates;
     }
+
+    public void followTrajectory() {
+        var output = _pathFollower.getPathTarget(_odometry.getPoseMeters());
+        setModuleStates(output);
+    }
+
+    public void initAutonPosition() {
+        resetGyro();
+        //_gyroOffset = _pathFollower.getStartingPose().getRotation().getDegrees();
+        _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+            new SwerveModulePosition(),
+            new SwerveModulePosition()
+        }, _pathFollower.getStartingPose());
+        m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
+    }
+
 
     private void setModuleStates(SwerveModuleState[] moduleStates) {
         _frontLeftModule.set(moduleStates[0].speedMetersPerSecond / Constants.MAX_VELOCITY_METERS_PER_SECOND * Constants.MAX_VOLTAGE, moduleStates[0].angle.getRadians());
