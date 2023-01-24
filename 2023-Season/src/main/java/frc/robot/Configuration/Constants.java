@@ -8,6 +8,19 @@ import edu.wpi.first.math.util.Units;
 
 public final class Constants {
     
+// Limelight Constants 
+    public static final int kLEDOff = 1;
+    public static final int kLEDOn = 3;
+    public static final int kCamModeVisionProcessing = 0;
+    public static final int kCamModeDriver = 1;
+    public static final String kTableName = "limelight";
+    public static final String kValidTargetKey = "tv";
+    public static final String kLEDModeKey = "ledMode";
+    public static final String kCamModeKey = "camMode";
+    public static final String kTargetAngleXKey = "tx";
+    public static final String kTargetAngleYKey = "ty";
+    public static final String kTargetTagId = "tid"; 
+
     // Usb Slots
     public static final int kDriverControllerUsbSlot = 0;
     public static final int kOperatorControllerUsbSlot = 1;
@@ -63,7 +76,15 @@ public final class Constants {
             //Back Right
             new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
         );
-    
+    // Apriltag ID's
+     public static final int kRedComRightId= 1; 
+     public static final int kRedComMidId= 2; 
+     public static final int kRedComLeftId= 3; 
+     public static final int kBlueSubStationId= 4; 
+     public static final int kRedSubStationId= 5; 
+     public static final int kBlueComRightId= 6;
+     public static final int kBlueComMidId= 7; 
+     public static final int kBlueComLeftId= 8; 
 
     // Deadband
     public static final double kDeadband = 0.15;
