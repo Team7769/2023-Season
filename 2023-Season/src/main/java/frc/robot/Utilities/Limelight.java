@@ -25,9 +25,18 @@ public class Limelight {
             .getTable(Constants.kTableName)
             .getEntry(Constants.kValidTargetKey);
 
-        _ledMode = NetworkTableInstance.getDefault().getTable(Constants.kTableName).getEntry(Constants.kLEDModeKey);
-        _camMode = NetworkTableInstance.getDefault().getTable(Constants.kTableName).getEntry(Constants.kCamModeKey);
-        _tagId = NetworkTableInstance.getDefault().getTable(Constants.kTableName).getEntry(Constants.kTargetTagId);
+        _ledMode = NetworkTableInstance.getDefault()
+            .getTable(Constants.kTableName)
+            .getEntry(Constants.kLEDModeKey);
+        
+        _camMode = NetworkTableInstance.getDefault()
+            .getTable(Constants.kTableName)
+            .getEntry(Constants.kCamModeKey);
+        
+        _tagId = NetworkTableInstance.getDefault()
+            .getTable(Constants.kTableName)
+            .getEntry(Constants.kTargetTagId);
+
     }
 
     public boolean hasTarget() {
