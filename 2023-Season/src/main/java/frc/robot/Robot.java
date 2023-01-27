@@ -73,17 +73,17 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    teleopDrive();
-
     if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed() ) {
       _drivetrain.resetGyro();
     }
+
+    teleopDrive();
   }
 
   @Override
   public void disabledInit() {
     _drivetrain.resetGyro();
-    _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+    _drivetrain.stopDriving();
   }
 
   @Override
@@ -107,12 +107,20 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopDrive() {
-    var translationX = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
-        Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var translationY = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
-        Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var rotationZ = OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable,
-        _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+    var translationX = OneDimensionalLookup.interpLinear(
+      Constants.XY_Axis_inputBreakpoints,
+      Constants.XY_Axis_outputTable, 
+      _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+
+    var translationY = OneDimensionalLookup.interpLinear(
+      Constants.XY_Axis_inputBreakpoints,
+      Constants.XY_Axis_outputTable, 
+      _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+
+    var rotationZ = OneDimensionalLookup.interpLinear(
+      Constants.RotAxis_inputBreakpoints, 
+      Constants.RotAxis_outputTable,
+      _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
 
     if (_driverController.getLeftBumperPressed()) {
       // Robot orientated speed

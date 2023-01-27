@@ -22,8 +22,7 @@ public class LEDController {
     public final double kBlueShot = -0.83;
     public final double kConfetti = -0.87;
 
-    public static LEDController GetInstance()
-    {
+    public static LEDController GetInstance() {
         if (_instance == null)
         {
             _instance = new LEDController();
