@@ -110,7 +110,7 @@ public class Robot extends TimedRobot {
     var translationX = OneDimensionalLookup.interpLinear(
       Constants.XY_Axis_inputBreakpoints,
       Constants.XY_Axis_outputTable, 
-      _driverController.getLeftY() ) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+      _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
 
     var translationY = OneDimensionalLookup.interpLinear(
       Constants.XY_Axis_inputBreakpoints,
