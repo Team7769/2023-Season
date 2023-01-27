@@ -8,7 +8,7 @@ import edu.wpi.first.math.util.Units;
 
 public final class Constants {
     
-// Limelight Constants 
+    // Limelight Constants 
     public static final int kLEDOff = 1;
     public static final int kLEDOn = 3;
     public static final int kCamModeVisionProcessing = 0;
@@ -64,27 +64,28 @@ public final class Constants {
 
     //setting up kinematics
     public static final SwerveDriveKinematics _kinematics = new SwerveDriveKinematics(
-            // Front Left
-            new Translation2d(DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
+        // Front Left
+        new Translation2d(DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
     
-            //Front Right
-            new Translation2d(DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0),
+        //Front Right
+        new Translation2d(DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0),
     
-            //Back Left
-            new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
+        //Back Left
+        new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
     
-            //Back Right
-            new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
-        );
+        //Back Right
+        new Translation2d(-DRIVETRAIN_TRACK_WIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
+    );
+
     // Apriltag ID's
-     public static final int kRedComRightId= 1; 
-     public static final int kRedComMidId= 2; 
-     public static final int kRedComLeftId= 3; 
-     public static final int kBlueSubStationId= 4; 
-     public static final int kRedSubStationId= 5; 
-     public static final int kBlueComRightId= 6;
-     public static final int kBlueComMidId= 7; 
-     public static final int kBlueComLeftId= 8; 
+    public static final int kRedComRightId= 1; 
+    public static final int kRedComMidId= 2; 
+    public static final int kRedComLeftId= 3; 
+    public static final int kBlueSubStationId= 4; 
+    public static final int kRedSubStationId= 5; 
+    public static final int kBlueComRightId= 6;
+    public static final int kBlueComMidId= 7; 
+    public static final int kBlueComLeftId= 8; 
 
     // Deadband
     public static final double kDeadband = 0.15;

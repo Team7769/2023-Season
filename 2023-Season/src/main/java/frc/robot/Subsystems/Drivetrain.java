@@ -51,41 +51,45 @@ public class Drivetrain extends Subsystem {
             tab.getLayout("Front Left Module", BuiltInLayouts.kList)
                .withSize(2, 4)
                .withPosition(0, 0),
-               Mk4SwerveModuleHelper.GearRatio.L2, 
-               Constants.kFrontLeftDriveId, 
-               Constants.kFrontLeftSteerId, 
-               Constants.kFrontLeftSteerEncoderId, 
-               Constants.kFrontLeftEncoderOffset);
+            Mk4SwerveModuleHelper.GearRatio.L2, 
+            Constants.kFrontLeftDriveId, 
+            Constants.kFrontLeftSteerId, 
+            Constants.kFrontLeftSteerEncoderId, 
+            Constants.kFrontLeftEncoderOffset
+        );
                
         _frontRightModule = Mk4SwerveModuleHelper.createFalcon500(
             tab.getLayout("Front Right Module", BuiltInLayouts.kList)
                .withSize(2, 4)
                .withPosition(2, 0),
-               Mk4SwerveModuleHelper.GearRatio.L2, 
-               Constants.kFrontRightDriveId, 
-               Constants.kFrontRightSteerId, 
-               Constants.kFrontRightSteerEncoderId, 
-               Constants.kFrontRightEncoderOffset);
+            Mk4SwerveModuleHelper.GearRatio.L2, 
+            Constants.kFrontRightDriveId, 
+            Constants.kFrontRightSteerId, 
+            Constants.kFrontRightSteerEncoderId, 
+            Constants.kFrontRightEncoderOffset
+        );
                
         _backLeftModule = Mk4SwerveModuleHelper.createFalcon500(
             tab.getLayout("Back Left Module", BuiltInLayouts.kList)
                .withSize(2, 4)
                .withPosition(4, 0),
-               Mk4SwerveModuleHelper.GearRatio.L2, 
-               Constants.kBackLeftDriveId, 
-               Constants.kBackLeftSteerId, 
-               Constants.kBackLeftSteerEncoderId, 
-               Constants.kBackLeftEncoderOffset);
+            Mk4SwerveModuleHelper.GearRatio.L2, 
+            Constants.kBackLeftDriveId, 
+            Constants.kBackLeftSteerId, 
+            Constants.kBackLeftSteerEncoderId, 
+            Constants.kBackLeftEncoderOffset
+        );
                
         _backRightModule = Mk4SwerveModuleHelper.createFalcon500(
             tab.getLayout("Back Right Module", BuiltInLayouts.kList)
                .withSize(2, 4)
                .withPosition(6, 0),
-               Mk4SwerveModuleHelper.GearRatio.L2, 
-               Constants.kBackRightDriveId, 
-               Constants.kBackRightSteerId, 
-               Constants.kBackRightSteerEncoderId, 
-               Constants.kBackRightEncoderOffset);
+            Mk4SwerveModuleHelper.GearRatio.L2, 
+            Constants.kBackRightDriveId, 
+            Constants.kBackRightSteerId, 
+            Constants.kBackRightSteerEncoderId, 
+            Constants.kBackRightEncoderOffset
+        );
 
         _moduleStates = Constants._kinematics.toSwerveModuleStates(new ChassisSpeeds(0.0, 0.0, 0.0));
         _odometry = new SwerveDriveOdometry(Constants._kinematics, Rotation2d.fromDegrees(0.0), new SwerveModulePosition[] {
@@ -200,5 +204,12 @@ public class Drivetrain extends Subsystem {
         _frontRightModule.set(moduleStates[1].speedMetersPerSecond / Constants.MAX_VELOCITY_METERS_PER_SECOND * Constants.MAX_VOLTAGE, moduleStates[1].angle.getRadians());
         _backLeftModule.set(moduleStates[2].speedMetersPerSecond / Constants.MAX_VELOCITY_METERS_PER_SECOND * Constants.MAX_VOLTAGE, moduleStates[2].angle.getRadians());
         _backRightModule.set(moduleStates[3].speedMetersPerSecond / Constants.MAX_VELOCITY_METERS_PER_SECOND * Constants.MAX_VOLTAGE, moduleStates[3].angle.getRadians());
+    }
+
+    /**
+     * Brings the robot to a stop
+     */
+    public void stopDriving() {
+        robotOrientedDrive(0.0, 0.0, 0.0);
     }
 }
