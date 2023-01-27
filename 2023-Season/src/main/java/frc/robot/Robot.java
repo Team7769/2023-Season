@@ -120,7 +120,7 @@ public class Robot extends TimedRobot {
     var rotationZ = OneDimensionalLookup.interpLinear(
       Constants.RotAxis_inputBreakpoints, 
       Constants.RotAxis_outputTable,
-      _driverController.getRightX() ) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+      _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
 
     if (_driverController.getLeftBumperPressed()) {
       // Robot orientated speed
