@@ -3,6 +3,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPlannerTrajectory.PathPlannerState;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.server.PathPlannerServer;
+
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -16,16 +23,17 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
 
 public class PathFollower {
     private static PathFollower _instance;
-    private HolonomicDriveController _controller;
-    private SwerveTrajectory _currentPath;
+    private PPHolonomicDriveController _controller;
+    private PathPlannerTrajectory _currentPath;
     private Timer _timer;
     private PIDController _translationXPID;
     private PIDController _translationYPID;
-    private ProfiledPIDController _thetaController;
+    private PIDController _thetaController;
 
     private final double _translateKp = 2; //5.5
     private final double _translateKi = 0.0;
@@ -37,36 +45,25 @@ public class PathFollower {
 
     private int _pathIndex = 0;
     
-    private Trajectory _blueSideStartToConePath;
-    private Trajectory _blueSideConeToScorePath;
+    private PathPlannerTrajectory _testTrajectory;
 
-    private ArrayList<SwerveTrajectory> _currentAutonomous;
+    //private ArrayList<SwerveTrajectory> _currentAutonomous;
 
     PathFollower()
     {
         _translationXPID = new PIDController(_translateKp, _translateKi, _translateKd);
         _translationYPID = new PIDController(_translateKp, _translateKi, _translateKd);
-        _thetaController = new ProfiledPIDController(_rotateKp, _rotateKi, _rotateKd, new TrapezoidProfile.Constraints(
-            Units.degreesToRadians(3600), //max angular velocity
-            Units.degreesToRadians(10800) //max angular acceleration
-          ));
-        _thetaController.enableContinuousInput(-Math.PI, Math.PI);
-        _controller = new HolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
+        // _thetaController = new ProfiledPIDController(_rotateKp, _rotateKi, _rotateKd, new TrapezoidProfile.Constraints(
+        //     Units.degreesToRadians(3600), //max angular velocity
+        //     Units.degreesToRadians(10800) //max angular acceleration
+        //   ));
+        // _thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        _thetaController = new PIDController(_rotateKp, _rotateKi, _rotateKd);
+        //_controller = new HolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
+        
+        _controller = new PPHolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         _timer = new Timer();
-
-        try {
-            Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("paths/Start To Cone.wpilib.json");
-            _blueSideStartToConePath = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-         } catch (IOException ex) {
-            DriverStation.reportError("Unable to open trajectory: " + "paths/Start To Cone.wpilib.json", ex.getStackTrace());
-         }
-         
-        try {
-            Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve("paths/Cone To Goal.wpilib.json");
-            _blueSideConeToScorePath = TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-         } catch (IOException ex) {
-            DriverStation.reportError("Unable to open trajectory: " + "paths/Cone To Goal.wpilib.json", ex.getStackTrace());
-         }
+        _testTrajectory = PathPlanner.loadPath("TestPath", new PathConstraints(4, 3));
     }
 
     public static PathFollower getInstance() {
@@ -77,23 +74,38 @@ public class PathFollower {
         return _instance;
     }
 
-    public void setBlueSideTwoConeAutonomous() {
-        _currentAutonomous = new ArrayList<SwerveTrajectory>();
-        _currentAutonomous.add(new SwerveTrajectory(_blueSideStartToConePath, Rotation2d.fromDegrees(0)));
-        _currentAutonomous.add(new SwerveTrajectory(_blueSideConeToScorePath, Rotation2d.fromDegrees(180)));
+    public void logData() {
+        SmartDashboard.putNumber("timer", _timer.get());
+    }
 
+    public void setBlueSideTwoConeAutonomous() {
+        // _currentAutonomous = new ArrayList<SwerveTrajectory>();
+        // _currentAutonomous.add(new SwerveTrajectory(_blueSideStartToConePath, Rotation2d.fromDegrees(0)));
+        // _currentAutonomous.add(new SwerveTrajectory(_blueSideConeToScorePath, Rotation2d.fromDegrees(180)));
+
+    }
+
+    public void setTestAuto() {
+        initializeTrajectory(_testTrajectory);
+    }
+
+    private void initializeTrajectory(PathPlannerTrajectory trajectory) {
         _pathIndex = 0;
-        _currentPath = _currentAutonomous.get(_pathIndex);
+        _currentPath =
+            PathPlannerTrajectory.transformTrajectoryForAlliance(
+                trajectory, DriverStation.getAlliance());
+        _timer.stop();
         _timer.reset();
+        PathPlannerServer.sendActivePath(_currentPath.getStates());
     }
 
     public void setNextPath() {        
-        if (_pathIndex >= _currentAutonomous.size()){
-            return;
-        } else {
-            _pathIndex++;
-            _currentPath = _currentAutonomous.get(_pathIndex);
-        }
+        // if (_pathIndex >= _currentAutonomous.size()){
+        //     return;
+        // } else {
+        //     _pathIndex++;
+        //     _currentPath = _currentAutonomous.get(_pathIndex);
+        // }
     }
 
     public void startPath()
@@ -104,22 +116,27 @@ public class PathFollower {
 
     public boolean isPathFinished()
     {
-        return _timer.get() > _currentPath.getTrajectory().getTotalTimeSeconds();
+        return _timer.hasElapsed(_currentPath.getTotalTimeSeconds());
     }
 
-    public Trajectory getCurrentTrajectory()
+    public PathPlannerTrajectory getCurrentTrajectory()
     {
-        return _currentPath.getTrajectory();
+        return _currentPath;
     }
 
     public Pose2d getStartingPose()
     {
-        return _currentPath.getTrajectory().getInitialPose();
+        return _currentPath.getInitialPose();
     }
 
     public SwerveModuleState[] getPathTarget(Pose2d currentPose) {
-        var desiredState = _currentPath.getTrajectory().sample(_timer.get());
-        var outputModuleStates = _controller.calculate(currentPose, desiredState, _currentPath.getDesiredRotation());
+        PathPlannerState desiredState = (PathPlannerState) _currentPath.sample(_timer.get());
+
+        PathPlannerServer.sendPathFollowingData(
+        new Pose2d(desiredState.poseMeters.getTranslation(), desiredState.holonomicRotation),
+        currentPose);
+
+        var outputModuleStates = _controller.calculate(currentPose, desiredState);
 
         return Constants._kinematics.toSwerveModuleStates(outputModuleStates);
     }

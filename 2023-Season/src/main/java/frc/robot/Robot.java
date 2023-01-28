@@ -7,6 +7,8 @@ package frc.robot;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.pathplanner.lib.server.PathPlannerServer;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -51,7 +53,8 @@ public class Robot extends TimedRobot {
     _subsystems.add(_drivetrain);
     _limelight = Limelight.getInstance();
 
-    _pathFollower.setBlueSideTwoConeAutonomous();
+    _pathFollower.setTestAuto();
+    PathPlannerServer.startServer(5811);
   }
 
   @Override
@@ -60,6 +63,7 @@ public class Robot extends TimedRobot {
       x.logTelemetry();
       x.readDashboardData();
     }
+    _pathFollower.logData();
 
     _drivetrain.updateOdomery();
   }
@@ -73,6 +77,26 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     blueSideTwoConeAuto();
+  }
+
+  public void testAuto()
+  {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _autonomousCase = 7769;
+          break;
+        }
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
   }
 
   public void blueSideTwoConeAuto()
