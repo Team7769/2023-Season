@@ -76,7 +76,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    blueSideTwoConeAuto();
+    testAuto();
   }
 
   public void testAuto()
@@ -91,8 +91,8 @@ public class Robot extends TimedRobot {
 
         if (_pathFollower.isPathFinished()) {
           _autonomousCase = 7769;
-          break;
         }
+        break;
       default:
         _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
         break;
@@ -114,7 +114,7 @@ public class Robot extends TimedRobot {
           break;
         }
       default:
-        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        //_drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
         break;
     }
   }
@@ -135,12 +135,13 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    _drivetrain.resetOdometry();
-    _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+    //_drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+    _pathFollower.setTestAuto();
   }
 
   @Override
   public void disabledPeriodic() {
+    _drivetrain.logPose();
   }
 
   @Override

@@ -7,6 +7,7 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPlannerTrajectory.PathPlannerState;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.server.PathPlannerServer;
 
@@ -35,11 +36,11 @@ public class PathFollower {
     private PIDController _translationYPID;
     private PIDController _thetaController;
 
-    private final double _translateKp = 2; //5.5
+    private final double _translateKp = 5.5; //5.5
     private final double _translateKi = 0.0;
     private final double _translateKd = 0.0;
 
-    private final double _rotateKp = 2; //4.5
+    private final double _rotateKp = 4.5; //4.5
     private final double _rotateKi = 0.0;
     private final double _rotateKd = 0.0;
 
@@ -59,11 +60,12 @@ public class PathFollower {
         //   ));
         // _thetaController.enableContinuousInput(-Math.PI, Math.PI);
         _thetaController = new PIDController(_rotateKp, _rotateKi, _rotateKd);
+        _thetaController.enableContinuousInput(-Math.PI, Math.PI);
         //_controller = new HolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         
         _controller = new PPHolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         _timer = new Timer();
-        _testTrajectory = PathPlanner.loadPath("TestPath", new PathConstraints(4, 3));
+        _testTrajectory = PathPlanner.loadPath("TestPath", new PathConstraints(2.25, 3), true);
     }
 
     public static PathFollower getInstance() {
@@ -126,18 +128,25 @@ public class PathFollower {
 
     public Pose2d getStartingPose()
     {
-        return _currentPath.getInitialPose();
+        return _currentPath.getInitialHolonomicPose();
+    }
+    public PathPlannerState getInitialState() {
+        return _currentPath.getInitialState();
     }
 
     public SwerveModuleState[] getPathTarget(Pose2d currentPose) {
         PathPlannerState desiredState = (PathPlannerState) _currentPath.sample(_timer.get());
+
+        SmartDashboard.putNumber("desiredX", desiredState.poseMeters.getX());
+        SmartDashboard.putNumber("desiredY", desiredState.poseMeters.getY());
+        SmartDashboard.putNumber("desiredZ", desiredState.poseMeters.getRotation().getDegrees());
+        SmartDashboard.putNumber("desiredHolonomic", desiredState.holonomicRotation.getDegrees());
 
         PathPlannerServer.sendPathFollowingData(
         new Pose2d(desiredState.poseMeters.getTranslation(), desiredState.holonomicRotation),
         currentPose);
 
         var outputModuleStates = _controller.calculate(currentPose, desiredState);
-
         return Constants._kinematics.toSwerveModuleStates(outputModuleStates);
     }
 }

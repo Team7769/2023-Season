@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.server.PathPlannerServer;
 import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper;
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
@@ -30,7 +31,7 @@ public class Drivetrain extends Subsystem {
     private static PathFollower _pathFollower;
 
     //private SwerveDriveKinematics _kinematics;
-    private AHRS _gyro;
+    private Gyro _gyro;
 
     private SwerveModule _frontLeftModule;
     private SwerveModule _frontRightModule;
@@ -142,33 +143,43 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainBackLeftModuleTargetAngle", _moduleStates[2].angle.getDegrees());
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
+        SmartDashboard.putNumber("gyroOffset", _gyroOffset);
+
+        SmartDashboard.putNumber("odometryX", _odometry.getPoseMeters().getX());
+        SmartDashboard.putNumber("odometryY", _odometry.getPoseMeters().getY());
+        SmartDashboard.putNumber("odometryZ", _odometry.getPoseMeters().getRotation().getDegrees());
+    }
+
+    public void logPose() {
+        var currentState = _pathFollower.getInitialState();
+        PathPlannerServer.sendPathFollowingData(currentState.poseMeters, _odometry.getPoseMeters());
+        SmartDashboard.putNumber("pathStateInitialPoseX", currentState.poseMeters.getX());
+        SmartDashboard.putNumber("pathStateInitialPoseY", currentState.poseMeters.getY());
+        SmartDashboard.putNumber("pathStateInitialPoseZ", currentState.poseMeters.getRotation().getDegrees());
+        SmartDashboard.putNumber("pathStateInitialPoseHolonomic", currentState.holonomicRotation.getDegrees());
     }
 
     public void resetOdometry() {
         resetGyro();
         _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition()
+            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
+        
         }, new Pose2d(0, 0, new Rotation2d()));
     }
 
     public void resetGyro() {
-        _gyro.zeroYaw();
+        _gyro.reset();
         _gyroOffset = 0.0;
     }
     
     public Rotation2d getGyroscopeRotation() {
-        if (_gyro.isMagnetometerCalibrated()) {
-            // We will only get valid fused headings if the magnetometer is calibrated
-            return Rotation2d.fromDegrees(_gyro.getFusedHeading());
-        }
-
         // We have to invert the angle of the NavX so that rotating the robot
         // counter-clockwise makes the angle increase.
-        return Rotation2d.fromDegrees(360.0 - _gyro.getYaw());
-        //return _gyro.getRotation2d();
+        //return Rotation2d.fromDegrees(_gyro.getYaw() - 180);
+        return _gyro.getRotation2d();
     }
 
     public void updateOdomery() {
@@ -201,29 +212,43 @@ public class Drivetrain extends Subsystem {
 
     public void followTrajectory() {
         var output = _pathFollower.getPathTarget(_odometry.getPoseMeters());
+        SwerveDriveKinematics.desaturateWheelSpeeds(output, Constants.MAX_VELOCITY_METERS_PER_SECOND);
+
+        SmartDashboard.putNumber("outputFrontLeftSpeed", output[0].speedMetersPerSecond);
+        SmartDashboard.putNumber("outputFrontRightSpeed", output[1].speedMetersPerSecond);
+        SmartDashboard.putNumber("outputBackLeftSpeed", output[2].speedMetersPerSecond);
+        SmartDashboard.putNumber("outputBackRightSpeed", output[3].speedMetersPerSecond);
+        SmartDashboard.putNumber("outputFrontLeftAngle", output[0].angle.getDegrees());
+        SmartDashboard.putNumber("outputFrontRightAngle", output[1].angle.getDegrees());
+        SmartDashboard.putNumber("outputBackLeftAngle", output[2].angle.getDegrees());
+        SmartDashboard.putNumber("outputBackRightAngle", output[3].angle.getDegrees());
         setModuleStates(output);
     }
 
     public void initAutonPosition() {
         resetGyro();
-        //_gyroOffset = _pathFollower.getStartingPose().getRotation().getDegrees();
+        var pathInitialState = _pathFollower.getInitialState();
+        _gyroOffset = pathInitialState.holonomicRotation.getDegrees();
         _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
             new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
             new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
             new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
-        }, _pathFollower.getStartingPose());
+        }, new Pose2d(pathInitialState.poseMeters.getTranslation(), pathInitialState.holonomicRotation));
+
+        SmartDashboard.putNumber("initialStateRotation", pathInitialState.holonomicRotation.getDegrees());
         m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
     }
     public void setTestPosition() {
         resetGyro();
-        //_gyroOffset = _pathFollower.getStartingPose().getRotation().getDegrees();
+        var pathInitialState = _pathFollower.getInitialState();
+        _gyroOffset = pathInitialState.holonomicRotation.getDegrees();
         _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
             new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
             new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
             new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
-        }, new Pose2d(1.70, .5, getGyroscopeRotation()));
+        }, new Pose2d(pathInitialState.poseMeters.getTranslation(), pathInitialState.holonomicRotation));
         //m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
     }
 
