@@ -1,7 +1,11 @@
 package com.swervedrivespecialties.swervelib;
 
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+
 public interface SwerveModule {
-    double getPosition();
+    SwerveModulePosition getPosition();
+
+    double getDistance();
     
     double getDriveVelocity();
 

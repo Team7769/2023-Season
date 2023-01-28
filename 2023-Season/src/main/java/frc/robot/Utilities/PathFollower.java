@@ -50,6 +50,7 @@ public class PathFollower {
             Units.degreesToRadians(3600), //max angular velocity
             Units.degreesToRadians(10800) //max angular acceleration
           ));
+        _thetaController.enableContinuousInput(-Math.PI, Math.PI);
         _controller = new HolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         _timer = new Timer();
 

@@ -50,6 +50,8 @@ public class Robot extends TimedRobot {
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
     _limelight = Limelight.getInstance();
+
+    //_pathFollower.setBlueSideTwoConeAutonomous();
   }
 
   @Override
@@ -108,10 +110,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledInit() {
-    _drivetrain.resetGyro();
+    _drivetrain.resetOdometry();
     _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
-    _pathFollower.setBlueSideTwoConeAutonomous();
-    _drivetrain.initAutonPosition();
   }
 
   @Override
