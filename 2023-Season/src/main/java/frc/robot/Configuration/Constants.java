@@ -30,10 +30,10 @@ public final class Constants {
     public static final int kBackRightSteerEncoderId = 13;
 
     // Swerve Encoder Offsets
-    public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.909 + 180);
-    public static final double kFrontRightEncoderOffset = -Math.toRadians(238.746 + 180);
-    public static final double kBackLeftEncoderOffset = -Math.toRadians(22.324 + 180);
-    public static final double kBackRightEncoderOffset = -Math.toRadians(145.321 + 180);
+    public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.73);
+    public static final double kFrontRightEncoderOffset = -Math.toRadians(239.06);
+    public static final double kBackLeftEncoderOffset = -Math.toRadians(22.324);
+    public static final double kBackRightEncoderOffset = -Math.toRadians(144.22);
 
     // Swerve Properties
     public static final double MAX_VOLTAGE = 12.0;

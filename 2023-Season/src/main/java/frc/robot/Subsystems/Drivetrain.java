@@ -173,10 +173,10 @@ public class Drivetrain extends Subsystem {
 
     public void updateOdomery() {
         _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(-_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(-_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(-_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(-_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
+            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
         });
     }
 
@@ -208,14 +208,24 @@ public class Drivetrain extends Subsystem {
         resetGyro();
         //_gyroOffset = _pathFollower.getStartingPose().getRotation().getDegrees();
         _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition(),
-            new SwerveModulePosition()
+            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
         }, _pathFollower.getStartingPose());
         m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
     }
-
+    public void setTestPosition() {
+        resetGyro();
+        //_gyroOffset = _pathFollower.getStartingPose().getRotation().getDegrees();
+        _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
+            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
+        }, new Pose2d(1.70, .5, getGyroscopeRotation()));
+        //m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
+    }
 
     private void setModuleStates(SwerveModuleState[] moduleStates) {
         _frontLeftModule.set(moduleStates[0].speedMetersPerSecond / Constants.MAX_VELOCITY_METERS_PER_SECOND * Constants.MAX_VOLTAGE, moduleStates[0].angle.getRadians());

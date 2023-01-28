@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
     _subsystems.add(_drivetrain);
     _limelight = Limelight.getInstance();
 
-    //_pathFollower.setBlueSideTwoConeAutonomous();
+    _pathFollower.setBlueSideTwoConeAutonomous();
   }
 
   @Override
@@ -97,6 +97,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    _drivetrain.setTestPosition();
   }
 
   @Override
@@ -135,11 +136,11 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopDrive() {
-    var translationX = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
+    var translationX = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
         Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var translationY = OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
+    var translationY = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
         Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var rotationZ = OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable,
+    var rotationZ = -OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable,
         _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
 
     if (_driverController.getLeftBumperPressed()) {
