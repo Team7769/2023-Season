@@ -6,7 +6,9 @@
     },
     "windows": {
       "/SmartDashboard/Field": {
-        "image": "C:\\Users\\Colin\\PathWeaver\\Games\\Charged Up\\2023-field.png",
+        "height": 9.800000190734863,
+        "image": "C:\\Users\\nbrow\\PathWeaver\\Games\\Charged up\\2023-field.png",
+        "width": 18.75,
         "window": {
           "visible": true
         }
