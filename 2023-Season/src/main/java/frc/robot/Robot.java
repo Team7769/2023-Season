@@ -4,14 +4,19 @@
 
 package frc.robot;
 
+import java.io.NotActiveException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.ejml.simple.AutomaticSimpleMatrixConvert;
 
 import com.pathplanner.lib.server.PathPlannerServer;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Configuration.Automode;
 import frc.robot.Configuration.Constants;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Subsystem;
@@ -38,11 +43,13 @@ public class Robot extends TimedRobot {
   private static Drivetrain _drivetrain;
   private static PathFollower _pathFollower;
   private XboxController _driverController;
+  private int _selectedAutoMode;
 
   private static Limelight _limelight;
 
   private List<Subsystem> _subsystems;
   private int _autonomousCase = 0;
+  private SendableChooser<Integer> _autoChooser = new SendableChooser<>();
 
   @Override
   public void robotInit() {
@@ -53,8 +60,16 @@ public class Robot extends TimedRobot {
     _subsystems.add(_drivetrain);
     _limelight = Limelight.getInstance();
 
-    _pathFollower.setTestAuto();
     PathPlannerServer.startServer(5811);
+    _selectedAutoMode = 0;
+
+    _autoChooser.setDefaultOption("Do Nothing", 0);
+    _autoChooser.addOption("Loading Side Link + Balance", Automode.LOADING_SIDE_LINK_BALANCE);
+    _autoChooser.addOption("Cable Side Two Cone + Balance", Automode.CABLE_SIDE_TWO_CONE_BALANCE);
+    _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK);
+    _autoChooser.addOption("Cable Side Link + Balance", Automode.CABLE_SIDE_LINK_BALANCE);
+
+    SmartDashboard.putData(_autoChooser);
   }
 
   @Override
@@ -70,16 +85,72 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    _selectedAutoMode = _autoChooser.getSelected();
+    switch(_selectedAutoMode){
+      case Automode.DO_NOTHING:
+        break;
+      case Automode.LOADING_SIDE_LINK_BALANCE:
+        _pathFollower.setBlueSideLSLinkBalance();
+        break;
+      case Automode.CABLE_SIDE_LINK_BALANCE:
+        break;  
+      case Automode.LOADING_SIDE_LINK:
+        break;
+      case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
+        _pathFollower.setTestAuto();
+        break;
+      default:
+        break;
+    }
+
     _drivetrain.resetOdometry();
-    _drivetrain.initAutonPosition();
+    switch (_selectedAutoMode) {
+      case Automode.LOADING_SIDE_LINK:
+      case Automode.LOADING_SIDE_LINK_BALANCE:
+      case Automode.CABLE_SIDE_LINK_BALANCE:
+        _drivetrain.initAutonPosition();
+        break;
+      default:
+        break;
+    }
   }
 
   @Override
   public void autonomousPeriodic() {
-    testAuto();
+    switch(_selectedAutoMode){
+      case Automode.LOADING_SIDE_LINK_BALANCE:
+        loadSideLinkBalance();
+        break;
+      case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
+        testAuto();
+        break;
+      default:
+        break;
+    }
+
   }
 
   public void testAuto()
+  {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _autonomousCase = 7769;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void loadSideLinkBalance()
   {
     switch (_autonomousCase) {
       case 0:

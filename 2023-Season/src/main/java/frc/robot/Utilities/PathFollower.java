@@ -47,6 +47,7 @@ public class PathFollower {
     private int _pathIndex = 0;
     
     private PathPlannerTrajectory _testTrajectory;
+    private PathPlannerTrajectory _loadSideLinkBalance;
 
     //private ArrayList<SwerveTrajectory> _currentAutonomous;
 
@@ -66,6 +67,8 @@ public class PathFollower {
         _controller = new PPHolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         _timer = new Timer();
         _testTrajectory = PathPlanner.loadPath("TestPath", new PathConstraints(2.25, 3), true);
+        _loadSideLinkBalance = PathPlanner.loadPath("LoadSideLinkBalance", new PathConstraints(2.25, 3), true);
+
     }
 
     public static PathFollower getInstance() {
@@ -89,6 +92,10 @@ public class PathFollower {
 
     public void setTestAuto() {
         initializeTrajectory(_testTrajectory);
+    }
+
+    public void setBlueSideLSLinkBalance() {
+        initializeTrajectory(_loadSideLinkBalance);
     }
 
     private void initializeTrajectory(PathPlannerTrajectory trajectory) {
