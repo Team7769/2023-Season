@@ -49,6 +49,7 @@ public class Robot extends TimedRobot {
 
   private List<Subsystem> _subsystems;
   private int _autonomousCase = 0;
+  private int _autoLoops = 0;
   private SendableChooser<Integer> _autoChooser = new SendableChooser<>();
 
   @Override
@@ -97,7 +98,7 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_LINK:
         break;
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
-        _pathFollower.setTestAuto();
+        _pathFollower.setCableSideTwoConeBalance();
         break;
       default:
         break;
@@ -108,6 +109,7 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_LINK:
       case Automode.LOADING_SIDE_LINK_BALANCE:
       case Automode.CABLE_SIDE_LINK_BALANCE:
+      case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
         _drivetrain.initAutonPosition();
         break;
       default:
@@ -122,12 +124,67 @@ public class Robot extends TimedRobot {
         loadSideLinkBalance();
         break;
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
-        testAuto();
+        cableSideTwoConeBalanceAuto();
         break;
       default:
         break;
     }
+    
+    _autoLoops++;
+  }
 
+  public void cableSideTwoConeBalanceAuto() {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 2:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 4:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autonomousCase++;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
   }
 
   public void testAuto()

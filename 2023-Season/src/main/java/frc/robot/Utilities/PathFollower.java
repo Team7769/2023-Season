@@ -2,6 +2,7 @@ package frc.robot.Utilities;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
@@ -31,6 +32,7 @@ public class PathFollower {
     private static PathFollower _instance;
     private PPHolonomicDriveController _controller;
     private PathPlannerTrajectory _currentPath;
+    private List<PathPlannerTrajectory> _currentSegmentedPath;
     private Timer _timer;
     private PIDController _translationXPID;
     private PIDController _translationYPID;
@@ -48,6 +50,7 @@ public class PathFollower {
     
     private PathPlannerTrajectory _testTrajectory;
     private PathPlannerTrajectory _loadSideLinkBalance;
+    private List<PathPlannerTrajectory> _cableSideTwoConeBalance;
 
     //private ArrayList<SwerveTrajectory> _currentAutonomous;
 
@@ -67,6 +70,7 @@ public class PathFollower {
         _controller = new PPHolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         _timer = new Timer();
         _testTrajectory = PathPlanner.loadPath("TestPath", new PathConstraints(2.25, 3), true);
+        _cableSideTwoConeBalance = PathPlanner.loadPathGroup("TestPath", true, new PathConstraints(2.25, 3));
         _loadSideLinkBalance = PathPlanner.loadPath("LoadSideLinkBalance", new PathConstraints(2.25, 3), true);
 
     }
@@ -83,13 +87,6 @@ public class PathFollower {
         SmartDashboard.putNumber("timer", _timer.get());
     }
 
-    public void setBlueSideTwoConeAutonomous() {
-        // _currentAutonomous = new ArrayList<SwerveTrajectory>();
-        // _currentAutonomous.add(new SwerveTrajectory(_blueSideStartToConePath, Rotation2d.fromDegrees(0)));
-        // _currentAutonomous.add(new SwerveTrajectory(_blueSideConeToScorePath, Rotation2d.fromDegrees(180)));
-
-    }
-
     public void setTestAuto() {
         initializeTrajectory(_testTrajectory);
     }
@@ -98,8 +95,13 @@ public class PathFollower {
         initializeTrajectory(_loadSideLinkBalance);
     }
 
-    private void initializeTrajectory(PathPlannerTrajectory trajectory) {
+    public void setCableSideTwoConeBalance() {
         _pathIndex = 0;
+        _currentSegmentedPath = _cableSideTwoConeBalance;
+        initializeTrajectory(_cableSideTwoConeBalance.get(_pathIndex));
+    }
+
+    private void initializeTrajectory(PathPlannerTrajectory trajectory) {
         _currentPath =
             PathPlannerTrajectory.transformTrajectoryForAlliance(
                 trajectory, DriverStation.getAlliance());
@@ -108,13 +110,13 @@ public class PathFollower {
         PathPlannerServer.sendActivePath(_currentPath.getStates());
     }
 
-    public void setNextPath() {        
-        // if (_pathIndex >= _currentAutonomous.size()){
-        //     return;
-        // } else {
-        //     _pathIndex++;
-        //     _currentPath = _currentAutonomous.get(_pathIndex);
-        // }
+    public void setNextPath() {
+        if (_currentSegmentedPath == null || _pathIndex >= _currentSegmentedPath.size()){
+            return;
+        } else {
+            _pathIndex++;
+            initializeTrajectory(_currentSegmentedPath.get(_pathIndex));
+        }
     }
 
     public void startPath()
