@@ -49,7 +49,7 @@ public class PathFollower {
     private int _pathIndex = 0;
     
     private PathPlannerTrajectory _testTrajectory;
-    private PathPlannerTrajectory _loadSideLinkBalance;
+    private List<PathPlannerTrajectory> _loadSideLinkBalance;
     private List<PathPlannerTrajectory> _cableSideTwoConeBalance;
 
     //private ArrayList<SwerveTrajectory> _currentAutonomous;
@@ -70,8 +70,8 @@ public class PathFollower {
         _controller = new PPHolonomicDriveController(_translationXPID, _translationYPID, _thetaController);
         _timer = new Timer();
         _testTrajectory = PathPlanner.loadPath("TestPath", new PathConstraints(2.25, 3), true);
-        _cableSideTwoConeBalance = PathPlanner.loadPathGroup("TestPath", true, new PathConstraints(2.25, 3));
-        _loadSideLinkBalance = PathPlanner.loadPath("LoadSideLinkBalance", new PathConstraints(2.25, 3), true);
+        _cableSideTwoConeBalance = PathPlanner.loadPathGroup("CableTwoConeBalance", true, new PathConstraints(2.25, 3));
+        _loadSideLinkBalance = PathPlanner.loadPathGroup("LoadSideLinkBalance", true, new PathConstraints(2.25, 3));
 
     }
 
@@ -91,8 +91,10 @@ public class PathFollower {
         initializeTrajectory(_testTrajectory);
     }
 
-    public void setBlueSideLSLinkBalance() {
-        initializeTrajectory(_loadSideLinkBalance);
+    public void setLoadsideLinkBalance() {
+        _pathIndex = 0;
+        _currentSegmentedPath = _loadSideLinkBalance;
+        initializeTrajectory(_loadSideLinkBalance.get(_pathIndex));
     }
 
     public void setCableSideTwoConeBalance() {
