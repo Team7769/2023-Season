@@ -1,18 +1,11 @@
 {
   "NetworkTables": {
+    "Persistent Values": {
+      "open": false
+    },
     "types": {
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Field": "Field2d"
-    },
-    "windows": {
-      "/SmartDashboard/Field": {
-        "height": 9.800000190734863,
-        "image": "C:\\Users\\nbrow\\PathWeaver\\Games\\Charged up\\2023-field.png",
-        "width": 18.75,
-        "window": {
-          "visible": true
-        }
-      }
     }
   },
   "NetworkTables Settings": {
