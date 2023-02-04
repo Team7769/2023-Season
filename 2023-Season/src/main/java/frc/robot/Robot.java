@@ -288,8 +288,6 @@ public class Robot extends TimedRobot {
 
         if (_pathFollower.isPathFinished()) {
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autoLoops = 0;
-          _pathFollower.setNextPath();
           _autonomousCase++;
         }
         break;
