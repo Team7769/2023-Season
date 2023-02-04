@@ -328,6 +328,22 @@ public class Robot extends TimedRobot {
     if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed() ) {
       _drivetrain.resetGyro();
     }
+
+    if ( _driverController.getAButtonPressed() ) {
+      // Turn To The wall facing us
+    }
+
+    if ( _driverController.getYButtonPressed() ) {
+      // Turn to the wall infront of us
+    }
+
+    if ( _driverController.getXButtonPressed() ) {
+      // Turn to the wall left of us
+    }
+
+    if ( _driverController.getBPressed() ) {
+      // Turn to the wall right of us
+    }
   }
 
   @Override
