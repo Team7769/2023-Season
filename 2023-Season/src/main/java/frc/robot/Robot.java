@@ -341,7 +341,7 @@ public class Robot extends TimedRobot {
       // Turn to the wall left of us
     }
 
-    if ( _driverController.getBPressed() ) {
+    if ( _driverController.getBButtonPressed() ) {
       // Turn to the wall right of us
     }
   }
