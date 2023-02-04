@@ -315,7 +315,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    _drivetrain.setTestPosition();
+
   }
 
   @Override
@@ -364,24 +364,24 @@ public class Robot extends TimedRobot {
         Constants.RotAxis_outputTable,
         _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
 
-    if (_driverController.getAButtonPressed()) {
+    if (_driverController.getAButtonPressed() || _driverController.getYButtonPressed() || _driverController.getXButtonPressed() || _driverController.getBButtonPressed()){
+      _drivetrain.resetWallFacingController();
+    }
+
+    if (_driverController.getAButton()) {
       // Turn To The wall facing us
-      rotationZ = 0;
-    }
-
-    if (_driverController.getYButtonPressed()) {
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+    } else if (_driverController.getYButton()) {
       // Turn to the wall infront of us
-      rotationZ = 0;
-    }
-
-    if (_driverController.getXButtonPressed()) {
+      rotationZ = _drivetrain.getWallRotationTarget(0);
+    } else if (_driverController.getXButton()) {
       // Turn to the wall left of us
-      rotationZ = 0;
-    }
-
-    if (_driverController.getBButtonPressed()) {
+      rotationZ = _drivetrain.getWallRotationTarget(90);
+    } else if (_driverController.getBButton()) {
       // Turn to the wall right of us
-      rotationZ = 0;
+      rotationZ = _drivetrain.getWallRotationTarget(-90);
+    } else {
+      rotationZ = rotationZ / 1.25;
     }
 
     if (_driverController.getLeftBumperPressed()) {
@@ -389,7 +389,7 @@ public class Robot extends TimedRobot {
       _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
     } else {
       // Field orientated speed
-      _drivetrain.fieldOrientedDrive(translationX / 1.25, translationY / 1.25, rotationZ / 1.25);
+      _drivetrain.fieldOrientedDrive(translationX / 1.25, translationY / 1.25, rotationZ);
     }
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);
