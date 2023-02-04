@@ -15,8 +15,12 @@ public class PlacerDowner extends Subsystem {
         return _instance;
     }
 
+    public void  liftUp() {
+
+    }
+    
     public void placeDown() {
-        
+
     }
 
 }
