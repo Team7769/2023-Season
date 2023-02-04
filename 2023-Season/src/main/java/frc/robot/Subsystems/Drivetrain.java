@@ -187,6 +187,10 @@ public class Drivetrain extends Subsystem {
         return _gyro.getRotation2d();
     }
 
+    public Rotation2d getGyroscopeRotationWithOffset() {
+        return Rotation2d.fromDegrees(_gyro.getRotation2d().getDegrees() + _gyroOffset);
+    }
+
     public void updateOdomery() {
         _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
@@ -202,7 +206,7 @@ public class Drivetrain extends Subsystem {
     }
 
     public void fieldOrientedDrive( double translationX, double translationY, double rotationZ) {
-        _chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(translationX, translationY, rotationZ, getGyroscopeRotation());
+        _chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(translationX, translationY, rotationZ, getGyroscopeRotationWithOffset());
 
         drive(_chassisSpeeds);
     }
@@ -250,7 +254,7 @@ public class Drivetrain extends Subsystem {
     }
 
     public double getWallRotationTarget(double targetRotation) {
-        var output = _wallFacingController.calculate(getGyroscopeRotation().getDegrees(), targetRotation);
+        var output = _wallFacingController.calculate(getGyroscopeRotationWithOffset().getDegrees(), targetRotation);
 
         SmartDashboard.putNumber("wallRotationTarget", targetRotation);
         SmartDashboard.putNumber("wallRotationOutput", output);
