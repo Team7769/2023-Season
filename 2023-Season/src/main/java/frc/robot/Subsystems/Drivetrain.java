@@ -127,16 +127,16 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsWz", _chassisSpeeds.omegaRadiansPerSecond);
 
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleDistance", _frontLeftModule.getPosition().distanceMeters);
+        SmartDashboard.putNumber("drivetrainFrontLeftModuleDistance", _frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
         SmartDashboard.putNumber("drivetrainFrontLeftModuleVelocity", _frontLeftModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainFrontLeftModuleAngle", Math.toDegrees(_frontLeftModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainFrontRightModuleDistance", _frontRightModule.getPosition().distanceMeters);
+        SmartDashboard.putNumber("drivetrainFrontRightModuleDistance", _frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
         SmartDashboard.putNumber("drivetrainFrontRightModuleVelocity", _frontRightModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainFrontRightModuleAngle", Math.toDegrees(_frontRightModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainBackLeftModuleDistance", _backLeftModule.getPosition().distanceMeters);
+        SmartDashboard.putNumber("drivetrainBackLeftModuleDistance", _backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
         SmartDashboard.putNumber("drivetrainBackLeftModuleVelocity", _backLeftModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainBackLeftModuleAngle", Math.toDegrees(_backLeftModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainBackRightModuleDistance", _backRightModule.getPosition().distanceMeters);
+        SmartDashboard.putNumber("drivetrainBackRightModuleDistance", _backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
         SmartDashboard.putNumber("drivetrainBackRightModuleVelocity", _backRightModule.getDriveVelocity());
         SmartDashboard.putNumber("drivetrainBackRightModuleAngle", Math.toDegrees(_backRightModule.getSteerAngle()));
 
@@ -167,11 +167,10 @@ public class Drivetrain extends Subsystem {
     public void resetOdometry() {
         resetGyro();
         _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
-        
+            new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         }, new Pose2d(0, 0, new Rotation2d()));
     }
 
@@ -193,10 +192,10 @@ public class Drivetrain extends Subsystem {
 
     public void updateOdomery() {
         _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
+            new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         });
     }
 
@@ -239,10 +238,10 @@ public class Drivetrain extends Subsystem {
         var pathInitialState = _pathFollower.getInitialState();
         _gyroOffset = pathInitialState.holonomicRotation.getDegrees();
         _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
+            new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
+            new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
+            new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         }, new Pose2d(pathInitialState.poseMeters.getTranslation(), pathInitialState.holonomicRotation));
 
         SmartDashboard.putNumber("initialStateRotation", pathInitialState.holonomicRotation.getDegrees());

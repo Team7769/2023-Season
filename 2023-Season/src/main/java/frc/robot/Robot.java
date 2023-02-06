@@ -12,6 +12,7 @@ import org.ejml.simple.AutomaticSimpleMatrixConvert;
 
 import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -67,8 +68,9 @@ public class Robot extends TimedRobot {
     _autoChooser.setDefaultOption("Do Nothing", 0);
     _autoChooser.addOption("Loading Side Link + Balance", Automode.LOADING_SIDE_LINK_BALANCE);
     _autoChooser.addOption("Cable Side Two Cone + Balance", Automode.CABLE_SIDE_TWO_CONE_BALANCE);
-    _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK);
     _autoChooser.addOption("Cable Side Link + Balance", Automode.CABLE_SIDE_LINK_BALANCE);
+    _autoChooser.addOption("Loading Side Link", Automode.LOADING_SIDE_LINK_NOBALANCE);
+    _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK_CONE_NOBALANCE);
 
     SmartDashboard.putData(_autoChooser);
   }
@@ -94,22 +96,29 @@ public class Robot extends TimedRobot {
         _pathFollower.setLoadsideLinkBalance();
         break;
       case Automode.CABLE_SIDE_LINK_BALANCE:
-        break;
-      case Automode.LOADING_SIDE_LINK:
+        _pathFollower.setCableSideLinkBalance();
         break;
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
         _pathFollower.setCableSideTwoConeBalance();
+        break;
+      case Automode.LOADING_SIDE_LINK_NOBALANCE:
+        _pathFollower.setLoadingSideLinkNoBalance();
+        break;
+      case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
+        _pathFollower.setLoadingSideLinkConeNoBalance();
         break;
       default:
         break;
     }
 
     _drivetrain.resetOdometry();
+    SmartDashboard.putString("alliance", DriverStation.getAlliance().name());
     switch (_selectedAutoMode) {
-      case Automode.LOADING_SIDE_LINK:
       case Automode.LOADING_SIDE_LINK_BALANCE:
       case Automode.CABLE_SIDE_LINK_BALANCE:
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
+      case Automode.LOADING_SIDE_LINK_NOBALANCE:
+      case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
         _drivetrain.initAutonPosition();
         break;
       default:
@@ -125,6 +134,15 @@ public class Robot extends TimedRobot {
         break;
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
         cableSideTwoConeBalanceAuto();
+        break;
+      case Automode.CABLE_SIDE_LINK_BALANCE:
+        cableSideLinkBalance();
+        break;
+      case Automode.LOADING_SIDE_LINK_NOBALANCE:
+        loadingSideLinkNoBalance();
+        break;
+      case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
+        loadingSideLinkConeNoBalance();
         break;
       default:
         break;
@@ -198,6 +216,273 @@ public class Robot extends TimedRobot {
 
         if (_pathFollower.isPathFinished()) {
           _autonomousCase = 7769;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void loadingSideLinkNoBalance()
+  {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 2:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 4:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 6:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 7:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autonomousCase++;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void loadingSideLinkConeNoBalance()
+  {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 2:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 4:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 6:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 7:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 8:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 9:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 10:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 11:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autonomousCase++;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void cableSideLinkBalance()
+  {
+    switch (_autonomousCase) {
+      case 0:
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 1:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 2:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 4:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 6:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 7:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 8:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops >= 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+        }
+        break;
+      case 9:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autonomousCase++;
         }
         break;
       default:
@@ -337,6 +622,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     _drivetrain.logPose();
+    _drivetrain.robotOrientedDrive(0, 0, 0);
   }
 
   @Override
