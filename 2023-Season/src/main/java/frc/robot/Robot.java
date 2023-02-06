@@ -87,14 +87,14 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     _selectedAutoMode = _autoChooser.getSelected();
-    switch(_selectedAutoMode){
+    switch (_selectedAutoMode) {
       case Automode.DO_NOTHING:
         break;
       case Automode.LOADING_SIDE_LINK_BALANCE:
         _pathFollower.setLoadsideLinkBalance();
         break;
       case Automode.CABLE_SIDE_LINK_BALANCE:
-        break;  
+        break;
       case Automode.LOADING_SIDE_LINK:
         break;
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
@@ -119,7 +119,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    switch(_selectedAutoMode){
+    switch (_selectedAutoMode) {
       case Automode.LOADING_SIDE_LINK_BALANCE:
         loadSideLinkBalance();
         break;
@@ -129,7 +129,7 @@ public class Robot extends TimedRobot {
       default:
         break;
     }
-    
+
     _autoLoops++;
   }
 
@@ -187,8 +187,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void testAuto()
-  {
+  public void testAuto() {
     switch (_autonomousCase) {
       case 0:
         _pathFollower.startPath();
@@ -207,8 +206,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void loadSideLinkBalance()
-  {
+  public void loadSideLinkBalance() {
     switch (_autonomousCase) {
       case 0:
         _pathFollower.startPath();
@@ -296,8 +294,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void blueSideTwoConeAuto()
-  {
+  public void blueSideTwoConeAuto() {
     switch (_autonomousCase) {
       case 0:
         _pathFollower.startPath();
@@ -311,28 +308,29 @@ public class Robot extends TimedRobot {
           break;
         }
       default:
-        //_drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        // _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
         break;
     }
   }
 
   @Override
   public void teleopInit() {
-    _drivetrain.setTestPosition();
+
   }
 
   @Override
   public void teleopPeriodic() {
     teleopDrive();
 
-    if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed() ) {
+    if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed()) {
       _drivetrain.resetGyro();
     }
+
   }
 
   @Override
   public void disabledInit() {
-    //_drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+    // _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
     _pathFollower.setTestAuto();
   }
 
@@ -362,19 +360,40 @@ public class Robot extends TimedRobot {
         Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
     var translationY = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
         Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var rotationZ = -OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints, Constants.RotAxis_outputTable,
+    var rotationZ = -OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints,
+        Constants.RotAxis_outputTable,
         _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+
+    if (_driverController.getAButtonPressed() || _driverController.getYButtonPressed() || _driverController.getXButtonPressed() || _driverController.getBButtonPressed()){
+      _drivetrain.resetWallFacingController();
+    }
+
+    if (_driverController.getAButton()) {
+      // Turn To The wall facing us
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+    } else if (_driverController.getYButton()) {
+      // Turn to the wall infront of us
+      rotationZ = _drivetrain.getWallRotationTarget(0);
+    } else if (_driverController.getXButton()) {
+      // Turn to the wall left of us
+      rotationZ = _drivetrain.getWallRotationTarget(90);
+    } else if (_driverController.getBButton()) {
+      // Turn to the wall right of us
+      rotationZ = _drivetrain.getWallRotationTarget(-90);
+    } else {
+      rotationZ = rotationZ / 1.25;
+    }
 
     if (_driverController.getLeftBumperPressed()) {
       // Robot orientated speed
       _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
     } else {
       // Field orientated speed
-      _drivetrain.fieldOrientedDrive(translationX/1.25, translationY/1.25, rotationZ/1.25);
+      _drivetrain.fieldOrientedDrive(translationX / 1.25, translationY / 1.25, rotationZ);
     }
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);
     SmartDashboard.putNumber("driveControllerTranslationY", translationY);
-    SmartDashboard.putNumber("driveControllerRotationZ", rotationZ); 
+    SmartDashboard.putNumber("driveControllerRotationZ", rotationZ);
   }
 }
