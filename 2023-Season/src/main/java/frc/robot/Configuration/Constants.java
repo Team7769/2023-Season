@@ -2,6 +2,7 @@ package frc.robot.Configuration;
 
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 
+import edu.wpi.first.math.estimator.AngleStatistics;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
@@ -11,6 +12,17 @@ public final class Constants {
     // Usb Slots
     public static final int kDriverControllerUsbSlot = 0;
     public static final int kOperatorControllerUsbSlot = 1;
+
+    // PlaceDowner Slots
+    public static final int kPlacerDownerMotorDeviceId = 16; // Change Later
+
+    public static final int kPlacerDownerKp = 0; // Change Later
+    public static final int kPlacerDownerKi = 0; // Change Later
+    public static final int kPlacerDownerKd = 0; // Change Later
+
+    // PickerUpper Slots
+    public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later
+    public static final int kPickerUpperRightMotorDeviceId = 15; // Change Later
 
     // Swerve Slots
     public static final int kFrontLeftDriveId = 2;

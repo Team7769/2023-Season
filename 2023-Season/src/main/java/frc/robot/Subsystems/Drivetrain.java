@@ -6,6 +6,7 @@ import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper;
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,6 +40,7 @@ public class Drivetrain extends Subsystem {
     private SwerveModule _backRightModule;
     private SwerveDriveOdometry _odometry;
     private SwerveModuleState[] _moduleStates = new SwerveModuleState[4];
+    private PIDController _wallFacingController;
 
     private double _gyroOffset = 0.0;
     private ChassisSpeeds _chassisSpeeds = new ChassisSpeeds(0.0, 0.0, 0);
@@ -99,6 +101,9 @@ public class Drivetrain extends Subsystem {
         });
 
         _pathFollower = PathFollower.getInstance();
+        _wallFacingController = new PIDController(0.125, 0.02, .01);
+        _wallFacingController.setIntegratorRange(-0.1, 0.1);
+        _wallFacingController.enableContinuousInput(-180, 180);
     }
 
     public static Drivetrain getInstance() {
@@ -181,6 +186,10 @@ public class Drivetrain extends Subsystem {
         return _gyro.getRotation2d();
     }
 
+    public Rotation2d getGyroscopeRotationWithOffset() {
+        return Rotation2d.fromDegrees(_gyro.getRotation2d().getDegrees() + _gyroOffset);
+    }
+
     public void updateOdomery() {
         _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
@@ -196,7 +205,7 @@ public class Drivetrain extends Subsystem {
     }
 
     public void fieldOrientedDrive( double translationX, double translationY, double rotationZ) {
-        _chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(translationX, translationY, rotationZ, getGyroscopeRotation());
+        _chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(translationX, translationY, rotationZ, getGyroscopeRotationWithOffset());
 
         drive(_chassisSpeeds);
     }
@@ -238,17 +247,17 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("initialStateRotation", pathInitialState.holonomicRotation.getDegrees());
         m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
     }
-    public void setTestPosition() {
-        resetGyro();
-        var pathInitialState = _pathFollower.getInitialState();
-        _gyroOffset = pathInitialState.holonomicRotation.getDegrees();
-        _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
-            new SwerveModulePosition(_frontLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_frontRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_frontRightModule.getSteerAngle())),
-            new SwerveModulePosition(_backLeftModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backLeftModule.getSteerAngle())),
-            new SwerveModulePosition(_backRightModule.getDistance() / (Constants.DRIVE_ENCODER_COUNTS_PER_REVOLUTION * Constants.DRIVE_ENCODER_CONVERSION_FACTOR), new Rotation2d(_backRightModule.getSteerAngle()))
-        }, new Pose2d(pathInitialState.poseMeters.getTranslation(), pathInitialState.holonomicRotation));
-        //m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
+
+    public void resetWallFacingController() {
+        _wallFacingController.reset();
+    }
+
+    public double getWallRotationTarget(double targetRotation) {
+        var output = _wallFacingController.calculate(getGyroscopeRotationWithOffset().getDegrees(), targetRotation);
+
+        SmartDashboard.putNumber("wallRotationTarget", targetRotation);
+        SmartDashboard.putNumber("wallRotationOutput", output);
+        return output;
     }
 
     private void setModuleStates(SwerveModuleState[] moduleStates) {
