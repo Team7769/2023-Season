@@ -624,6 +624,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     _drivetrain.logPose();
+    _drivetrain.robotOrientedDrive(0, 0, 0);
   }
 
   @Override
