@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
 import frc.robot.Configuration.Constants;
 import frc.robot.Subsystems.Drivetrain;
+import frc.robot.Subsystems.GamePieceManager;
 import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
@@ -42,6 +43,7 @@ public class Robot extends TimedRobot {
    */
 
   private static Drivetrain _drivetrain;
+  private static GamePieceManager _gamePieceManager;
   private static PathFollower _pathFollower;
   private XboxController _driverController;
   private int _selectedAutoMode;
@@ -58,8 +60,10 @@ public class Robot extends TimedRobot {
     _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
     _drivetrain = Drivetrain.getInstance();
     _pathFollower = PathFollower.getInstance();
+    _gamePieceManager = GamePieceManager.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
+    _subsystems.add(_gamePieceManager);
     _limelight = Limelight.getInstance();
 
     PathPlannerServer.startServer(5811);
@@ -148,6 +152,7 @@ public class Robot extends TimedRobot {
         break;
     }
 
+    _gamePieceManager.handle();
     _autoLoops++;
   }
 
@@ -606,11 +611,11 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     teleopDrive();
+    teleopGamePieceManagement();
 
     if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed()) {
       _drivetrain.resetGyro();
     }
-
   }
 
   @Override
@@ -639,6 +644,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {
+  }
+
+  private void teleopGamePieceManagement() {
+
+    _gamePieceManager.handle();
   }
 
   private void teleopDrive() {
