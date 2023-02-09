@@ -19,8 +19,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
 import frc.robot.Configuration.Constants;
+import frc.robot.Enums.PlacerDownerState;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.GamePieceManager;
+import frc.robot.Subsystems.PlacerDowner;
 import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
@@ -44,8 +46,10 @@ public class Robot extends TimedRobot {
 
   private static Drivetrain _drivetrain;
   private static GamePieceManager _gamePieceManager;
+  private static PlacerDowner _placerDowner;
   private static PathFollower _pathFollower;
   private XboxController _driverController;
+  private XboxController _operatorController;
   private int _selectedAutoMode;
 
   private static Limelight _limelight;
@@ -58,9 +62,11 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
+    _operatorController = new XboxController(Constants.kOperatorControllerUsbSlot);
     _drivetrain = Drivetrain.getInstance();
     _pathFollower = PathFollower.getInstance();
     _gamePieceManager = GamePieceManager.getInstance();
+    _placerDowner = PlacerDowner.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
     _subsystems.add(_gamePieceManager);
@@ -648,7 +654,16 @@ public class Robot extends TimedRobot {
 
   private void teleopGamePieceManagement() {
 
-    _gamePieceManager.handle();
+    if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
+      _placerDowner.setWantedState(PlacerDownerState.EJECT);
+    } else if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
+      _placerDowner.setWantedState(PlacerDownerState.INTAKE);
+    } else {
+      _placerDowner.setWantedState(PlacerDownerState.STOP);
+    }
+
+    //_gamePieceManager.handle();
+    _placerDowner.handleCurrentState();
   }
 
   private void teleopDrive() {

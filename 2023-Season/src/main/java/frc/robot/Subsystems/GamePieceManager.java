@@ -13,7 +13,7 @@ public class GamePieceManager extends Subsystem {
     GamePieceManager() {
         _pickerUpper = PickerUpper.getInstance();
         _placerDowner = PlacerDowner.getInstance();
-        _currentState = GamePieceManagerState.IDLE;
+        _currentState = GamePieceManagerState.HOLDING;
     }
 
     public static GamePieceManager getInstance() {
@@ -42,29 +42,17 @@ public class GamePieceManager extends Subsystem {
         var invalidState = false;
 
         switch (_currentState) {
-            case IDLE:
-                invalidState = state != GamePieceManagerState.COLLECTING;
-                break;
             case COLLECTING:
                 invalidState = state != GamePieceManagerState.TRANSFER;
                 break;
             case TRANSFER:
-                invalidState = state != GamePieceManagerState.PREPARE_TO_SCORE;
+                invalidState = (state != GamePieceManagerState.COLLECTING && state != GamePieceManagerState.HOLDING);
                 break;
-            case PREPARE_TO_SCORE:
-                invalidState = (state != GamePieceManagerState.DEPLOY && state != GamePieceManagerState.EJECT);
-                break;
-            case DEPLOY:
-                invalidState = (state != GamePieceManagerState.SCORING && state != GamePieceManagerState.RESET);
+            case HOLDING:
+                invalidState = (state != GamePieceManagerState.SCORING && state != GamePieceManagerState.COLLECTING);
                 break;
             case SCORING:
-                invalidState = state != GamePieceManagerState.RESET;
-                break;
-            case RESET:
-                invalidState = state != GamePieceManagerState.IDLE;
-                break;
-            case EJECT:
-                invalidState = state != GamePieceManagerState.IDLE;
+                invalidState = (state != GamePieceManagerState.COLLECTING && state != GamePieceManagerState.HOLDING);
                 break;
             default:
                 invalidState = true;
@@ -81,21 +69,28 @@ public class GamePieceManager extends Subsystem {
 
     public void handle() {
         switch (_currentState) {
-            case IDLE:
-                break;
             case COLLECTING:
+                // Intake
+                // Eject
+                // Clamp
+                // Drop
+                // Raise
                 break;
             case TRANSFER:
+                // Raise Elevator
+                // Lower Elevator
+                // Intake
                 break;
-            case PREPARE_TO_SCORE:
-                break;
-            case DEPLOY:
+            case HOLDING:
+                // Hold piece
+                // Eject
                 break;
             case SCORING:
-                break;
-            case RESET:
-                break;
-            case EJECT:
+                // Lower Elevator
+                // Raise Elevator
+                // Release
+                // Deploy
+                // Retract
                 break;
             default:
                 break;
