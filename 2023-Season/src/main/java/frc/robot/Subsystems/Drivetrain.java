@@ -122,7 +122,7 @@ public class Drivetrain extends Subsystem {
     @Override
     public void logTelemetry() {
         m_field.setRobotPose(_odometry.getPoseMeters());
-        SmartDashboard.putNumber("gryoAngle", getGyroscopeRotation().getDegrees());
+        SmartDashboard.putNumber("drivetrainGyroAngle", getGyroscopeRotation().getDegrees());
         SmartDashboard.putNumber("drivetrainChassisSpeedsVx", _chassisSpeeds.vxMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsWz", _chassisSpeeds.omegaRadiansPerSecond);
@@ -148,20 +148,20 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainBackLeftModuleTargetAngle", _moduleStates[2].angle.getDegrees());
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
-        SmartDashboard.putNumber("gyroOffset", _gyroOffset);
+        SmartDashboard.putNumber("drivetrainGyroOffset", _gyroOffset);
 
-        SmartDashboard.putNumber("odometryX", _odometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("odometryY", _odometry.getPoseMeters().getY());
-        SmartDashboard.putNumber("odometryZ", _odometry.getPoseMeters().getRotation().getDegrees());
+        SmartDashboard.putNumber("drivetrainOdometryX", _odometry.getPoseMeters().getX());
+        SmartDashboard.putNumber("drivetrainOdometryY", _odometry.getPoseMeters().getY());
+        SmartDashboard.putNumber("drivetrainOdometryZ", _odometry.getPoseMeters().getRotation().getDegrees());
     }
 
     public void logPose() {
         var currentState = _pathFollower.getInitialState();
         PathPlannerServer.sendPathFollowingData(currentState.poseMeters, _odometry.getPoseMeters());
-        SmartDashboard.putNumber("pathStateInitialPoseX", currentState.poseMeters.getX());
-        SmartDashboard.putNumber("pathStateInitialPoseY", currentState.poseMeters.getY());
-        SmartDashboard.putNumber("pathStateInitialPoseZ", currentState.poseMeters.getRotation().getDegrees());
-        SmartDashboard.putNumber("pathStateInitialPoseHolonomic", currentState.holonomicRotation.getDegrees());
+        SmartDashboard.putNumber("drivetrainPathStateInitialPoseX", currentState.poseMeters.getX());
+        SmartDashboard.putNumber("drivetrainPathStateInitialPoseY", currentState.poseMeters.getY());
+        SmartDashboard.putNumber("drivetrainPathStateInitialPoseZ", currentState.poseMeters.getRotation().getDegrees());
+        SmartDashboard.putNumber("drivetrainPathStateInitialPoseHolonomic", currentState.holonomicRotation.getDegrees());
     }
 
     public void resetOdometry() {
@@ -222,14 +222,14 @@ public class Drivetrain extends Subsystem {
         var output = _pathFollower.getPathTarget(_odometry.getPoseMeters());
         SwerveDriveKinematics.desaturateWheelSpeeds(output, Constants.MAX_VELOCITY_METERS_PER_SECOND);
 
-        SmartDashboard.putNumber("outputFrontLeftSpeed", output[0].speedMetersPerSecond);
-        SmartDashboard.putNumber("outputFrontRightSpeed", output[1].speedMetersPerSecond);
-        SmartDashboard.putNumber("outputBackLeftSpeed", output[2].speedMetersPerSecond);
-        SmartDashboard.putNumber("outputBackRightSpeed", output[3].speedMetersPerSecond);
-        SmartDashboard.putNumber("outputFrontLeftAngle", output[0].angle.getDegrees());
-        SmartDashboard.putNumber("outputFrontRightAngle", output[1].angle.getDegrees());
-        SmartDashboard.putNumber("outputBackLeftAngle", output[2].angle.getDegrees());
-        SmartDashboard.putNumber("outputBackRightAngle", output[3].angle.getDegrees());
+        SmartDashboard.putNumber("drivetrainOutputFrontLeftSpeed", output[0].speedMetersPerSecond);
+        SmartDashboard.putNumber("drivetrainOutputFrontRightSpeed", output[1].speedMetersPerSecond);
+        SmartDashboard.putNumber("drivetrainOutputBackLeftSpeed", output[2].speedMetersPerSecond);
+        SmartDashboard.putNumber("drivetrainOutputBackRightSpeed", output[3].speedMetersPerSecond);
+        SmartDashboard.putNumber("drivetrainOutputFrontLeftAngle", output[0].angle.getDegrees());
+        SmartDashboard.putNumber("drivetrainOutputFrontRightAngle", output[1].angle.getDegrees());
+        SmartDashboard.putNumber("drivetrainOutputBackLeftAngle", output[2].angle.getDegrees());
+        SmartDashboard.putNumber("drivetrainOutputBackRightAngle", output[3].angle.getDegrees());
         setModuleStates(output);
     }
 
@@ -244,7 +244,7 @@ public class Drivetrain extends Subsystem {
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         }, new Pose2d(pathInitialState.poseMeters.getTranslation(), pathInitialState.holonomicRotation));
 
-        SmartDashboard.putNumber("initialStateRotation", pathInitialState.holonomicRotation.getDegrees());
+        SmartDashboard.putNumber("drivetrainInitialStateRotation", pathInitialState.holonomicRotation.getDegrees());
         m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
     }
 
@@ -255,8 +255,8 @@ public class Drivetrain extends Subsystem {
     public double getWallRotationTarget(double targetRotation) {
         var output = _wallFacingController.calculate(getGyroscopeRotationWithOffset().getDegrees(), targetRotation);
 
-        SmartDashboard.putNumber("wallRotationTarget", targetRotation);
-        SmartDashboard.putNumber("wallRotationOutput", output);
+        SmartDashboard.putNumber("drivetrainWallRotationTarget", targetRotation);
+        SmartDashboard.putNumber("drivetrainWallRotationOutput", output);
         return output;
     }
 
