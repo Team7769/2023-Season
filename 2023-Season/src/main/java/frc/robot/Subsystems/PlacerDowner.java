@@ -91,7 +91,25 @@ public class PlacerDowner extends Subsystem {
     @Override
     public void logTelemetry() {
         SmartDashboard.putString("placerDownerState", _currentState.name());
-        SmartDashboard.putBoolean("elevatorAtSetpoint", atSetpoint());
+        SmartDashboard.putBoolean("placerDownerElevatorAtSetpoint", atSetpoint());
+        SmartDashboard.putNumber("placerDownerP", _elevatorController.getP());
+        SmartDashboard.putNumber("placerDownerI", _elevatorController.getI());
+        SmartDashboard.putNumber("placerDownerD", _elevatorController.getD());
+        SmartDashboard.putNumber("placerDownerIZone", _elevatorController.getIZone());
+        SmartDashboard.putNumber("placerDownerFF", _elevatorController.getFF());
+        SmartDashboard.putNumber("placerDownerOutputRangeMax", _elevatorController.getOutputMax());
+        SmartDashboard.putNumber("placerDownerOutputRangeMin", _elevatorController.getOutputMin());
+        SmartDashboard.putNumber("placerDownerSmartMotionMaxVelocity", _elevatorController.getSmartMotionMaxVelocity(0));
+        SmartDashboard.putNumber("placerDownerSmartMotionMaxAcceleration", _elevatorController.getSmartMotionMaxAccel(0));
+        SmartDashboard.putNumber("placerDownerSmartMotionAllowedClosedLoopError", _elevatorController.getSmartMotionAllowedClosedLoopError(0));
+        SmartDashboard.putNumber("placerDownerCurrentPosition", _placerDownerElevatorEncoder.getPosition());
+        
+        SmartDashboard.putNumber("placerDownerMotorVoltage", _placerDownerMotor.getAppliedOutput());
+        SmartDashboard.putNumber("placerDownerMotorTemperature", _placerDownerMotor.getMotorTemperature());
+        SmartDashboard.putNumber("placerDownerMotorOutputCurrent", _placerDownerMotor.getOutputCurrent());
+        SmartDashboard.putString("placerDownerTilterCurrentState", _tilter.get().name());
+        SmartDashboard.putString("placerDownerPivoterCurrentState", _pivoter.get().name());
+        
     }
 
     private void intake() {
