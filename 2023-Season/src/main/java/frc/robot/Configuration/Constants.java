@@ -27,6 +27,10 @@ public final class Constants {
     public static final int kPlacerDownerKi = 0; // Change Later
     public static final int kPlacerDownerKd = 0; // Change Later
 
+    public static final int kPlacerDownerFeedforwardKs = 0; // Change Later
+    public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
+    public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
+
     // PickerUpper Slots
     public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later
     public static final int kPickerUpperRightMotorDeviceId = 15; // Change Later

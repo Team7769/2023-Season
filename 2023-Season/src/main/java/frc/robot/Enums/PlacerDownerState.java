@@ -5,5 +5,6 @@ public enum PlacerDownerState {
     EJECT,
     DEPLOY,
     STOW,
-    STOP
+    STOP,
+    HOLD_POSITION
 }
