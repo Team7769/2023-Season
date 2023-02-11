@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
 import frc.robot.Configuration.Constants;
+import frc.robot.Configuration.ElevatorPosition;
 import frc.robot.Enums.PlacerDownerState;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.GamePieceManager;
@@ -58,6 +59,7 @@ public class Robot extends TimedRobot {
   private int _autonomousCase = 0;
   private int _autoLoops = 0;
   private SendableChooser<Integer> _autoChooser = new SendableChooser<>();
+  private boolean _ejectHeld = false;
 
   @Override
   public void robotInit() {
@@ -653,14 +655,34 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopGamePieceManagement() {
-
-    if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
-      _placerDowner.setWantedState(PlacerDownerState.EJECT);
-    } else if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
-      _placerDowner.setWantedState(PlacerDownerState.INTAKE);
-    } else {
-      _placerDowner.setWantedState(PlacerDownerState.STOP);
+    if (_operatorController.getYButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+    } else if (_operatorController.getXButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+    } else if (_operatorController.getBButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+    } else if (_operatorController.getAButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
     }
+
+    var eject = Math.abs(_operatorController.getRightTriggerAxis()) > 0.25;
+
+    if (_operatorController.getRightBumper()) {
+      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+    } else if (_operatorController.getLeftBumper()) {
+      _placerDowner.setWantedState(PlacerDownerState.STOW);
+    } else if (eject) {
+      _placerDowner.setWantedState(PlacerDownerState.EJECT);
+    } else if (_ejectHeld) {
+      _placerDowner.setWantedState(PlacerDownerState.RESET);
+    }
+
+    _ejectHeld = eject;
+
+    // Logic for after picker upper puts game piece in position
+    // if (pickerUpperReady()) {
+    //   _placerDowner.setWantedState(PlacerDownerState.INTAKE);
+    // } 
 
     //_gamePieceManager.handle();
     _placerDowner.handleCurrentState();
