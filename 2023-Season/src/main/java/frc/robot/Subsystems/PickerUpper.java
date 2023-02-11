@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.robot.Configuration.Constants;
 import frc.robot.Enums.PickerUpperState;
@@ -19,12 +20,12 @@ public class PickerUpper extends Subsystem {
     private PickerUpperState _currentState;
     private DoubleSolenoid _boxer;
     private DoubleSolenoid _flexer;
-    private boolean pizzaReady;
+    private Timer _boxItTimer;
+    //private boolean pizzaReady;
 
     private final double _collectSpeed = 0.5;
     private final double _ejectSpeed = -0.5;
     
-
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
@@ -34,13 +35,13 @@ public class PickerUpper extends Subsystem {
         _leftMotor.setIdleMode(IdleMode.kBrake);
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
-
         _rightMotor.follow(_leftMotor);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
 
-        pizzaReady = false;
+        _boxItTimer = new Timer();
+        //pizzaReady = false;
     }
 
     public static PickerUpper getInstance() {
@@ -51,63 +52,88 @@ public class PickerUpper extends Subsystem {
         return _instance;
     }
 
-    public void open() {
+    private void open() {
         _boxer.set(Value.kForward);
     }
 
-    public void close() {
+    private void close() {
         _boxer.set(Value.kReverse);
     }
 
-    public void collect() {
+    private void collect() {
         _leftMotor.set(_collectSpeed);
         _rightMotor.set(_collectSpeed);
     }
 
-    public void eject() {
+    private void eject() {
         _leftMotor.set(_ejectSpeed);
         _rightMotor.set(_ejectSpeed);
     }
 
-    public void up() {
+    private void up() {
         _flexer.set(Value.kForward);
     }
 
-    public void down() {
+    private void down() {
         _flexer.set(Value.kReverse);
     }
 
-    public void stop() {
+    private void stop() {
         _leftMotor.set(0);
         _rightMotor.set(0);
     }
+
+    public void shakeNBake() {
+        open();
+        collect();
+
+        // If sensor == true set next state BoxIt
+    }
+
+    public void boxIt() {
+        close();
+        if (_boxItTimer.hasElapsed(0.5)) {
+            up();
+            _boxItTimer.stop();
+            setWantedState(PickerUpperState.PIZZAS_READY);
+        }
+    }
     
    // To be added when we get sensor  
-   // public void pizzaReady() {
-   //     if(sensor=true){
-   //         pizzaReady = true;
-   //     }
+   // public boolean pizzaReady() {
+   //     return sensor==true and state==;
    // }
 
     public void handleCurrentState() {
         switch (_currentState) {
             case SHAKE_N_BAKE:
-                open();
-                collect();
+                shakeNBake();
                 break;
             case WRONG_ORDER:
                 open();
                 eject();
                 break;
             case BOX_IT:
-                close();
-                stop();
+                boxIt();
                 break;
-            case PIZZA_STOLEN:
+            case PIZZAS_READY:
                 stop();
                 break;
             default:
                 break;
         }
+    }
+
+    public void setWantedState(PickerUpperState state) {
+        switch (state) {
+            case BOX_IT:
+                _boxItTimer.reset();
+                _boxItTimer.start();
+                break;
+            default:
+                break;
+        }
+
+        _currentState = state;
     }
 }
