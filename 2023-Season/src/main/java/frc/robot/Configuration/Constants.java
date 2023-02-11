@@ -15,10 +15,21 @@ public final class Constants {
 
     // PlaceDowner Slots
     public static final int kPlacerDownerMotorDeviceId = 16; // Change Later
+    public static final int kPlacerDownerElevatorMotorDeviceId = 17; 
+
+    // Solenoids
+    public static final int kTilterForward = 0;
+    public static final int kTilterReverse = 1;
+    public static final int kPivoterForward = 2;
+    public static final int kPivoterReverse = 3;
 
     public static final int kPlacerDownerKp = 0; // Change Later
     public static final int kPlacerDownerKi = 0; // Change Later
     public static final int kPlacerDownerKd = 0; // Change Later
+
+    public static final int kPlacerDownerFeedforwardKs = 0; // Change Later
+    public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
+    public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
 
     // PickerUpper Slots
     public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later

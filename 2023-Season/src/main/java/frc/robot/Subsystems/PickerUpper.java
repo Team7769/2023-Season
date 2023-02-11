@@ -22,7 +22,7 @@ public class PickerUpper extends Subsystem {
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
 
-        _leftMotor.follow(_rightMotor);
+        _rightMotor.follow(_leftMotor);
     }
 
     public static PickerUpper getInstance() {

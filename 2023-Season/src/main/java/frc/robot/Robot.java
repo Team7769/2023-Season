@@ -19,7 +19,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
 import frc.robot.Configuration.Constants;
+import frc.robot.Configuration.ElevatorPosition;
+import frc.robot.Enums.PlacerDownerState;
 import frc.robot.Subsystems.Drivetrain;
+import frc.robot.Subsystems.GamePieceManager;
+import frc.robot.Subsystems.PlacerDowner;
 import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
@@ -42,8 +46,11 @@ public class Robot extends TimedRobot {
    */
 
   private static Drivetrain _drivetrain;
+  private static GamePieceManager _gamePieceManager;
+  private static PlacerDowner _placerDowner;
   private static PathFollower _pathFollower;
   private XboxController _driverController;
+  private XboxController _operatorController;
   private int _selectedAutoMode;
 
   private static Limelight _limelight;
@@ -52,14 +59,19 @@ public class Robot extends TimedRobot {
   private int _autonomousCase = 0;
   private int _autoLoops = 0;
   private SendableChooser<Integer> _autoChooser = new SendableChooser<>();
+  private boolean _ejectHeld = false;
 
   @Override
   public void robotInit() {
     _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
+    _operatorController = new XboxController(Constants.kOperatorControllerUsbSlot);
     _drivetrain = Drivetrain.getInstance();
     _pathFollower = PathFollower.getInstance();
+    _gamePieceManager = GamePieceManager.getInstance();
+    _placerDowner = PlacerDowner.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
+    _subsystems.add(_gamePieceManager);
     _limelight = Limelight.getInstance();
 
     PathPlannerServer.startServer(5811);
@@ -148,6 +160,7 @@ public class Robot extends TimedRobot {
         break;
     }
 
+    _gamePieceManager.handle();
     _autoLoops++;
   }
 
@@ -606,11 +619,11 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     teleopDrive();
+    teleopGamePieceManagement();
 
     if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed()) {
       _drivetrain.resetGyro();
     }
-
   }
 
   @Override
@@ -639,6 +652,40 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {
+  }
+
+  private void teleopGamePieceManagement() {
+    if (_operatorController.getYButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+    } else if (_operatorController.getXButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+    } else if (_operatorController.getBButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+    } else if (_operatorController.getAButton()) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
+    }
+
+    var eject = Math.abs(_operatorController.getRightTriggerAxis()) > 0.25;
+
+    if (_operatorController.getRightBumper()) {
+      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+    } else if (_operatorController.getLeftBumper()) {
+      _placerDowner.setWantedState(PlacerDownerState.STOW);
+    } else if (eject) {
+      _placerDowner.setWantedState(PlacerDownerState.EJECT);
+    } else if (_ejectHeld) {
+      _placerDowner.setWantedState(PlacerDownerState.RESET);
+    }
+
+    _ejectHeld = eject;
+
+    // Logic for after picker upper puts game piece in position
+    // if (pickerUpperReady()) {
+    //   _placerDowner.setWantedState(PlacerDownerState.INTAKE);
+    // } 
+
+    //_gamePieceManager.handle();
+    _placerDowner.handleCurrentState();
   }
 
   private void teleopDrive() {
