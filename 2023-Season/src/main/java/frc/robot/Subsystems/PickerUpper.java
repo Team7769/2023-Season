@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import frc.robot.Configuration.Constants;
 import frc.robot.Enums.PickerUpperState;
+import frc.robot.Lib.Photoeye;
 
 public class PickerUpper extends Subsystem {
     private static PickerUpper _instance = null;
@@ -21,6 +22,7 @@ public class PickerUpper extends Subsystem {
     private DoubleSolenoid _boxer;
     private DoubleSolenoid _flexer;
     private Timer _boxItTimer;
+    private Photoeye _collectorSensor;
     //private boolean pizzaReady;
 
     private final double _collectSpeed = 0.5;
@@ -39,6 +41,8 @@ public class PickerUpper extends Subsystem {
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
+
+        _collectorSensor = new Photoeye(Constants.kCollectorPort);
 
         _boxItTimer = new Timer();
         //pizzaReady = false;
@@ -87,7 +91,14 @@ public class PickerUpper extends Subsystem {
         open();
         collect();
 
-        // If sensor == true set next state BoxIt
+        if (_collectorSensor.isBlocked()){
+            setWantedState(PickerUpperState.BOX_IT);
+        }
+    }
+
+    public void wrongOrder() {
+        open();
+        eject();
     }
 
     public void boxIt() {
@@ -97,6 +108,10 @@ public class PickerUpper extends Subsystem {
             _boxItTimer.stop();
             setWantedState(PickerUpperState.PIZZAS_READY);
         }
+    }
+
+    public void pizzaReady(){
+        stop();
     }
     
    // To be added when we get sensor  
@@ -110,14 +125,13 @@ public class PickerUpper extends Subsystem {
                 shakeNBake();
                 break;
             case WRONG_ORDER:
-                open();
-                eject();
+                wrongOrder();
                 break;
             case BOX_IT:
                 boxIt();
                 break;
             case PIZZAS_READY:
-                stop();
+                pizzaReady();
                 break;
             default:
                 break;

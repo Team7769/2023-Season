@@ -35,6 +35,9 @@ public final class Constants {
     public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
     public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
 
+    // Photo Eye
+    public static final int kCollectorPort = 6; // change later this is a random number
+
     // PickerUpper Slots
     public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later
     public static final int kPickerUpperRightMotorDeviceId = 15; // Change Later
