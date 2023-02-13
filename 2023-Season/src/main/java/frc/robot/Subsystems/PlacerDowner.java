@@ -47,7 +47,11 @@ public class PlacerDowner extends Subsystem {
     private final double kSmartMotionAllowedError = 100;
     private final double kArbFeedforward = 0.115;
     private final double kAllowedError = 100;
-    
+
+    private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
+    private TrapezoidProfile.State _goal = new TrapezoidProfile.State();
+    private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
+
     PlacerDowner() {
         _placerDownerMotor = new CANSparkMax(Constants.kPlacerDownerMotorDeviceId, MotorType.kBrushless);
         _placerDownerMotor.setIdleMode(IdleMode.kBrake);
@@ -64,9 +68,11 @@ public class PlacerDowner extends Subsystem {
         _placerDownerElevatorEncoder = _placerDownerMotor.getEncoder();
 
         // WPILib Controller
-        _placerDownerPID = new ProfiledPIDController(Constants.kPlacerDownerKp, Constants.kPlacerDownerKi, Constants.kPlacerDownerKd, new TrapezoidProfile.Constraints(2000, 1500));
-        _feedForward = new ElevatorFeedforward(Constants.kPlacerDownerFeedforwardKs, Constants.kPlacerDownerFeedforwardKg, Constants.kPlacerDownerFeedforwardKv);
-        
+        _placerDownerPID = new ProfiledPIDController(Constants.kPlacerDownerKp, Constants.kPlacerDownerKi,
+                Constants.kPlacerDownerKd, new TrapezoidProfile.Constraints(2000, 1500));
+        _feedForward = new ElevatorFeedforward(Constants.kPlacerDownerFeedforwardKs,
+                Constants.kPlacerDownerFeedforwardKg, Constants.kPlacerDownerFeedforwardKv);
+
         // Spark MAX Smart Motion Parameters
         _elevatorController = _placerDownerElevator.getPIDController();
         _elevatorController.setP(kSmartMotionP);
@@ -81,7 +87,7 @@ public class PlacerDowner extends Subsystem {
     }
 
     public static PlacerDowner getInstance() {
-        if ( _instance == null ) {
+        if (_instance == null) {
             _instance = new PlacerDowner();
         }
 
@@ -104,7 +110,7 @@ public class PlacerDowner extends Subsystem {
             setWantedState(PlacerDownerState.HOLD_POSITION);
         }
     }
-    
+
     private void eject() {
         _placerDownerMotor.set(-_placerDownerSpeed);
     }
@@ -112,7 +118,7 @@ public class PlacerDowner extends Subsystem {
     private void stop() {
         _placerDownerMotor.set(0);
     }
-    
+
     private void deploy() {
         _tilter.set(Value.kForward);
         _pivoter.set(Value.kForward);
@@ -158,17 +164,26 @@ public class PlacerDowner extends Subsystem {
     private void handleElevatorPosition() {
         // WPILib
         // _placerDownerPID.setGoal(_setpoint);
-        // var pidOutput = _placerDownerPID.calculate(_placerDownerElevatorEncoder.getPosition());
-        // var feedforward = _feedForward.calculate(_placerDownerPID.getSetpoint().velocity);
+        // var pidOutput =
+        // _placerDownerPID.calculate(_placerDownerElevatorEncoder.getPosition());
+        // var feedforward =
+        // _feedForward.calculate(_placerDownerPID.getSetpoint().velocity);
         // _placerDownerElevator.setVoltage(pidOutput + feedforward);
 
         // SparkMAX
-        _elevatorController.setReference(_setpoint, com.revrobotics.CANSparkMax.ControlType.kSmartMotion, 0,
-                kArbFeedforward);
+        var profile = new TrapezoidProfile(_constraints, _goal, _profileSetpoint);
+
+        _profileSetpoint = profile.calculate(0.02);
+        _elevatorController.setReference(_profileSetpoint.position, com.revrobotics.CANSparkMax.ControlType.kPosition, 0,
+                _feedForward.calculate(_profileSetpoint.velocity));
     }
 
     private void setSetpoint(double position) {
+        // WPILib
         _setpoint = position;
+
+        // SparkMAX
+        _goal = new TrapezoidProfile.State(position, 0);
     }
 
     public void handleCurrentState() {

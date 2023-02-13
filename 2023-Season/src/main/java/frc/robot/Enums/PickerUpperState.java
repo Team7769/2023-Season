@@ -16,5 +16,10 @@ public enum PickerUpperState {
     /**
     * stowed.
     */
-    PIZZAS_READY
+    PIZZAS_READY,
+
+    /**
+     * Test
+     */
+    TEST
 }
