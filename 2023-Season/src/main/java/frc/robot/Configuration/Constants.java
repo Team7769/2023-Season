@@ -22,6 +22,10 @@ public final class Constants {
     public static final int kTilterReverse = 1;
     public static final int kPivoterForward = 2;
     public static final int kPivoterReverse = 3;
+    public static final int kBoxerForward = 4;
+    public static final int kBoxerReverse = 5;
+    public static final int kFlexerForward = 6;
+    public static final int kFlexerReverse = 7;
 
     public static final int kPlacerDownerKp = 0; // Change Later
     public static final int kPlacerDownerKi = 0; // Change Later
@@ -30,6 +34,9 @@ public final class Constants {
     public static final int kPlacerDownerFeedforwardKs = 0; // Change Later
     public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
     public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
+
+    // Photo Eye
+    public static final int kCollectorPort = 6; // change later this is a random number
 
     // PickerUpper Slots
     public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later
