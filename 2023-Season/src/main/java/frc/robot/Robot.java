@@ -668,6 +668,9 @@ public class Robot extends TimedRobot {
     else if (_operatorController.getXButton()){
       _placerDowner.setWantedState(PlacerDownerState.TEST_EJECT);
     }
+
+
+    _placerDowner.handleCurrentState();
   }
 
   private void testPeriodicPickerUpper() {
