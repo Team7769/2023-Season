@@ -119,6 +119,10 @@ public class PlacerDowner extends Subsystem {
         _placerDownerMotor.set(0);
     }
 
+    public void setSpeed(double speed) {
+        _placerDownerMotor.set(speed);
+    }
+
     private void deploy() {
         _tilter.set(Value.kForward);
         _pivoter.set(Value.kForward);
@@ -205,6 +209,15 @@ public class PlacerDowner extends Subsystem {
                 break;
             case RESET:
                 reset();
+                break;
+            case TEST_UP:
+                retract();
+                break;
+            case TEST_DOWN:
+                deploy();
+                break;
+            case TEST_INTAKE:
+                intake();
                 break;
             case STOP:
             default:

@@ -119,10 +119,10 @@ public class PickerUpper extends Subsystem {
         stop();
     }
     
-   // To be added when we get sensor  
-   public boolean isPizzaReady() {
+    // To be added when we get sensor  
+    public boolean isPizzaReady() {
        return _collectorSensor.isBlocked() && _currentState == PickerUpperState.PIZZAS_READY;
-   }
+    }
 
     public void handleCurrentState() {
         switch (_currentState) {
@@ -137,6 +137,18 @@ public class PickerUpper extends Subsystem {
                 break;
             case PIZZAS_READY:
                 pizzasReady();
+                break;
+            case TEST_CLOSE:
+                close();
+                break;
+            case TEST_OPEN:
+                open();
+                break;
+            case TEST_EJECT:
+                eject();
+                break;
+            case TEST_COLLECT:
+                collect();
                 break;
             default:
                 break;

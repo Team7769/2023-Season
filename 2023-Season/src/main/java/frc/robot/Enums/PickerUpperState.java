@@ -19,7 +19,22 @@ public enum PickerUpperState {
     PIZZAS_READY,
 
     /**
-     * Test
+     * Test Close
      */
-    TEST
+    TEST_CLOSE,
+
+    /**
+     * Test Open
+     */
+    TEST_OPEN,
+
+    /*
+     * Test Eject
+     */
+    TEST_EJECT,
+
+    /**
+     * Test Collect
+     */
+    TEST_COLLECT
 }

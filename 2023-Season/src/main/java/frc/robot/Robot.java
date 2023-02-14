@@ -24,6 +24,8 @@ import frc.robot.Enums.PlacerDownerState;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.GamePieceManager;
 import frc.robot.Subsystems.PlacerDowner;
+import frc.robot.Subsystems.PickerUpper;
+import frc.robot.Enums.PickerUpperState;
 import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
@@ -48,6 +50,7 @@ public class Robot extends TimedRobot {
   private static Drivetrain _drivetrain;
   private static GamePieceManager _gamePieceManager;
   private static PlacerDowner _placerDowner;
+  private static PickerUpper _pickerUpper;
   private static PathFollower _pathFollower;
   private XboxController _driverController;
   private XboxController _operatorController;
@@ -69,6 +72,7 @@ public class Robot extends TimedRobot {
     _pathFollower = PathFollower.getInstance();
     _gamePieceManager = GamePieceManager.getInstance();
     _placerDowner = PlacerDowner.getInstance();
+    _pickerUpper = PickerUpper.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
     _subsystems.add(_gamePieceManager);
@@ -644,6 +648,41 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
+    testPeriodicPickerUpper();
+    testPeriodicPlacerDowner();
+  }
+
+  private void testPeriodicPlacerDowner() {
+    _placerDowner.setSpeed(
+      _operatorController.getLeftY()
+    );
+
+    if ( _operatorController.getYButton() ) {
+      _placerDowner.setWantedState(PlacerDownerState.TEST_UP);
+    } else if ( _operatorController.getBButton() ) {
+      _placerDowner.setWantedState(PlacerDownerState.TEST_DOWN);
+    }
+    else if (_operatorController.getAButton()){
+      _placerDowner.setWantedState(PlacerDownerState.TEST_INTAKE);
+    }
+    else if (_operatorController.getXButton()){
+      _placerDowner.setWantedState(PlacerDownerState.TEST_EJECT);
+    }
+  }
+
+  private void testPeriodicPickerUpper() {
+    if (_operatorController.getLeftBumper()) {
+      _pickerUpper.setWantedState(PickerUpperState.TEST_CLOSE);
+    } else if (_operatorController.getRightBumper()) {
+      _pickerUpper.setWantedState(PickerUpperState.TEST_OPEN);
+    } else if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
+      _pickerUpper.setWantedState(PickerUpperState.TEST_COLLECT);
+    } else if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
+      _pickerUpper.setWantedState(PickerUpperState.TEST_EJECT);
+    }
+    
+
+    _pickerUpper.handleCurrentState();
   }
 
   @Override
