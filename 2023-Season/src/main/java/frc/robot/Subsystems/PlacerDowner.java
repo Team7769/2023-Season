@@ -122,10 +122,6 @@ public class PlacerDowner extends Subsystem {
         }
     }
 
-    private void testIntake() {
-        _placerDownerMotor.set(_placerDownerSpeed);
-    }
-
     private void eject() {
         _placerDownerMotor.set(-_placerDownerSpeed);
     }
