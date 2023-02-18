@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
 import frc.robot.Enums.PickerUpperState;
 import frc.robot.Lib.Photoeye;
@@ -57,7 +58,21 @@ public class PickerUpper extends Subsystem {
 
         return _instance;
     }
-
+    @Override
+    public void logTelemetry() { 
+        SmartDashboard.putString("pickerUpperBoxerCurrentState", _boxer.get().name()); 
+        SmartDashboard.putString("pickerUpperFlexerCurrentState", _flexer.get().name());
+        SmartDashboard.putBoolean("pickerUpperCollectorSensorIsBlocked", _collectorSensor.isBlocked());
+        SmartDashboard.putString("pickerUpperCurrentState", _currentState.name());
+        SmartDashboard.putNumber("pickerUpperLeftMotorCurrentSpeed", _leftMotor.getAppliedOutput());
+        SmartDashboard.putNumber("pickerUpperRightMotorCurrentSpeed", _rightMotor.getAppliedOutput());
+        SmartDashboard.putNumber("pickerUpperLeftMotorCurrentTemperature", _leftMotor.getMotorTemperature());
+        SmartDashboard.putNumber("pickerUpperRightMotorCurrentTemperature", _rightMotor.getMotorTemperature());
+        SmartDashboard.putNumber("pickerUpperLeftMotorOutputCurrent", _leftMotor.getOutputCurrent());
+        SmartDashboard.putNumber("pickerUpperRightMotorOutputCurrent", _rightMotor.getOutputCurrent());
+        SmartDashboard.putNumber("pickerUppersTimer", _boxItTimer.get());
+        
+    }
     private void open() {
         _boxer.set(Value.kForward);
     }
