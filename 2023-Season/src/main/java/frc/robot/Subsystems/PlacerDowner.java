@@ -22,7 +22,7 @@ import frc.robot.Enums.PlacerDownerState;
 public class PlacerDowner extends Subsystem {
     private static PlacerDowner _instance = null;
 
-    private CANSparkMax _placerDownerMotor;
+    private CANSparkMax _theClaw;
     private CANSparkMax _placerDownerElevator;
     private RelativeEncoder _placerDownerElevatorEncoder;
     private ProfiledPIDController _placerDownerPID;
@@ -61,10 +61,10 @@ public class PlacerDowner extends Subsystem {
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
 
     PlacerDowner() {
-        _placerDownerMotor = new CANSparkMax(Constants.kPlacerDownerMotorDeviceId, MotorType.kBrushless);
-        _placerDownerMotor.setIdleMode(IdleMode.kBrake);
-        _placerDownerMotor.setSmartCurrentLimit(20);
-        _placerDownerMotor.burnFlash();
+        _theClaw = new CANSparkMax(Constants.kPlacerDownerMotorDeviceId, MotorType.kBrushless);
+        _theClaw.setIdleMode(IdleMode.kBrake);
+        _theClaw.setSmartCurrentLimit(20);
+        _theClaw.burnFlash();
 
         _tilter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kTilterForward, Constants.kTilterReverse);
         _pivoter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kPivoterForward, Constants.kPivoterReverse);
@@ -73,7 +73,7 @@ public class PlacerDowner extends Subsystem {
         _placerDownerElevator.setSmartCurrentLimit(20);
         _placerDownerElevator.setSecondaryCurrentLimit(40);
         _placerDownerElevator.setIdleMode(IdleMode.kBrake);
-        _placerDownerElevatorEncoder = _placerDownerMotor.getEncoder();
+        _placerDownerElevatorEncoder = _theClaw.getEncoder();
 
         // WPILib Controller
         _placerDownerPID = new ProfiledPIDController(Constants.kPlacerDownerKp, Constants.kPlacerDownerKi,
@@ -113,7 +113,7 @@ public class PlacerDowner extends Subsystem {
 
     private void intake() {
         _setpoint = ElevatorPosition.PIZZA_DELIVERY;
-        _placerDownerMotor.set(_placerDownerSpeed);
+        _theClaw.set(_placerDownerSpeed);
         handleElevatorPosition();
 
         if (atSetpoint()) {
@@ -123,11 +123,11 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void eject() {
-        _placerDownerMotor.set(-_placerDownerSpeed);
+        _theClaw.set(-_placerDownerSpeed);
     }
 
     private void stop() {
-        _placerDownerMotor.set(0);
+        _theClaw.set(0);
     }
 
     public void setSpeed(double speed) {
@@ -154,7 +154,7 @@ public class PlacerDowner extends Subsystem {
 
     private void holdPosition() {
         handleElevatorPosition();
-        _placerDownerMotor.set(_placerDownerHoldSpeed);
+        _theClaw.set(_placerDownerHoldSpeed);
     }
 
     private void reset() {
@@ -188,7 +188,7 @@ public class PlacerDowner extends Subsystem {
 
     private void yeehaw() {
         _placerDownerElevator.set(_manualElevatorSpeed);
-        _placerDownerMotor.set(_manualClawSpeed);
+        _theClaw.set(_manualClawSpeed);
         _pivoter.set(_manualPivotValue);
         _tilter.set(_manualTiltValue);
     }
