@@ -2,9 +2,11 @@ package frc.robot.Subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxLimitSwitch.Type;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -27,6 +29,7 @@ public class PlacerDowner extends Subsystem {
     private ElevatorFeedforward _feedForward;
     private DoubleSolenoid _tilter;
     private DoubleSolenoid _pivoter;
+    private SparkMaxLimitSwitch _limitSwitch;
 
     private SparkMaxPIDController _elevatorController;
 
@@ -85,6 +88,8 @@ public class PlacerDowner extends Subsystem {
         _elevatorController.setSmartMotionMaxVelocity(kSmartMotionMaxVel, 0);
         _elevatorController.setSmartMotionMaxAccel(kSmartMotionMaxAccel, 0);
         _elevatorController.setSmartMotionAllowedClosedLoopError(kSmartMotionAllowedError, 0);
+
+        //_limitSwitch = _hoodMotor.getForwardLimitSwitch(Type.kNormallyOpen); (Not hood motor but dont know what motor yet)
     }
 
     public static PlacerDowner getInstance() {
@@ -99,6 +104,7 @@ public class PlacerDowner extends Subsystem {
     public void logTelemetry() {
         SmartDashboard.putString("placerDownerState", _currentState.name());
         SmartDashboard.putBoolean("elevatorAtSetpoint", atSetpoint());
+        SmartDashboard.putBoolean("limitSwitchBlocked", _limitSwitch.isPressed());
     }
 
     private void intake() {
