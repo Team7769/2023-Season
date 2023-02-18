@@ -8,9 +8,5 @@ public enum PlacerDownerState {
     STOP,
     HOLD_POSITION,
     RESET,
-    TEST_DEPLOY,
-    TEST_STOW,
-    TEST_INTAKE,
-    TEST_EJECT,
-    TEST_ELEVATOR
+    YEEHAW
 }

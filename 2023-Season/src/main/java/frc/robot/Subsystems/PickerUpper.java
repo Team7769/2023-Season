@@ -23,11 +23,13 @@ public class PickerUpper extends Subsystem {
     private DoubleSolenoid _flexer;
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
-    //private boolean pizzaReady;
 
     private final double _collectSpeed = 0.5;
     private final double _ejectSpeed = -0.5;
     private final double _deliverySpeed = -0.15;
+
+    private double _manualSpeed = 0.0;
+    private Value _manualFlex = Value.kOff;
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
@@ -124,6 +126,25 @@ public class PickerUpper extends Subsystem {
     public void pizzasReady(){
         stop();
     }
+
+    public void setManualCollect() {
+        _manualSpeed = _collectSpeed;
+    }
+    public void setManualEject() {
+        _manualSpeed = -_ejectSpeed;
+    }
+    public void setManualStop() {
+        _manualSpeed = 0.0;
+    }
+    public void setManualFlex(Value value) {
+        _manualFlex = value;
+    }
+
+    private void yeehaw() {
+        _leftMotor.set(_manualSpeed);
+        _rightMotor.set(_manualSpeed);
+        _flexer.set(_manualFlex);
+    }
     
     // To be added when we get sensor  
     public boolean isPizzaReady() {
@@ -147,17 +168,8 @@ public class PickerUpper extends Subsystem {
             case DELIVERY:
                 delivery();
                 break;
-            case TEST_CLOSE:
-                close();
-                break;
-            case TEST_OPEN:
-                open();
-                break;
-            case TEST_EJECT:
-                eject();
-                break;
-            case TEST_COLLECT:
-                collect();
+            case YEEHAW:
+                yeehaw();
                 break;
             case WERE_CLOSED:
                 stop();

@@ -15,6 +15,7 @@ import com.pathplanner.lib.server.PathPlannerServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
@@ -644,6 +645,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
+    _placerDowner.setWantedState(PlacerDownerState.YEEHAW);
+    _pickerUpper.setWantedState(PickerUpperState.YEEHAW);
   }
 
   @Override
@@ -654,34 +657,45 @@ public class Robot extends TimedRobot {
   }
 
   private void testPeriodicPlacerDowner() {
-    _placerDowner.setSpeed(
-      _operatorController.getLeftY()
-    );
+    _placerDowner.setManualElevatorSpeed(_operatorController.getLeftY());
 
-    if ( _operatorController.getYButton() ) {
-      _placerDowner.setWantedState(PlacerDownerState.TEST_DEPLOY);
-    } else if ( _operatorController.getBButton() ) {
-      _placerDowner.setWantedState(PlacerDownerState.TEST_STOW);
-    } else if (_operatorController.getAButton()){
-      _placerDowner.setWantedState(PlacerDownerState.TEST_INTAKE);
-    } else if (_operatorController.getXButton()){
-      _placerDowner.setWantedState(PlacerDownerState.TEST_EJECT);
+    if (_operatorController.getLeftBumper()) {
+      _placerDowner.setTiltValue(Value.kForward);
+    } else if (_operatorController.getRightBumper()) {
+      _placerDowner.setTiltValue(Value.kReverse);
+    }
+
+    if (_operatorController.getAButton()){
+      _placerDowner.setManualIntake();
+    } else if (_operatorController.getBButton()){
+      _placerDowner.setManualEject();
     } else {
-      _placerDowner.setWantedState(PlacerDownerState.TEST_ELEVATOR);
+      _placerDowner.setManualStop();
+    }
+
+    if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
+      _placerDowner.setPivotValue(Value.kForward);
+    } else if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
+      _placerDowner.setPivotValue(Value.kReverse);
     }
 
     _placerDowner.handleCurrentState();
   }
 
   private void testPeriodicPickerUpper() {
-    if (_operatorController.getLeftBumper()) {
-      _pickerUpper.setWantedState(PickerUpperState.TEST_CLOSE);
-    } else if (_operatorController.getRightBumper()) {
-      _pickerUpper.setWantedState(PickerUpperState.TEST_OPEN);
-    } else if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
-      _pickerUpper.setWantedState(PickerUpperState.TEST_COLLECT);
-    } else if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
-      _pickerUpper.setWantedState(PickerUpperState.TEST_EJECT);
+
+    if (_driverController.getLeftBumper()) {
+      _pickerUpper.setManualCollect();
+    } else if (_driverController.getRightBumper()) {
+      _pickerUpper.setManualEject();
+    } else {
+      _pickerUpper.setManualStop();
+    }
+
+    if (Math.abs(_driverController.getLeftTriggerAxis()) > 0.25) {
+      _pickerUpper.setManualFlex(Value.kForward);
+    } else if (Math.abs(_driverController.getRightTriggerAxis()) > 0.25) {
+      _pickerUpper.setManualFlex(Value.kReverse);
     }
 
     _pickerUpper.handleCurrentState();
