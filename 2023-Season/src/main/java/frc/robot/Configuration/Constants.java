@@ -46,7 +46,7 @@ public final class Constants {
     public static final int kPickerUpperRightMotorDeviceId = 15; // Change Later
     
     // PlaceDowner Slots
-    public static final int kPlacerDownerMotorDeviceId = 16; // Change Later
+    public static final int kTheClawDeviceId = 16; // Change Later
     public static final int kPlacerDownerElevatorMotorDeviceId = 17; 
     
     // Solenoids

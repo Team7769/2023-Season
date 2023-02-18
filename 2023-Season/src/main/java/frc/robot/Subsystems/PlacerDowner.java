@@ -61,7 +61,7 @@ public class PlacerDowner extends Subsystem {
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
 
     PlacerDowner() {
-        _theClaw = new CANSparkMax(Constants.kPlacerDownerMotorDeviceId, MotorType.kBrushless);
+        _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
         _theClaw.setIdleMode(IdleMode.kBrake);
         _theClaw.setSmartCurrentLimit(20);
         _theClaw.burnFlash();
