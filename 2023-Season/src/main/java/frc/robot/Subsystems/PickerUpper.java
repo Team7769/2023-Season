@@ -24,11 +24,13 @@ public class PickerUpper extends Subsystem {
     private DoubleSolenoid _flexer;
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
-    //private boolean pizzaReady;
 
     private final double _collectSpeed = 0.5;
     private final double _ejectSpeed = -0.5;
-    
+    private final double _deliverySpeed = -0.15;
+
+    private double _manualSpeed = 0.0;
+    private Value _manualFlex = Value.kOff;
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
@@ -130,14 +132,39 @@ public class PickerUpper extends Subsystem {
         }
     }
 
+    public void delivery() {
+        _leftMotor.set(_deliverySpeed);
+        _rightMotor.set(_deliverySpeed);
+        up();
+    }
+
     public void pizzasReady(){
         stop();
     }
+
+    public void setManualCollect() {
+        _manualSpeed = _collectSpeed;
+    }
+    public void setManualEject() {
+        _manualSpeed = -_ejectSpeed;
+    }
+    public void setManualStop() {
+        _manualSpeed = 0.0;
+    }
+    public void setManualFlex(Value value) {
+        _manualFlex = value;
+    }
+
+    private void yeehaw() {
+        _leftMotor.set(_manualSpeed);
+        _rightMotor.set(_manualSpeed);
+        _flexer.set(_manualFlex);
+    }
     
-   // To be added when we get sensor  
-   public boolean isPizzaReady() {
+    // To be added when we get sensor  
+    public boolean isPizzaReady() {
        return _collectorSensor.isBlocked() && _currentState == PickerUpperState.PIZZAS_READY;
-   }
+    }
 
     public void handleCurrentState() {
         switch (_currentState) {
@@ -152,6 +179,15 @@ public class PickerUpper extends Subsystem {
                 break;
             case PIZZAS_READY:
                 pizzasReady();
+                break;
+            case DELIVERY:
+                delivery();
+                break;
+            case YEEHAW:
+                yeehaw();
+                break;
+            case WERE_CLOSED:
+                stop();
                 break;
             default:
                 break;

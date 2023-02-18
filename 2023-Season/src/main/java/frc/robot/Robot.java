@@ -15,6 +15,7 @@ import com.pathplanner.lib.server.PathPlannerServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
@@ -24,6 +25,8 @@ import frc.robot.Enums.PlacerDownerState;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.GamePieceManager;
 import frc.robot.Subsystems.PlacerDowner;
+import frc.robot.Subsystems.PickerUpper;
+import frc.robot.Enums.PickerUpperState;
 import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
@@ -48,6 +51,7 @@ public class Robot extends TimedRobot {
   private static Drivetrain _drivetrain;
   private static GamePieceManager _gamePieceManager;
   private static PlacerDowner _placerDowner;
+  private static PickerUpper _pickerUpper;
   private static PathFollower _pathFollower;
   private XboxController _driverController;
   private XboxController _operatorController;
@@ -69,6 +73,7 @@ public class Robot extends TimedRobot {
     _pathFollower = PathFollower.getInstance();
     _gamePieceManager = GamePieceManager.getInstance();
     _placerDowner = PlacerDowner.getInstance();
+    _pickerUpper = PickerUpper.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
     _subsystems.add(_gamePieceManager);
@@ -640,10 +645,60 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testInit() {
+    _placerDowner.setWantedState(PlacerDownerState.YEEHAW);
+    _pickerUpper.setWantedState(PickerUpperState.YEEHAW);
   }
 
   @Override
   public void testPeriodic() {
+    teleopDrive();
+    testPeriodicPickerUpper();
+    testPeriodicPlacerDowner();
+  }
+
+  private void testPeriodicPlacerDowner() {
+    _placerDowner.setManualElevatorSpeed(_operatorController.getLeftY());
+
+    if (_operatorController.getLeftBumper()) {
+      _placerDowner.setTiltValue(Value.kForward);
+    } else if (_operatorController.getRightBumper()) {
+      _placerDowner.setTiltValue(Value.kReverse);
+    }
+
+    if (_operatorController.getAButton()){
+      _placerDowner.setManualIntake();
+    } else if (_operatorController.getBButton()){
+      _placerDowner.setManualEject();
+    } else {
+      _placerDowner.setManualStop();
+    }
+
+    if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
+      _placerDowner.setPivotValue(Value.kForward);
+    } else if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
+      _placerDowner.setPivotValue(Value.kReverse);
+    }
+
+    _placerDowner.handleCurrentState();
+  }
+
+  private void testPeriodicPickerUpper() {
+
+    if (_driverController.getLeftBumper()) {
+      _pickerUpper.setManualCollect();
+    } else if (_driverController.getRightBumper()) {
+      _pickerUpper.setManualEject();
+    } else {
+      _pickerUpper.setManualStop();
+    }
+
+    if (Math.abs(_driverController.getLeftTriggerAxis()) > 0.25) {
+      _pickerUpper.setManualFlex(Value.kForward);
+    } else if (Math.abs(_driverController.getRightTriggerAxis()) > 0.25) {
+      _pickerUpper.setManualFlex(Value.kReverse);
+    }
+
+    _pickerUpper.handleCurrentState();
   }
 
   @Override
@@ -665,7 +720,7 @@ public class Robot extends TimedRobot {
       _placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
     }
 
-    var eject = Math.abs(_operatorController.getRightTriggerAxis()) > 0.25;
+    var eject = Math.abs(_driverController.getRightTriggerAxis()) > 0.25;
 
     if (_operatorController.getRightBumper()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
@@ -679,12 +734,21 @@ public class Robot extends TimedRobot {
 
     _ejectHeld = eject;
 
+    if (_driverController.getLeftBumper()) {
+      _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+    } else if (_driverController.getRightBumper()) {
+      _pickerUpper.setWantedState(PickerUpperState.WRONG_ORDER);
+    } else if (_pickerUpper.isPizzaReady()) {
+      _placerDowner.setWantedState(PlacerDownerState.INTAKE);
+      _pickerUpper.setWantedState(PickerUpperState.DELIVERY);
+    } else {
+      _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+    }
+
     // Logic for after picker upper puts game piece in position
-    // if (pickerUpperReady()) {
-    //   _placerDowner.setWantedState(PlacerDownerState.INTAKE);
-    // } 
 
     //_gamePieceManager.handle();
+    _pickerUpper.handleCurrentState();
     _placerDowner.handleCurrentState();
   }
 

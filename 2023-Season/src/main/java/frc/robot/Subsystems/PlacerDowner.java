@@ -2,9 +2,11 @@ package frc.robot.Subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxLimitSwitch.Type;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -20,18 +22,24 @@ import frc.robot.Enums.PlacerDownerState;
 public class PlacerDowner extends Subsystem {
     private static PlacerDowner _instance = null;
 
-    private CANSparkMax _placerDownerMotor;
+    private CANSparkMax _theClaw;
     private CANSparkMax _placerDownerElevator;
     private RelativeEncoder _placerDownerElevatorEncoder;
     private ProfiledPIDController _placerDownerPID;
     private ElevatorFeedforward _feedForward;
     private DoubleSolenoid _tilter;
     private DoubleSolenoid _pivoter;
+    private SparkMaxLimitSwitch _limitSwitch;
 
     private SparkMaxPIDController _elevatorController;
 
     private PlacerDownerState _currentState = PlacerDownerState.STOW;
     private double _setpoint = ElevatorPosition.DIGIORNO;
+    private double _manualElevatorSpeed = 0.0;
+    private double _manualClawSpeed = 0.0;
+    private Value _manualPivotValue = Value.kOff;
+    private Value _manualTiltValue = Value.kOff;
+
     private final double _placerDownerSpeed = 0.25;
     private final double _placerDownerHoldSpeed = 0.1;
 
@@ -53,10 +61,10 @@ public class PlacerDowner extends Subsystem {
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
 
     PlacerDowner() {
-        _placerDownerMotor = new CANSparkMax(Constants.kPlacerDownerMotorDeviceId, MotorType.kBrushless);
-        _placerDownerMotor.setIdleMode(IdleMode.kBrake);
-        _placerDownerMotor.setSmartCurrentLimit(20);
-        _placerDownerMotor.burnFlash();
+        _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
+        _theClaw.setIdleMode(IdleMode.kBrake);
+        _theClaw.setSmartCurrentLimit(20);
+        _theClaw.burnFlash();
 
         _tilter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kTilterForward, Constants.kTilterReverse);
         _pivoter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kPivoterForward, Constants.kPivoterReverse);
@@ -65,7 +73,7 @@ public class PlacerDowner extends Subsystem {
         _placerDownerElevator.setSmartCurrentLimit(20);
         _placerDownerElevator.setSecondaryCurrentLimit(40);
         _placerDownerElevator.setIdleMode(IdleMode.kBrake);
-        _placerDownerElevatorEncoder = _placerDownerMotor.getEncoder();
+        _placerDownerElevatorEncoder = _theClaw.getEncoder();
 
         // WPILib Controller
         _placerDownerPID = new ProfiledPIDController(Constants.kPlacerDownerKp, Constants.kPlacerDownerKi,
@@ -84,6 +92,8 @@ public class PlacerDowner extends Subsystem {
         _elevatorController.setSmartMotionMaxVelocity(kSmartMotionMaxVel, 0);
         _elevatorController.setSmartMotionMaxAccel(kSmartMotionMaxAccel, 0);
         _elevatorController.setSmartMotionAllowedClosedLoopError(kSmartMotionAllowedError, 0);
+
+        //_limitSwitch = _hoodMotor.getForwardLimitSwitch(Type.kNormallyOpen); (Not hood motor but dont know what motor yet)
     }
 
     public static PlacerDowner getInstance() {
@@ -110,17 +120,19 @@ public class PlacerDowner extends Subsystem {
         SmartDashboard.putNumber("placerDownerSmartMotionAllowedClosedLoopError", _elevatorController.getSmartMotionAllowedClosedLoopError(0));
         SmartDashboard.putNumber("placerDownerCurrentPosition", _placerDownerElevatorEncoder.getPosition());
         
-        SmartDashboard.putNumber("placerDownerMotorVoltage", _placerDownerMotor.getAppliedOutput());
-        SmartDashboard.putNumber("placerDownerMotorTemperature", _placerDownerMotor.getMotorTemperature());
-        SmartDashboard.putNumber("placerDownerMotorOutputCurrent", _placerDownerMotor.getOutputCurrent());
+        SmartDashboard.putNumber("placerDownerMotorVoltage", _theClaw.getAppliedOutput());
+        SmartDashboard.putNumber("placerDownerMotorTemperature", _theClaw.getMotorTemperature());
+        SmartDashboard.putNumber("placerDownerMotorOutputCurrent", _theClaw.getOutputCurrent());
         SmartDashboard.putString("placerDownerTilterCurrentState", _tilter.get().name());
         SmartDashboard.putString("placerDownerPivoterCurrentState", _pivoter.get().name());
         
+        SmartDashboard.putBoolean("elevatorAtSetpoint", atSetpoint());
+        SmartDashboard.putBoolean("limitSwitchBlocked", _limitSwitch.isPressed());
     }
 
     private void intake() {
         _setpoint = ElevatorPosition.PIZZA_DELIVERY;
-        _placerDownerMotor.set(_placerDownerSpeed);
+        _theClaw.set(_placerDownerSpeed);
         handleElevatorPosition();
 
         if (atSetpoint()) {
@@ -130,11 +142,18 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void eject() {
-        _placerDownerMotor.set(-_placerDownerSpeed);
+        _theClaw.set(-_placerDownerSpeed);
     }
 
     private void stop() {
-        _placerDownerMotor.set(0);
+        _theClaw.set(0);
+    }
+
+    public void setSpeed(double speed) {
+        if (Math.abs(speed) <= 0.10) {
+            speed = 0;
+        }
+        _placerDownerElevator.set(speed);
     }
 
     private void deploy() {
@@ -154,7 +173,7 @@ public class PlacerDowner extends Subsystem {
 
     private void holdPosition() {
         handleElevatorPosition();
-        _placerDownerMotor.set(_placerDownerHoldSpeed);
+        _theClaw.set(_placerDownerHoldSpeed);
     }
 
     private void reset() {
@@ -163,7 +182,41 @@ public class PlacerDowner extends Subsystem {
         setWantedState(PlacerDownerState.HOLD_POSITION);
     }
 
+    public void setManualElevatorSpeed(double speed) {
+        if (Math.abs(speed) <= 0.10) {
+            speed = 0.0;
+        }
+
+        _manualElevatorSpeed = speed;
+    }
+    public void setManualIntake() {
+        _manualClawSpeed = _placerDownerSpeed;
+    }
+    public void setManualEject() {
+        _manualClawSpeed = -_placerDownerSpeed;
+    }
+    public void setManualStop() {
+        _manualClawSpeed = 0.0;
+    }
+    public void setTiltValue(Value value) {
+        _manualTiltValue = value;
+    }
+    public void setPivotValue(Value value) {
+        _manualPivotValue = value;
+    }
+
+    private void yeehaw() {
+        _placerDownerElevator.set(_manualElevatorSpeed);
+        _theClaw.set(_manualClawSpeed);
+        _pivoter.set(_manualPivotValue);
+        _tilter.set(_manualTiltValue);
+    }
+
     public void setElevatorSetpoint(double position) {
+        if (_tilter.get() != Value.kForward) {
+            position = _setpoint;
+        }
+
         switch (_currentState) {
             case HOLD_POSITION:
                 setSetpoint(position);
@@ -223,6 +276,9 @@ public class PlacerDowner extends Subsystem {
                 break;
             case RESET:
                 reset();
+                break;
+            case YEEHAW:
+                yeehaw();
                 break;
             case STOP:
             default:
