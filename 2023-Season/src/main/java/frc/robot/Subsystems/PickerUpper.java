@@ -27,7 +27,7 @@ public class PickerUpper extends Subsystem {
 
     private final double _collectSpeed = 0.5;
     private final double _ejectSpeed = -0.5;
-    
+    private final double _deliverySpeed = -0.15;
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
@@ -115,6 +115,12 @@ public class PickerUpper extends Subsystem {
         }
     }
 
+    public void delivery() {
+        _leftMotor.set(_deliverySpeed);
+        _rightMotor.set(_deliverySpeed);
+        up();
+    }
+
     public void pizzasReady(){
         stop();
     }
@@ -138,6 +144,9 @@ public class PickerUpper extends Subsystem {
             case PIZZAS_READY:
                 pizzasReady();
                 break;
+            case DELIVERY:
+                delivery();
+                break;
             case TEST_CLOSE:
                 close();
                 break;
@@ -149,6 +158,9 @@ public class PickerUpper extends Subsystem {
                 break;
             case TEST_COLLECT:
                 collect();
+                break;
+            case WERE_CLOSED:
+                stop();
                 break;
             default:
                 break;

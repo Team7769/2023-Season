@@ -32,6 +32,7 @@ public class PlacerDowner extends Subsystem {
 
     private PlacerDownerState _currentState = PlacerDownerState.STOW;
     private double _setpoint = ElevatorPosition.DIGIORNO;
+    private double _testSpeed = 0.0;
     private final double _placerDownerSpeed = 0.25;
     private final double _placerDownerHoldSpeed = 0.1;
 
@@ -111,6 +112,10 @@ public class PlacerDowner extends Subsystem {
         }
     }
 
+    private void testIntake() {
+        _placerDownerMotor.set(_placerDownerSpeed);
+    }
+
     private void eject() {
         _placerDownerMotor.set(-_placerDownerSpeed);
     }
@@ -120,13 +125,31 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void setSpeed(double speed) {
-        _placerDownerMotor.set(speed);
+        if (Math.abs(speed) <= 0.10) {
+            speed = 0;
+        }
+        _placerDownerElevator.set(speed);
     }
 
     private void deploy() {
         _tilter.set(Value.kForward);
         _pivoter.set(Value.kForward);
         holdPosition();
+    }
+
+    private void testDeploy() {
+        _tilter.set(Value.kForward);
+        _pivoter.set(Value.kForward);
+    }
+
+    private void testRetract() {
+        _tilter.set(Value.kReverse);
+        _pivoter.set(Value.kReverse);
+    }
+    
+    private void testElevator() {
+        _placerDownerMotor.set(0);
+        _placerDownerElevator.set(_testSpeed);
     }
 
     private void retract() {
@@ -150,6 +173,10 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void setElevatorSetpoint(double position) {
+        if (_tilter.get() != Value.kForward) {
+            position = _setpoint;
+        }
+        
         switch (_currentState) {
             case HOLD_POSITION:
                 setSetpoint(position);
@@ -196,6 +223,7 @@ public class PlacerDowner extends Subsystem {
                 intake();
                 break;
             case EJECT:
+            case TEST_EJECT:
                 eject();
                 break;
             case DEPLOY:
@@ -210,14 +238,17 @@ public class PlacerDowner extends Subsystem {
             case RESET:
                 reset();
                 break;
-            case TEST_UP:
-                retract();
+            case TEST_STOW:
+                testRetract();
                 break;
-            case TEST_DOWN:
-                deploy();
+            case TEST_DEPLOY:
+                testDeploy();
                 break;
             case TEST_INTAKE:
-                intake();
+                testIntake();
+                break;
+            case TEST_ELEVATOR:
+                testElevator();
                 break;
             case STOP:
             default:
