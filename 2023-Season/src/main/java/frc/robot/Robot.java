@@ -76,7 +76,8 @@ public class Robot extends TimedRobot {
     _pickerUpper = PickerUpper.getInstance();
     _subsystems = new ArrayList<Subsystem>();
     _subsystems.add(_drivetrain);
-    _subsystems.add(_gamePieceManager);
+    _subsystems.add(_pickerUpper);
+    _subsystems.add(_placerDowner);
     _limelight = Limelight.getInstance();
 
     PathPlannerServer.startServer(5811);
@@ -165,7 +166,8 @@ public class Robot extends TimedRobot {
         break;
     }
 
-    _gamePieceManager.handle();
+    _pickerUpper.handleCurrentState();
+    _placerDowner.handleCurrentState();
     _autoLoops++;
   }
 

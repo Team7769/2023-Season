@@ -52,8 +52,6 @@ public class PlacerDowner extends Subsystem {
     private final double kSmartMotionMinOutput = -1.0;
     private final double kSmartMotionMaxVel = 2000;
     private final double kSmartMotionMaxAccel = 1500;
-    private final double kSmartMotionAllowedError = 100;
-    private final double kArbFeedforward = 0.115;
     private final double kAllowedError = 100;
 
     private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
@@ -89,9 +87,6 @@ public class PlacerDowner extends Subsystem {
         _elevatorController.setIZone(kSmartMotionIz);
         _elevatorController.setFF(kSmartMotionFF);
         _elevatorController.setOutputRange(kSmartMotionMinOutput, kSmartMotionMaxOutput);
-        _elevatorController.setSmartMotionMaxVelocity(kSmartMotionMaxVel, 0);
-        _elevatorController.setSmartMotionMaxAccel(kSmartMotionMaxAccel, 0);
-        _elevatorController.setSmartMotionAllowedClosedLoopError(kSmartMotionAllowedError, 0);
 
         //_limitSwitch = _hoodMotor.getForwardLimitSwitch(Type.kNormallyOpen); (Not hood motor but dont know what motor yet)
     }
@@ -115,9 +110,6 @@ public class PlacerDowner extends Subsystem {
         SmartDashboard.putNumber("placerDownerFF", _elevatorController.getFF());
         SmartDashboard.putNumber("placerDownerOutputRangeMax", _elevatorController.getOutputMax());
         SmartDashboard.putNumber("placerDownerOutputRangeMin", _elevatorController.getOutputMin());
-        SmartDashboard.putNumber("placerDownerSmartMotionMaxVelocity", _elevatorController.getSmartMotionMaxVelocity(0));
-        SmartDashboard.putNumber("placerDownerSmartMotionMaxAcceleration", _elevatorController.getSmartMotionMaxAccel(0));
-        SmartDashboard.putNumber("placerDownerSmartMotionAllowedClosedLoopError", _elevatorController.getSmartMotionAllowedClosedLoopError(0));
         SmartDashboard.putNumber("placerDownerCurrentPosition", _placerDownerElevatorEncoder.getPosition());
         
         SmartDashboard.putNumber("placerDownerMotorVoltage", _theClaw.getAppliedOutput());
@@ -125,9 +117,7 @@ public class PlacerDowner extends Subsystem {
         SmartDashboard.putNumber("placerDownerMotorOutputCurrent", _theClaw.getOutputCurrent());
         SmartDashboard.putString("placerDownerTilterCurrentState", _tilter.get().name());
         SmartDashboard.putString("placerDownerPivoterCurrentState", _pivoter.get().name());
-        
-        SmartDashboard.putBoolean("elevatorAtSetpoint", atSetpoint());
-        SmartDashboard.putBoolean("limitSwitchBlocked", _limitSwitch.isPressed());
+        //SmartDashboard.putBoolean("placerDownerLimitSwitchBlocked", _limitSwitch.isPressed());
     }
 
     private void intake() {
@@ -147,13 +137,6 @@ public class PlacerDowner extends Subsystem {
 
     private void stop() {
         _theClaw.set(0);
-    }
-
-    public void setSpeed(double speed) {
-        if (Math.abs(speed) <= 0.10) {
-            speed = 0;
-        }
-        _placerDownerElevator.set(speed);
     }
 
     private void deploy() {

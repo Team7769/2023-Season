@@ -48,7 +48,6 @@ public class PickerUpper extends Subsystem {
         _collectorSensor = new Photoeye(Constants.kCollectorPort);
 
         _boxItTimer = new Timer();
-        //pizzaReady = false;
     }
 
     public static PickerUpper getInstance() {
