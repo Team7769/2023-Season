@@ -13,16 +13,6 @@ public final class Constants {
     public static final int kDriverControllerUsbSlot = 0;
     public static final int kOperatorControllerUsbSlot = 1;
 
-    // PlaceDowner Slots
-    public static final int kPlacerDownerMotorDeviceId = 16; // Change Later
-    public static final int kPlacerDownerElevatorMotorDeviceId = 17; 
-
-    // Solenoids
-    public static final int kTilterForward = 0;
-    public static final int kTilterReverse = 1;
-    public static final int kPivoterForward = 2;
-    public static final int kPivoterReverse = 3;
-
     public static final int kPlacerDownerKp = 0; // Change Later
     public static final int kPlacerDownerKi = 0; // Change Later
     public static final int kPlacerDownerKd = 0; // Change Later
@@ -31,9 +21,8 @@ public final class Constants {
     public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
     public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
 
-    // PickerUpper Slots
-    public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later
-    public static final int kPickerUpperRightMotorDeviceId = 15; // Change Later
+    // Photo Eye
+    public static final int kCollectorPort = 0; // change later this is a random number
 
     // Swerve Slots
     public static final int kFrontLeftDriveId = 2;
@@ -51,6 +40,24 @@ public final class Constants {
     public static final int kBackRightDriveId = 11;
     public static final int kBackRightSteerId = 12;
     public static final int kBackRightSteerEncoderId = 13;
+
+    // PickerUpper Slots
+    public static final int kPickerUpperLeftMotorDeviceId = 14; // Change Later
+    public static final int kPickerUpperRightMotorDeviceId = 15; // Change Later
+    
+    // PlaceDowner Slots
+    public static final int kTheClawDeviceId = 16; // Change Later
+    public static final int kPlacerDownerElevatorMotorDeviceId = 17; 
+    
+    // Solenoids
+    public static final int kTilterForward = 0;
+    public static final int kTilterReverse = 1;
+    public static final int kPivoterForward = 2;
+    public static final int kPivoterReverse = 3;
+    public static final int kBoxerForward = 4;
+    public static final int kBoxerReverse = 5;
+    public static final int kFlexerForward = 6;
+    public static final int kFlexerReverse = 7;
 
     // Swerve Encoder Offsets
     public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.73);

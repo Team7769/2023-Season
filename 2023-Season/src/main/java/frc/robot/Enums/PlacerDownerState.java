@@ -7,5 +7,6 @@ public enum PlacerDownerState {
     STOW,
     STOP,
     HOLD_POSITION,
-    RESET
+    RESET,
+    YEEHAW
 }
