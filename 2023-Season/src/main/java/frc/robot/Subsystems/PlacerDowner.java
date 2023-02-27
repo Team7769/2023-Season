@@ -61,16 +61,16 @@ public class PlacerDowner extends Subsystem {
     PlacerDowner() {
         _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
         _theClaw.setIdleMode(IdleMode.kBrake);
-        _theClaw.setSmartCurrentLimit(20);
-        _theClaw.burnFlash();
+        _theClaw.setInverted(true);
+        _theClaw.setSmartCurrentLimit(20, 100);
 
         _tilter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kTilterForward, Constants.kTilterReverse);
         _pivoter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kPivoterForward, Constants.kPivoterReverse);
 
         _placerDownerElevator = new CANSparkMax(Constants.kPlacerDownerElevatorMotorDeviceId, MotorType.kBrushless);
-        _placerDownerElevator.setSmartCurrentLimit(20);
-        _placerDownerElevator.setSecondaryCurrentLimit(40);
+        _placerDownerElevator.setSmartCurrentLimit(20, 100);
         _placerDownerElevator.setIdleMode(IdleMode.kBrake);
+        _placerDownerElevator.setInverted(true);
         _placerDownerElevatorEncoder = _theClaw.getEncoder();
 
         // WPILib Controller

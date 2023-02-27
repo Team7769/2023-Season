@@ -63,7 +63,7 @@ public final class Falcon500DriveControllerFactoryBuilder {
                 motorConfiguration.supplyCurrLimit.enable = true;
             }
 
-            TalonFX motor = new TalonFX(driveConfiguration);
+            TalonFX motor = new TalonFX(driveConfiguration, "DriveCANivore");
             CtreUtils.checkCtreError(motor.configAllSettings(motorConfiguration), "Failed to configure Falcon 500");
 
             if (hasVoltageCompensation()) {

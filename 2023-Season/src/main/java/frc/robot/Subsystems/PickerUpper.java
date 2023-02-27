@@ -36,11 +36,11 @@ public class PickerUpper extends Subsystem {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
         _rightMotor = new CANSparkMax(Constants.kPickerUpperRightMotorDeviceId, MotorType.kBrushless);
 
-        _leftMotor.setInverted(true);
         _leftMotor.setIdleMode(IdleMode.kBrake);
+        _leftMotor.setInverted(false);
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
-        _rightMotor.follow(_leftMotor);
+        _rightMotor.setInverted(false);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
@@ -48,6 +48,7 @@ public class PickerUpper extends Subsystem {
         _collectorSensor = new Photoeye(Constants.kCollectorPort);
 
         _boxItTimer = new Timer();
+        _currentState = PickerUpperState.PIZZAS_READY;
     }
 
     public static PickerUpper getInstance() {
@@ -145,7 +146,7 @@ public class PickerUpper extends Subsystem {
         _manualSpeed = _collectSpeed;
     }
     public void setManualEject() {
-        _manualSpeed = -_ejectSpeed;
+        _manualSpeed = _ejectSpeed;
     }
     public void setManualStop() {
         _manualSpeed = 0.0;
