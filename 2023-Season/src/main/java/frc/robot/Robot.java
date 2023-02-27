@@ -12,7 +12,9 @@ import org.ejml.simple.AutomaticSimpleMatrixConvert;
 
 import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -31,6 +33,7 @@ import frc.robot.Subsystems.Subsystem;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
 import frc.robot.util.OneDimensionalLookup;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -64,7 +67,7 @@ public class Robot extends TimedRobot {
   private int _autoLoops = 0;
   private SendableChooser<Integer> _autoChooser = new SendableChooser<>();
   private boolean _ejectHeld = false;
-
+  private Compressor _compressor; 
   @Override
   public void robotInit() {
     _driverController = new XboxController(Constants.kDriverControllerUsbSlot);
@@ -79,7 +82,8 @@ public class Robot extends TimedRobot {
     _subsystems.add(_pickerUpper);
     _subsystems.add(_placerDowner);
     _limelight = Limelight.getInstance();
-
+    // _compressor = new Compressor(1, PneumaticsModuleType.REVPH);
+    // _compressor.enableAnalog(70, 110);
     PathPlannerServer.startServer(5811);
     _selectedAutoMode = 0;
 

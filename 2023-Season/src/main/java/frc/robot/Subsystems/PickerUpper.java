@@ -40,7 +40,7 @@ public class PickerUpper extends Subsystem {
         _leftMotor.setInverted(false);
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
-        _rightMotor.setInverted(false);
+        _rightMotor.setInverted(true);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
