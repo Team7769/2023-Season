@@ -31,6 +31,7 @@ public class PickerUpper extends Subsystem {
 
     private double _manualSpeed = 0.0;
     private Value _manualFlex = Value.kOff;
+    private Value _manualBox = Value.kOff;
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
@@ -144,12 +145,15 @@ public class PickerUpper extends Subsystem {
 
     public void setManualCollect() {
         _manualSpeed = _collectSpeed;
+        _manualBox = Value.kReverse;
     }
     public void setManualEject() {
         _manualSpeed = _ejectSpeed;
+        _manualBox = Value.kReverse;
     }
     public void setManualStop() {
         _manualSpeed = 0.0;
+        _manualBox = Value.kForward;
     }
     public void setManualFlex(Value value) {
         _manualFlex = value;
@@ -159,6 +163,7 @@ public class PickerUpper extends Subsystem {
         _leftMotor.set(_manualSpeed);
         _rightMotor.set(_manualSpeed);
         _flexer.set(_manualFlex);
+        _boxer.set(_manualBox);
     }
     
     // To be added when we get sensor  

@@ -82,8 +82,8 @@ public class Robot extends TimedRobot {
     _subsystems.add(_pickerUpper);
     _subsystems.add(_placerDowner);
     _limelight = Limelight.getInstance();
-    // _compressor = new Compressor(1, PneumaticsModuleType.REVPH);
-    // _compressor.enableAnalog(70, 110);
+     _compressor = new Compressor(1, PneumaticsModuleType.REVPH);
+     _compressor.enableAnalog(70, 110);
     PathPlannerServer.startServer(5811);
     _selectedAutoMode = 0;
 
