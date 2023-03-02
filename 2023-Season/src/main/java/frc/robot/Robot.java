@@ -83,7 +83,7 @@ public class Robot extends TimedRobot {
     _subsystems.add(_placerDowner);
     _limelight = Limelight.getInstance();
      _compressor = new Compressor(1, PneumaticsModuleType.REVPH);
-     _compressor.enableAnalog(70, 110);
+     _compressor.enableDigital();
     PathPlannerServer.startServer(5811);
     _selectedAutoMode = 0;
 
@@ -647,6 +647,7 @@ public class Robot extends TimedRobot {
   public void disabledPeriodic() {
     _drivetrain.logPose();
     _drivetrain.robotOrientedDrive(0, 0, 0);
+    _placerDowner.handleElevatorReset();
   }
 
   @Override
@@ -663,7 +664,7 @@ public class Robot extends TimedRobot {
   }
 
   private void testPeriodicPlacerDowner() {
-    _placerDowner.setManualElevatorSpeed(_operatorController.getLeftY());
+    _placerDowner.setManualElevatorSpeed(-_operatorController.getLeftY());
 
     if (_operatorController.getLeftBumper()) {
       _placerDowner.setTiltValue(Value.kForward);
@@ -717,20 +718,28 @@ public class Robot extends TimedRobot {
 
   private void teleopGamePieceManagement() {
     if (_operatorController.getYButton()) {
+      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
     } else if (_operatorController.getXButton()) {
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
-    } else if (_operatorController.getBButton()) {
+      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      //_placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+    } else if (_operatorController.getBButton()) {
+      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      //_placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
     } else if (_operatorController.getAButton()) {
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
+      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      //_placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
     }
+    
 
     var eject = Math.abs(_driverController.getRightTriggerAxis()) > 0.25;
 
-    if (_operatorController.getRightBumper()) {
+    if (_operatorController.getRightBumperPressed()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-    } else if (_operatorController.getLeftBumper()) {
+    } else if (_operatorController.getLeftBumperPressed()) {
       _placerDowner.setWantedState(PlacerDownerState.STOW);
     } else if (eject) {
       _placerDowner.setWantedState(PlacerDownerState.EJECT);

@@ -16,9 +16,9 @@ public final class Constants {
     public static final int kPlacerDownerKi = 0; // Change Later
     public static final int kPlacerDownerKd = 0; // Change Later
 
-    public static final int kPlacerDownerFeedforwardKs = 0; // Change Later
-    public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
-    public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
+    public static final double kPlacerDownerFeedforwardKs = 0.29736; // Change Later
+    public static final double kPlacerDownerFeedforwardKg = 0.26; // Change Later
+    public static final double kPlacerDownerFeedforwardKv = 0.066; // Change Later
 
     // Photo Eye
     public static final int kCollectorPort = 0; // change later this is a random number

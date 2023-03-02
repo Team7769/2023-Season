@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.ADIS16448_IMU.CalibrationTime;
 import edu.wpi.first.wpilibj.ADIS16448_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.SPI.Port;
@@ -54,6 +55,7 @@ public class Drivetrain extends Subsystem {
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
 
         _gyro = new AHRS(Port.kMXP);
+        //_gyro = new AHRS(SerialPort.Port.kUSB);
 
         _frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
             tab.getLayout("Front Left Module", BuiltInLayouts.kList)
