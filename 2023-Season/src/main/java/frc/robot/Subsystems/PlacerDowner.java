@@ -51,8 +51,8 @@ public class PlacerDowner extends Subsystem {
     private final double kSmartMotionIz = 0.0;
     private final double kSmartMotionMaxOutput = 0.75;
     private final double kSmartMotionMinOutput = -0.75;
-    private final double kSmartMotionMaxVel = 30;
-    private final double kSmartMotionMaxAccel = 20;
+    private final double kSmartMotionMaxVel = 75;
+    private final double kSmartMotionMaxAccel = 50;
     private final double kAllowedError = 0.5;
 
     private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
