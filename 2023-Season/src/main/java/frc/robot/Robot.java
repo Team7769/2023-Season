@@ -718,30 +718,32 @@ public class Robot extends TimedRobot {
 
   private void teleopGamePieceManagement() {
     if (_operatorController.getYButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
     } else if (_operatorController.getXButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
       //_placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
     } else if (_operatorController.getBButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      _placerDowner.setWantedState(PlacerDownerState.STOW);
       //_placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
-    } else if (_operatorController.getAButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
-      //_placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
-    }
+    } 
+    // else if (_operatorController.getAButton()) {
+    //   _placerDowner.setWantedState(PlacerDownerState.STOW);
+    //   //_placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
+    //   _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
+    // }
     
 
     var eject = Math.abs(_driverController.getRightTriggerAxis()) > 0.25;
 
-    if (_operatorController.getRightBumperPressed()) {
-      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-    } else if (_operatorController.getLeftBumperPressed()) {
-      _placerDowner.setWantedState(PlacerDownerState.STOW);
-    } else if (eject) {
+    // if (_operatorController.getRightBumperPressed()) {
+    //   _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+    // } else if (_operatorController.getLeftBumperPressed()) {
+    //   _placerDowner.setWantedState(PlacerDownerState.STOW);
+    // } else 
+    if (eject) {
       _placerDowner.setWantedState(PlacerDownerState.EJECT);
     } else if (_ejectHeld) {
       _placerDowner.setWantedState(PlacerDownerState.RESET);
@@ -749,11 +751,13 @@ public class Robot extends TimedRobot {
 
     _ejectHeld = eject;
 
-    if (_driverController.getLeftBumper()) {
+    if (_operatorController.getLeftBumper()) {
       _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
-    } else if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
-      _pickerUpper.setWantedState(PickerUpperState.BOX_IT);
-    } else if (_driverController.getRightBumper()) {
+    } 
+    // else if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
+    //   _pickerUpper.setWantedState(PickerUpperState.BOX_IT);
+    // } 
+    else if (_operatorController.getRightBumper()) {
       _pickerUpper.setWantedState(PickerUpperState.WRONG_ORDER);
     } else if (_pickerUpper.isPizzaReady()) {
       _placerDowner.setWantedState(PlacerDownerState.INTAKE);
@@ -803,7 +807,7 @@ public class Robot extends TimedRobot {
       _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
     } else {
       // Field orientated speed
-      _drivetrain.fieldOrientedDrive(translationX / 1.25, translationY / 1.25, rotationZ);
+      _drivetrain.fieldOrientedDrive(translationX / 2, translationY / 2, rotationZ);
     }
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);

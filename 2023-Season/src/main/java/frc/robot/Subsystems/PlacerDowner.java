@@ -42,18 +42,18 @@ public class PlacerDowner extends Subsystem {
     private Value _manualTiltValue = Value.kOff;
 
     private final double _placerDownerSpeed = 0.25;
-    private final double _placerDownerHoldSpeed = 0.08;
+    private final double _placerDownerHoldSpeed = 0.10;
 
-    private final double kSmartMotionP = 0.01;
+    private final double kSmartMotionP = 0.015;
     private final double kSmartMotionI = 0.0;
     private final double kSmartMotionD = 0.001;
     private final double kSmartMotionFF = 0.0;
     private final double kSmartMotionIz = 0.0;
-    private final double kSmartMotionMaxOutput = 0.75;
-    private final double kSmartMotionMinOutput = -0.75;
+    private final double kSmartMotionMaxOutput = 0.85;
+    private final double kSmartMotionMinOutput = -0.85;
     private final double kSmartMotionMaxVel = 75;
     private final double kSmartMotionMaxAccel = 50;
-    private final double kAllowedError = 0.5;
+    private final double kAllowedError = 3;
 
     private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
     private TrapezoidProfile.State _goal = new TrapezoidProfile.State();
@@ -134,12 +134,11 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void intake() {
-        _setpoint = ElevatorPosition.PIZZA_DELIVERY;
+        setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
         _theClaw.set(_placerDownerSpeed);
         handleElevatorPosition();
 
         if (atSetpoint()) {
-            _setpoint = ElevatorPosition.DIGIORNO;
             setWantedState(PlacerDownerState.HOLD_POSITION);
         }
     }
@@ -153,8 +152,8 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void deploy() {
-        _tilter.set(Value.kForward);
-        _pivoter.set(Value.kForward);
+        _tilter.set(Value.kReverse);
+        _pivoter.set(Value.kReverse);
 
         if (_currentState == PlacerDownerState.DEPLOY) {
             setWantedState(PlacerDownerState.HOLD_POSITION);
@@ -162,8 +161,8 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void retract() {
-        _tilter.set(Value.kReverse);
-        _pivoter.set(Value.kReverse);
+        _tilter.set(Value.kForward);
+        _pivoter.set(Value.kForward);
 
         if (_currentState == PlacerDownerState.STOW) {
             setWantedState(PlacerDownerState.HOLD_POSITION);
@@ -176,9 +175,8 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void reset() {
-        retract();
         setElevatorSetpoint(ElevatorPosition.DIGIORNO);
-        setWantedState(PlacerDownerState.HOLD_POSITION);
+        setWantedState(PlacerDownerState.STOW);
     }
 
     public void setManualElevatorSpeed(double speed) {
@@ -212,12 +210,16 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void setElevatorSetpoint(double position) {
-        if (_tilter.get() != Value.kForward) {
-            position = _setpoint;
-        }
+        // if (_tilter.get() != Value.kForward) {
+        //     position = _setpoint;
+        // }
 
         switch (_currentState) {
+            case RESET:
+            case INTAKE:
             case HOLD_POSITION:
+            case DEPLOY:
+            case STOW:
                 setSetpoint(position);
             default:
                 break;
@@ -287,6 +289,15 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void setWantedState(PlacerDownerState wantedState) {
+        switch (_currentState) {
+            case INTAKE:
+                if (wantedState == PlacerDownerState.INTAKE) {
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
         _currentState = wantedState;
     }
 }

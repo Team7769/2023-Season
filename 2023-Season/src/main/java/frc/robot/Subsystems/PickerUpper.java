@@ -27,7 +27,7 @@ public class PickerUpper extends Subsystem {
 
     private final double _collectSpeed = 0.5;
     private final double _ejectSpeed = -0.5;
-    private final double _deliverySpeed = -0.15;
+    private final double _deliverySpeed = -0.25;
 
     private double _manualSpeed = 0.0;
     private Value _manualFlex = Value.kOff;
@@ -35,7 +35,9 @@ public class PickerUpper extends Subsystem {
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
+        _leftMotor.setSmartCurrentLimit(5, 100);
         _rightMotor = new CANSparkMax(Constants.kPickerUpperRightMotorDeviceId, MotorType.kBrushless);
+        _rightMotor.setSmartCurrentLimit(5, 100);
 
         _leftMotor.setIdleMode(IdleMode.kBrake);
         _leftMotor.setInverted(false);
@@ -75,11 +77,11 @@ public class PickerUpper extends Subsystem {
         
     }
     private void open() {
-        _boxer.set(Value.kForward);
+        _boxer.set(Value.kReverse);
     }
 
     private void close() {
-        _boxer.set(Value.kReverse);
+        _boxer.set(Value.kForward);
     }
 
     private void collect() {
@@ -95,11 +97,11 @@ public class PickerUpper extends Subsystem {
     }
 
     private void up() {
-        _flexer.set(Value.kForward);
+        _flexer.set(Value.kReverse);
     }
 
     private void down() {
-        _flexer.set(Value.kReverse);
+        _flexer.set(Value.kForward);
     }
 
     private void stop() {
@@ -131,6 +133,9 @@ public class PickerUpper extends Subsystem {
         } else {
             close();
         }
+
+        _leftMotor.set(_collectSpeed);
+        _rightMotor.set(_collectSpeed);
     }
 
     public void delivery() {
@@ -172,6 +177,10 @@ public class PickerUpper extends Subsystem {
        return _currentState == PickerUpperState.PIZZAS_READY;
     }
 
+    public boolean isBoxing() {
+        return _currentState == PickerUpperState.BOX_IT;
+    }
+
     public void handleCurrentState() {
         switch (_currentState) {
             case SHAKE_N_BAKE:
@@ -201,12 +210,22 @@ public class PickerUpper extends Subsystem {
     }
 
     public void setWantedState(PickerUpperState state) {
+        if (_currentState == PickerUpperState.BOX_IT && state == PickerUpperState.BOX_IT) {
+            return;
+        }
+
         switch (state) {
             case BOX_IT:
                 _boxItTimer.reset();
                 _boxItTimer.start();
                 break;
+            case PIZZAS_READY:
+            case DELIVERY:
+                break;
             default:
+                if (isBoxing()){
+                    return;
+                }
                 break;
         }
 
