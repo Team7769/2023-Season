@@ -751,6 +751,8 @@ public class Robot extends TimedRobot {
 
     if (_driverController.getLeftBumper()) {
       _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+    } else if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
+      _pickerUpper.setWantedState(PickerUpperState.BOX_IT);
     } else if (_driverController.getRightBumper()) {
       _pickerUpper.setWantedState(PickerUpperState.WRONG_ORDER);
     } else if (_pickerUpper.isPizzaReady()) {

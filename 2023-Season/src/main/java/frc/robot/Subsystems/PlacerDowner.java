@@ -44,9 +44,9 @@ public class PlacerDowner extends Subsystem {
     private final double _placerDownerSpeed = 0.25;
     private final double _placerDownerHoldSpeed = 0.08;
 
-    private final double kSmartMotionP = 0.001;
+    private final double kSmartMotionP = 0.01;
     private final double kSmartMotionI = 0.0;
-    private final double kSmartMotionD = 0.0;
+    private final double kSmartMotionD = 0.001;
     private final double kSmartMotionFF = 0.0;
     private final double kSmartMotionIz = 0.0;
     private final double kSmartMotionMaxOutput = 0.75;
