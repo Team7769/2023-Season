@@ -93,6 +93,7 @@ public class Robot extends TimedRobot {
     _autoChooser.addOption("Cable Side Link + Balance", Automode.CABLE_SIDE_LINK_BALANCE);
     _autoChooser.addOption("Loading Side Link", Automode.LOADING_SIDE_LINK_NOBALANCE);
     _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK_CONE_NOBALANCE);
+    _autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
 
     SmartDashboard.putData(_autoChooser);
   }
@@ -129,6 +130,9 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
         _pathFollower.setLoadingSideLinkConeNoBalance();
         break;
+      case Automode.LOADING_SIDE_PICKUP_BALANCE:
+        _pathFollower.setLoadsidePickupBalance();
+        break;
       default:
         break;
     }
@@ -141,6 +145,7 @@ public class Robot extends TimedRobot {
       case Automode.CABLE_SIDE_TWO_CONE_BALANCE:
       case Automode.LOADING_SIDE_LINK_NOBALANCE:
       case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
+      case Automode.LOADING_SIDE_PICKUP_BALANCE:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
@@ -168,6 +173,9 @@ public class Robot extends TimedRobot {
         break;
       case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
         loadingSideLinkConeNoBalance();
+        break;
+      case Automode.LOADING_SIDE_PICKUP_BALANCE:
+        loadSidePickupBalance();
         break;
       default:
         break;
@@ -590,34 +598,46 @@ public class Robot extends TimedRobot {
         }
         break;
       case 7:
-        _drivetrain.robotOrientedDrive(0, 0, 0);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         _autonomousCase++;
         break;
       case 8:
-        if (_placerDowner.atSetpoint()) {
-          _placerDowner.setWantedState(PlacerDownerState.EJECT);
-          _autonomousCase++;
+        if (_placerDowner.atSetpoint()) {          
+          _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+
+          if (_autoLoops > 25) {
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          }
+        } else {
           _autoLoops = 0;
         }
         break;
       case 9:
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
         if (_autoLoops > 25) {
+          // No time.
+          _autonomousCase = 7769;
           _placerDowner.setWantedState(PlacerDownerState.RESET);
           _autoLoops = 0;
           _autonomousCase++;
         }
         break;
       case 10:
-        _drivetrain.robotOrientedDrive(0, 0, 0);
-        _pathFollower.startPath();
-        _autonomousCase++;
+        if (_autoLoops > 100) {
+          _autoLoops = 0;
+          _pathFollower.startPath();
+          _autonomousCase++;
+        } else {
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+        }
         break;
       case 11:
         _drivetrain.followTrajectory();
-
-        if (_autoLoops > 50 && _autoLoops <= 55) {
+        if (_autoLoops > 75 && _autoLoops <= 80) {
           _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
         }
 
@@ -644,20 +664,26 @@ public class Robot extends TimedRobot {
         }
         break;
       case 14:
-        _drivetrain.robotOrientedDrive(0, 0, 0);
-
         _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         _autonomousCase++;
         break;
       case 15:
-        if (_placerDowner.atSetpoint()) {
-          _placerDowner.setWantedState(PlacerDownerState.EJECT);
-          _autonomousCase++;
+        if (_placerDowner.atSetpoint()) {          
+          _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+
+          if (_autoLoops > 25) {
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          }
+        } else {
           _autoLoops = 0;
         }
         break;
       case 16:
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
         if (_autoLoops > 25) {
           _placerDowner.setWantedState(PlacerDownerState.RESET);
           _autoLoops = 0;
@@ -665,13 +691,86 @@ public class Robot extends TimedRobot {
         }
         break;
       case 17:
-        if (_autoLoops > 25) {
+        if (_autoLoops > 100) {
           _autoLoops = 0;
           _pathFollower.startPath();
           _autonomousCase++;
+        } else {
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
         }
         break;
       case 18:
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autonomousCase++;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  
+  public void loadSidePickupBalance() {
+    switch (_autonomousCase) {
+      case 0:
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        _autonomousCase++;
+        break;
+      case 1:
+        if (_placerDowner.atSetpoint()) {          
+          _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+
+          if (_autoLoops > 25) {
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          }
+        } else {
+          _autoLoops = 0;
+        }
+        break;
+      case 2:
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
+        if (_autoLoops > 25) {
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        if (_autoLoops > 150) {
+          _autoLoops = 0;
+          _pathFollower.startPath();
+          _autonomousCase++;
+        } else {
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+        }
+        break;
+      case 4:
+        _drivetrain.followTrajectory();
+        if (_autoLoops > 75 && _autoLoops <= 80) {
+          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+        }
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 6:
         _drivetrain.followTrajectory();
 
         if (_pathFollower.isPathFinished()) {

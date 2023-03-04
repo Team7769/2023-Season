@@ -25,8 +25,8 @@ public class PickerUpper extends Subsystem {
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
 
-    private final double _collectSpeed = 0.5;
-    private final double _ejectSpeed = -0.5;
+    private final double _collectSpeed = 0.65;
+    private final double _ejectSpeed = -0.65;
     private final double _deliverySpeed = -0.25;
 
     private double _manualSpeed = 0.0;
