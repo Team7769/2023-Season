@@ -142,6 +142,9 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_LINK_NOBALANCE:
       case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
         _drivetrain.initAutonPosition();
+        _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
+        _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
         break;
       default:
         break;
@@ -518,28 +521,32 @@ public class Robot extends TimedRobot {
   public void loadSideLinkBalance() {
     switch (_autonomousCase) {
       case 0:
-        _pathFollower.startPath();
-        _autonomousCase++;
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        if (_placerDowner.atSetpoint()) {
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          _autonomousCase++;
+          _autoLoops = 0;
+        }
         break;
       case 1:
-        _drivetrain.followTrajectory();
-
-        if (_pathFollower.isPathFinished()) {
-          _drivetrain.robotOrientedDrive(0, 0, 0);
+        if (_autoLoops > 25) {
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
           _autoLoops = 0;
-          _pathFollower.setNextPath();
           _autonomousCase++;
         }
         break;
-      case 2:
-        _drivetrain.robotOrientedDrive(0, 0, 0);
-        if (_autoLoops >= 50) {
+      case 2: 
+        if (_autoLoops > 25) {
+          _autoLoops = 0;
           _pathFollower.startPath();
           _autonomousCase++;
         }
         break;
       case 3:
         _drivetrain.followTrajectory();
+        if (_autoLoops > 50 && _autoLoops <= 55) {
+          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+        }
 
         if (_pathFollower.isPathFinished()) {
           _drivetrain.robotOrientedDrive(0, 0, 0);
@@ -550,10 +557,8 @@ public class Robot extends TimedRobot {
         break;
       case 4:
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        if (_autoLoops >= 50) {
-          _pathFollower.startPath();
-          _autonomousCase++;
-        }
+        _pathFollower.startPath();
+        _autonomousCase++;
         break;
       case 5:
         _drivetrain.followTrajectory();
@@ -567,12 +572,45 @@ public class Robot extends TimedRobot {
         break;
       case 6:
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        if (_autoLoops >= 50) {
-          _pathFollower.startPath();
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        if (_placerDowner.atSetpoint()) {
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
           _autonomousCase++;
+          _autoLoops = 0;
         }
         break;
       case 7:
+        if (_autoLoops > 25) {
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 8:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 9:
+        _drivetrain.followTrajectory();
+
+        if (_autoLoops > 50 && _autoLoops <= 55) {
+          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+        }
+
+        if (_pathFollower.isPathFinished()) {
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 10:
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        _pathFollower.startPath();
+        _autonomousCase++;
+        break;
+      case 11:
         _drivetrain.followTrajectory();
 
         if (_pathFollower.isPathFinished()) {
@@ -582,14 +620,31 @@ public class Robot extends TimedRobot {
           _autonomousCase++;
         }
         break;
-      case 8:
+      case 12:
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        if (_autoLoops >= 50) {
+        
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        if (_placerDowner.atSetpoint()) {
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          _autonomousCase++;
+          _autoLoops = 0;
+        }
+        break;
+      case 13:
+        if (_autoLoops > 25) {
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 14:
+        if (_autoLoops > 25) {
+          _autoLoops = 0;
           _pathFollower.startPath();
           _autonomousCase++;
         }
         break;
-      case 9:
+      case 15:
         _drivetrain.followTrajectory();
 
         if (_pathFollower.isPathFinished()) {

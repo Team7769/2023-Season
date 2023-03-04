@@ -10,19 +10,9 @@ public final class ElevatorPosition {
     public static final double JETS = 90;
 
     /**
-    * High Cube.
-    */
-    public static final double BUDDYS = 90;
-
-    /**
     * Mid Cone.
     */
     public static final double SHIELDS = 66;
-
-    /**
-    * Mid Cube.
-    */
-    public static final double HUNGRY_HOWIES = 66;
 
     /**
     * It's not delivery, it's Digiorno.

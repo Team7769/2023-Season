@@ -226,7 +226,7 @@ public class PlacerDowner extends Subsystem {
         }
     }
 
-    private boolean atSetpoint() {
+    public boolean atSetpoint() {
         var currentPosition = _placerDownerElevatorEncoder.getPosition();
         var error = _setpoint - currentPosition;
 
