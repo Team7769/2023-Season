@@ -105,6 +105,7 @@ public class PickerUpper extends Subsystem {
     }
 
     private void stop() {
+        up();
         _leftMotor.set(0);
         _rightMotor.set(0);
     }
@@ -125,8 +126,6 @@ public class PickerUpper extends Subsystem {
 
     public void boxIt() {
         if (_boxItTimer.hasElapsed(2)) {
-            open();
-            _boxItTimer.stop();
             setWantedState(PickerUpperState.PIZZAS_READY);
         } else if (_boxItTimer.hasElapsed(0.5)) {
             up();
@@ -139,8 +138,15 @@ public class PickerUpper extends Subsystem {
     }
 
     public void delivery() {
-        _leftMotor.set(_deliverySpeed);
-        _rightMotor.set(_deliverySpeed);
+        if (_boxItTimer.hasElapsed(2.5)) {
+            setWantedState(PickerUpperState.WERE_CLOSED);
+            _boxItTimer.stop();
+        } else if (_boxItTimer.hasElapsed(2.25)) {
+            _leftMotor.set(_deliverySpeed);
+            _rightMotor.set(_deliverySpeed);
+            open();
+        } 
+
         up();
     }
 
@@ -174,7 +180,7 @@ public class PickerUpper extends Subsystem {
     // To be added when we get sensor  
     public boolean isPizzaReady() {
        //return _collectorSensor.isBlocked() && _currentState == PickerUpperState.PIZZAS_READY;
-       return _currentState == PickerUpperState.PIZZAS_READY;
+       return _currentState == PickerUpperState.PIZZAS_READY || _currentState == PickerUpperState.DELIVERY;
     }
 
     public boolean isBoxing() {
