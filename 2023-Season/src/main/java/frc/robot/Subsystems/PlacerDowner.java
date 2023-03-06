@@ -14,6 +14,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
@@ -49,15 +50,16 @@ public class PlacerDowner extends Subsystem {
     private final double kSmartMotionD = 0.001;
     private final double kSmartMotionFF = 0.0;
     private final double kSmartMotionIz = 0.0;
-    private final double kSmartMotionMaxOutput = 0.85;
-    private final double kSmartMotionMinOutput = -0.85;
-    private final double kSmartMotionMaxVel = 75;
-    private final double kSmartMotionMaxAccel = 50;
+    private final double kSmartMotionMaxOutput = 1.00;
+    private final double kSmartMotionMinOutput = -1.00;
+    private final double kSmartMotionMaxVel = 150;
+    private final double kSmartMotionMaxAccel = 100;
     private final double kAllowedError = 3;
 
     private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
     private TrapezoidProfile.State _goal = new TrapezoidProfile.State();
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
+    private Timer _deployTimer = new Timer();
 
     PlacerDowner() {
         _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
@@ -155,18 +157,21 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (_currentState == PlacerDownerState.DEPLOY) {
-            setWantedState(PlacerDownerState.HOLD_POSITION);
+        if (_deployTimer.hasElapsed(1)) {
+            _deployTimer.stop();
+            handleElevatorPosition();
         }
     }
 
     private void retract() {
-        _tilter.set(Value.kForward);
-        _pivoter.set(Value.kForward);
+        handleElevatorPosition();
 
-        if (_currentState == PlacerDownerState.STOW) {
+        if (_deployTimer.hasElapsed(1)) {
+            _tilter.set(Value.kForward);
+            _pivoter.set(Value.kForward);
+
             setWantedState(PlacerDownerState.HOLD_POSITION);
-        }
+        }        
     }
 
     private void holdPosition() {
@@ -295,9 +300,20 @@ public class PlacerDowner extends Subsystem {
                     return;
                 }
                 break;
+            case DEPLOY:
+                if (wantedState == PlacerDownerState.DEPLOY) {
+                    return;
+                }
+                break;
             default:
                 break;
         }
+
+        if (wantedState == PlacerDownerState.DEPLOY || wantedState == PlacerDownerState.STOW){
+            _deployTimer.reset();
+            _deployTimer.start();
+        }
+        
         _currentState = wantedState;
     }
 }
