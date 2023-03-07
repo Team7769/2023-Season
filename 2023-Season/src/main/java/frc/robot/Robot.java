@@ -998,6 +998,11 @@ public class Robot extends TimedRobot {
       rotationZ = rotationZ / 1.25;
     }
 
+    if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
+      translationX /= 2;
+      translationY /= 2;
+    }
+
     if (_driverController.getLeftBumperPressed()) {
       // Robot orientated speed
       _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
