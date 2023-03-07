@@ -37,6 +37,7 @@ public class Drivetrain extends Subsystem {
 
     //private SwerveDriveKinematics _kinematics;
     private Gyro _gyro;
+    private AHRS _ahrs;
 
     private SwerveModule _frontLeftModule;
     private SwerveModule _frontRightModule;
@@ -54,7 +55,9 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putData("Field", m_field);
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
 
-        _gyro = new AHRS(Port.kMXP);
+        _ahrs = new AHRS(Port.kMXP);
+        _gyro = _ahrs;
+
         //_gyro = new AHRS(SerialPort.Port.kUSB);
 
         _frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
@@ -154,6 +157,7 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
         SmartDashboard.putNumber("drivetrainGyroOffset", _gyroOffset);
+        SmartDashboard.putNumber("drivetrainPitch", _ahrs.getRoll());
 
         SmartDashboard.putNumber("drivetrainOdometryX", _odometry.getPoseMeters().getX());
         SmartDashboard.putNumber("drivetrainOdometryY", _odometry.getPoseMeters().getY());
@@ -202,6 +206,9 @@ public class Drivetrain extends Subsystem {
             new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         });
+    }
+    public boolean isLevel() {
+        return Math.abs(_ahrs.getRoll()) <= 13;
     }
 
     public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {

@@ -722,13 +722,13 @@ public class Robot extends TimedRobot {
         _autonomousCase++;
         break;
       case 1:
-        if (_placerDowner.atSetpoint()) {          
-          _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
-
-          if (_autoLoops > 25) {
+        if (_placerDowner.atSetpoint()) {
+          if (_autoLoops > 35) {
             _placerDowner.setWantedState(PlacerDownerState.EJECT);
             _autoLoops = 0;
             _autonomousCase++;
+          } else if (_autoLoops <= 20 ){
+            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
           }
         } else {
           _autoLoops = 0;
@@ -738,23 +738,26 @@ public class Robot extends TimedRobot {
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
 
         if (_autoLoops > 25) {
+          _drivetrain.resetWallFacingController();
           _placerDowner.setWantedState(PlacerDownerState.RESET);
           _autoLoops = 0;
           _autonomousCase++;
         }
         break;
       case 3:
-        if (_autoLoops > 150) {
+        if (_autoLoops > 100) {
           _autoLoops = 0;
           _pathFollower.startPath();
           _autonomousCase++;
+        } else if (_autoLoops <= 25) {
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
         } else {
-          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+          _drivetrain.fieldOrientedDrive(0, 0, 0);
         }
         break;
       case 4:
         _drivetrain.followTrajectory();
-        if (_autoLoops > 75 && _autoLoops <= 80) {
+        if (_autoLoops > 55 && _autoLoops <= 60) {
           _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
         }
 
@@ -767,15 +770,27 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        _pathFollower.startPath();
-        _autonomousCase++;
+        if (_autoLoops > 50) {
+          _pathFollower.startPath();
+          _autonomousCase++;
+          _autoLoops = 0;
+        }
         break;
       case 6:
         _drivetrain.followTrajectory();
 
         if (_pathFollower.isPathFinished()) {
+          _drivetrain.resetWallFacingController();
           _drivetrain.robotOrientedDrive(0, 0, 0);
           _autonomousCase++;
+          _autoLoops = 0;
+        }
+        break;
+      case 7:
+        if (!_drivetrain.isLevel() || _autoLoops <= 100) {
+          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
+        } else {
+          _drivetrain.robotOrientedDrive(0, 0, 0.10);
         }
         break;
       default:
