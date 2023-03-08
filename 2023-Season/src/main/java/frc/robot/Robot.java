@@ -717,26 +717,36 @@ public class Robot extends TimedRobot {
   public void loadSidePickupBalance() {
     switch (_autonomousCase) {
       case 0:
+        // Init Elevator 
         _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         _autonomousCase++;
         break;
       case 1:
+        // If elevator is fully extended.
         if (_placerDowner.atSetpoint()) {
-          if (_autoLoops > 35) {
+
+          // Wait 1 second then stop and eject.
+          if (_autoLoops >= 50) {            
+            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
             _placerDowner.setWantedState(PlacerDownerState.EJECT);
             _autoLoops = 0;
             _autonomousCase++;
-          } else if (_autoLoops <= 20 ){
+          } else if (_autoLoops >= 25 && _autoLoops < 50){
+            // Wait .5 seconds, then drive for .5 seconds
             _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
           }
         } else {
+          // Don't move until the elevator is extended.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
           _autoLoops = 0;
         }
         break;
       case 2:
+        // Stop
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
 
+        // Wait .5 seconds, then start the elevator reset.
         if (_autoLoops > 25) {
           _drivetrain.resetWallFacingController();
           _placerDowner.setWantedState(PlacerDownerState.RESET);
@@ -745,23 +755,30 @@ public class Robot extends TimedRobot {
         }
         break;
       case 3:
+        
         if (_autoLoops > 100) {
+          // Start path to cone/cube after 2 full seconds
           _autoLoops = 0;
           _pathFollower.startPath();
           _autonomousCase++;
         } else if (_autoLoops <= 25) {
+          // Back away for .5 seconds.
           _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
         } else {
+          // Stop for 1.5 seconds
           _drivetrain.fieldOrientedDrive(0, 0, 0);
         }
         break;
       case 4:
         _drivetrain.followTrajectory();
         if (_autoLoops > 55 && _autoLoops <= 60) {
+          // After around 1 second drop the collector
           _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
         }
 
         if (_pathFollower.isPathFinished()) {
+          // Set next path, prepare for pickup
+          _drivetrain.resetWallFacingController();
           _drivetrain.robotOrientedDrive(0, 0, 0);
           _autoLoops = 0;
           _pathFollower.setNextPath();
@@ -769,17 +786,23 @@ public class Robot extends TimedRobot {
         }
         break;
       case 5:
-        _drivetrain.robotOrientedDrive(0, 0, 0);
-        if (_autoLoops > 50) {
+        if (_autoLoops > 75) {
+          // Start the path to the charge station.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
           _pathFollower.startPath();
           _autonomousCase++;
           _autoLoops = 0;
+        } else {
+          // Drive slowly towards the gamepiece for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
         }
         break;
       case 6:
+        // Follow path to charge station.
         _drivetrain.followTrajectory();
 
         if (_pathFollower.isPathFinished()) {
+          // Prepare to balance walk
           _drivetrain.resetWallFacingController();
           _drivetrain.robotOrientedDrive(0, 0, 0);
           _autonomousCase++;
@@ -787,9 +810,11 @@ public class Robot extends TimedRobot {
         }
         break;
       case 7:
+        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
         if (!_drivetrain.isLevel() || _autoLoops <= 100) {
           _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
         } else {
+          // Otherwise stop and turn the wheels very slightly to lock position.
           _drivetrain.robotOrientedDrive(0, 0, 0.10);
         }
         break;
@@ -841,7 +866,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
-    _drivetrain.logPose();
+    // _drivetrain.logPose();
     _drivetrain.robotOrientedDrive(0, 0, 0);
     _placerDowner.handleElevatorReset();
   }
@@ -918,27 +943,20 @@ public class Robot extends TimedRobot {
       _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
     } else if (_operatorController.getXButton()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-      //_placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
     } else if (_operatorController.getBButton()) {
       _placerDowner.setWantedState(PlacerDownerState.STOW);
-      //_placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
-    } 
-    // else if (_operatorController.getAButton()) {
-    //   _placerDowner.setWantedState(PlacerDownerState.STOW);
-    //   //_placerDowner.setElevatorSetpoint(ElevatorPosition.HUNGRY_HOWIES);
-    //   _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
-    // }
+    } else if (_operatorController.getAButton()) {
+      // Human Player Pickup mode
+      _placerDowner.setWantedState(PlacerDownerState.STOW);
+      _pickerUpper.setWantedState(PickerUpperState.FRESH_FROM_THE_OVEN);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.FRESH_FROM_THE_OVEN);
+    }
     
 
     var eject = Math.abs(_driverController.getRightTriggerAxis()) > 0.25;
 
-    // if (_operatorController.getRightBumperPressed()) {
-    //   _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-    // } else if (_operatorController.getLeftBumperPressed()) {
-    //   _placerDowner.setWantedState(PlacerDownerState.STOW);
-    // } else 
     if (eject) {
       _placerDowner.setWantedState(PlacerDownerState.EJECT);
     } else if (_ejectHeld) {
@@ -958,13 +976,11 @@ public class Robot extends TimedRobot {
     } else if (_pickerUpper.isPizzaReady()) {
       _placerDowner.setWantedState(PlacerDownerState.INTAKE);
       _pickerUpper.setWantedState(PickerUpperState.DELIVERY);
-    } else {
+    } else if (!_pickerUpper.isBusy()) {
+      // IsBusy covers the boxing process or if we are trying Human Player
       _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
     }
 
-    // Logic for after picker upper puts game piece in position
-
-    //_gamePieceManager.handle();
     _pickerUpper.handleCurrentState();
     _placerDowner.handleCurrentState();
   }
@@ -978,7 +994,7 @@ public class Robot extends TimedRobot {
         Constants.RotAxis_outputTable,
         _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
 
-    if (_driverController.getAButtonPressed() || _driverController.getYButtonPressed() || _driverController.getXButtonPressed() || _driverController.getBButtonPressed()){
+    if (_driverController.getAButtonPressed() || _driverController.getYButtonPressed() || _driverController.getXButtonPressed() || _driverController.getBButtonPressed() || _driverController.getLeftBumperPressed() || _driverController.getRightBumperPressed()){
       _drivetrain.resetWallFacingController();
     }
 
@@ -1003,13 +1019,19 @@ public class Robot extends TimedRobot {
       translationY /= 4;
     }
 
-    if (_driverController.getLeftBumperPressed()) {
-      // Robot orientated speed
-      _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
-    } else {
-      // Field orientated speed
-      _drivetrain.fieldOrientedDrive(translationX / 1.3, translationY / 1.3, rotationZ);
+    // Strafing for scoring.
+    if (_driverController.getLeftBumper()) {
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+      translationX = 0;
+      translationY = -0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    } else if (_driverController.getRightBumper()) {
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+      translationX = 0;
+      translationY = 0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
     }
+
+    // Field orientated speed
+    _drivetrain.fieldOrientedDrive(translationX / 1.3, translationY / 1.3, rotationZ);
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);
     SmartDashboard.putNumber("driveControllerTranslationY", translationY);

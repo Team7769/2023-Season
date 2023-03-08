@@ -15,6 +15,11 @@ public final class ElevatorPosition {
     public static final double SHIELDS = 66;
 
     /**
+     * Human Player drop.
+     */
+    public static final double FRESH_FROM_THE_OVEN = 43.5;
+
+    /**
     * It's not delivery, it's Digiorno.
     */
     public static final double DIGIORNO = 23.5;
