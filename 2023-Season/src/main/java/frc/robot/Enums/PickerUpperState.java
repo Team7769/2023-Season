@@ -19,6 +19,11 @@ public enum PickerUpperState {
     PIZZAS_READY,
 
     /**
+     * Human player.
+     */
+    FRESH_FROM_THE_OVEN,
+
+    /**
      * Delivery
      */
     DELIVERY,

@@ -179,14 +179,14 @@ public class PathFollower {
     public SwerveModuleState[] getPathTarget(Pose2d currentPose) {
         PathPlannerState desiredState = (PathPlannerState) _currentPath.sample(_timer.get());
 
-        SmartDashboard.putNumber("desiredX", desiredState.poseMeters.getX());
-        SmartDashboard.putNumber("desiredY", desiredState.poseMeters.getY());
-        SmartDashboard.putNumber("desiredZ", desiredState.poseMeters.getRotation().getDegrees());
-        SmartDashboard.putNumber("desiredHolonomic", desiredState.holonomicRotation.getDegrees());
+        // SmartDashboard.putNumber("desiredX", desiredState.poseMeters.getX());
+        // SmartDashboard.putNumber("desiredY", desiredState.poseMeters.getY());
+        // SmartDashboard.putNumber("desiredZ", desiredState.poseMeters.getRotation().getDegrees());
+        // SmartDashboard.putNumber("desiredHolonomic", desiredState.holonomicRotation.getDegrees());
 
-        PathPlannerServer.sendPathFollowingData(
-        new Pose2d(desiredState.poseMeters.getTranslation(), desiredState.holonomicRotation),
-        currentPose);
+        // PathPlannerServer.sendPathFollowingData(
+        // new Pose2d(desiredState.poseMeters.getTranslation(), desiredState.holonomicRotation),
+        // currentPose);
 
         var outputModuleStates = _controller.calculate(currentPose, desiredState);
         return Constants._kinematics.toSwerveModuleStates(outputModuleStates);

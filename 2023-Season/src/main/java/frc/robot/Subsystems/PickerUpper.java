@@ -150,6 +150,13 @@ public class PickerUpper extends Subsystem {
         up();
     }
 
+    private void fresh() {
+        up();
+        open();
+        _leftMotor.set(_collectSpeed);
+        _rightMotor.set(_collectSpeed);
+    }
+
     public void pizzasReady(){
         stop();
     }
@@ -177,14 +184,27 @@ public class PickerUpper extends Subsystem {
         _boxer.set(_manualBox);
     }
     
-    // To be added when we get sensor  
     public boolean isPizzaReady() {
-       //return _collectorSensor.isBlocked() && _currentState == PickerUpperState.PIZZAS_READY;
-       return _currentState == PickerUpperState.PIZZAS_READY || _currentState == PickerUpperState.DELIVERY;
+       switch (_currentState) {
+            case PIZZAS_READY:
+            case DELIVERY:
+                return true;
+            case FRESH_FROM_THE_OVEN:
+                if (_collectorSensor.isBlocked()) {
+                    return true;
+                }
+                return false;
+            default:
+                return false;
+       }
     }
 
     public boolean isBoxing() {
         return _currentState == PickerUpperState.BOX_IT;
+    }
+
+    public boolean isBusy() {
+        return isBoxing() || _currentState == PickerUpperState.FRESH_FROM_THE_OVEN;
     }
 
     public void handleCurrentState() {
@@ -197,6 +217,9 @@ public class PickerUpper extends Subsystem {
                 break;
             case BOX_IT:
                 boxIt();
+                break;
+            case FRESH_FROM_THE_OVEN:
+                fresh();
                 break;
             case PIZZAS_READY:
                 pizzasReady();
