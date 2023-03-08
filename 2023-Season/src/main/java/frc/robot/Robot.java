@@ -999,8 +999,8 @@ public class Robot extends TimedRobot {
     }
 
     if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
-      translationX /= 2;
-      translationY /= 2;
+      translationX /= 4;
+      translationY /= 4;
     }
 
     if (_driverController.getLeftBumperPressed()) {
@@ -1008,7 +1008,7 @@ public class Robot extends TimedRobot {
       _drivetrain.robotOrientedDrive(translationX, translationY, rotationZ);
     } else {
       // Field orientated speed
-      _drivetrain.fieldOrientedDrive(translationX / 2, translationY / 2, rotationZ);
+      _drivetrain.fieldOrientedDrive(translationX / 1.3, translationY / 1.3, rotationZ);
     }
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);

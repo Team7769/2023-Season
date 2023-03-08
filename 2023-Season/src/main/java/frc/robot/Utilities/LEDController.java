@@ -3,7 +3,8 @@ package frc.robot.Utilities;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class LEDController {
-    
+    private static Spark _bellyPanBlinkin;
+    private static Spark _elevatorBlinkin;
     public static LEDController _instance;
 
     public final double kBlueHeartBeat = -.23;
@@ -29,6 +30,21 @@ public class LEDController {
             _instance = new LEDController();
         }
         return _instance;
+    }
+
+    public void setLowerLED(double value)
+    {
+        _bellyPanBlinkin.set(value);
+    }
+
+    public void setUpperLED(double value)
+    {
+        _elevatorBlinkin.set(value);
+    }
+
+    public void setTeleopIdle()
+    {
+        _elevatorBlinkin.set(sinelonCustom);
     }
 
 }
