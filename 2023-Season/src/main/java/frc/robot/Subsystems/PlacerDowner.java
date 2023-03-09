@@ -43,6 +43,7 @@ public class PlacerDowner extends Subsystem {
     private Value _manualTiltValue = Value.kOff;
 
     private final double _placerDownerSpeed = 0.25;
+    private final double _placerDownerEjectSpeed = .35;
     private final double _placerDownerHoldSpeed = 0.10;
 
     private final double kSmartMotionP = 0.015;
@@ -146,7 +147,7 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void eject() {
-        _theClaw.set(-_placerDownerSpeed);
+        _theClaw.set(-_placerDownerEjectSpeed);
     }
 
     private void stop() {
@@ -212,6 +213,14 @@ public class PlacerDowner extends Subsystem {
         _theClaw.set(_manualClawSpeed);
         _pivoter.set(_manualPivotValue);
         _tilter.set(_manualTiltValue);
+    }
+
+    private void flipoff() {
+        handleElevatorPosition();
+        if (atSetpoint()) {
+            _pivoter.set(Value.kReverse);
+            setWantedState(PlacerDownerState.HOLD_POSITION);
+        }
     }
 
     public void setElevatorSetpoint(double position) {
@@ -285,6 +294,9 @@ public class PlacerDowner extends Subsystem {
                 break;
             case YEEHAW:
                 yeehaw();
+                break;
+            case LOW_SCORE:
+                flipoff();
                 break;
             case STOP:
             default:

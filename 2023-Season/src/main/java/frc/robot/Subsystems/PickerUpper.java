@@ -250,6 +250,10 @@ public class PickerUpper extends Subsystem {
                 break;
             case PIZZAS_READY:
             case DELIVERY:
+                if (_currentState == PickerUpperState.FRESH_FROM_THE_OVEN) {
+                    _boxItTimer.reset();
+                    _boxItTimer.start();
+                }
                 break;
             default:
                 if (isBoxing()){

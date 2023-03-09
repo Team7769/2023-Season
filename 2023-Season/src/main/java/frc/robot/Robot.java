@@ -732,7 +732,7 @@ public class Robot extends TimedRobot {
             _placerDowner.setWantedState(PlacerDownerState.EJECT);
             _autoLoops = 0;
             _autonomousCase++;
-          } else if (_autoLoops >= 25 && _autoLoops < 50){
+          } else if (_autoLoops >= 15 && _autoLoops < 50){
             // Wait .5 seconds, then drive for .5 seconds
             _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
           }
@@ -786,7 +786,7 @@ public class Robot extends TimedRobot {
         }
         break;
       case 5:
-        if (_autoLoops > 75) {
+        if (_autoLoops > 40) {
           // Start the path to the charge station.
           _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
           _pathFollower.startPath();
@@ -853,7 +853,7 @@ public class Robot extends TimedRobot {
     teleopDrive();
     teleopGamePieceManagement();
 
-    if (_driverController.getStartButtonPressed() && _driverController.getRightBumperPressed()) {
+    if (_driverController.getStartButtonPressed()) {
       _drivetrain.resetGyro();
     }
   }
@@ -952,6 +952,9 @@ public class Robot extends TimedRobot {
       _placerDowner.setWantedState(PlacerDownerState.STOW);
       _pickerUpper.setWantedState(PickerUpperState.FRESH_FROM_THE_OVEN);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.FRESH_FROM_THE_OVEN);
+    } else if (Math.abs(_operatorController.getRightTriggerAxis()) >= 0.25) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
+      _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
     }
     
 
@@ -1023,11 +1026,11 @@ public class Robot extends TimedRobot {
     if (_driverController.getLeftBumper()) {
       rotationZ = _drivetrain.getWallRotationTarget(180);
       translationX = 0;
-      translationY = -0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+      translationY = 0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
     } else if (_driverController.getRightBumper()) {
       rotationZ = _drivetrain.getWallRotationTarget(180);
       translationX = 0;
-      translationY = 0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+      translationY = -0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
     }
 
     // Field orientated speed
