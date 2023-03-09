@@ -8,4 +8,5 @@ public final class Automode {
     public static final int LOADING_SIDE_LINK_NOBALANCE = 4;
     public static final int LOADING_SIDE_LINK_CONE_NOBALANCE = 5;
     public static final int LOADING_SIDE_PICKUP_BALANCE = 6;
+    public static final int MIDDLE_YEET_BALANCE = 7;
 }

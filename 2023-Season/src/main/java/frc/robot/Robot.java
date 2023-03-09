@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
@@ -30,6 +31,7 @@ import frc.robot.Subsystems.PlacerDowner;
 import frc.robot.Subsystems.PickerUpper;
 import frc.robot.Enums.PickerUpperState;
 import frc.robot.Subsystems.Subsystem;
+import frc.robot.Utilities.LEDController;
 import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
 import frc.robot.util.OneDimensionalLookup;
@@ -56,6 +58,7 @@ public class Robot extends TimedRobot {
   private static PlacerDowner _placerDowner;
   private static PickerUpper _pickerUpper;
   private static PathFollower _pathFollower;
+  private static LEDController _ledController;
   private XboxController _driverController;
   private XboxController _operatorController;
   private int _selectedAutoMode;
@@ -84,8 +87,10 @@ public class Robot extends TimedRobot {
     _limelight = Limelight.getInstance();
      _compressor = new Compressor(1, PneumaticsModuleType.REVPH);
      _compressor.enableDigital();
-    PathPlannerServer.startServer(5811);
+    //PathPlannerServer.startServer(5811);
     _selectedAutoMode = 0;
+
+    _ledController = LEDController.GetInstance();
 
     _autoChooser.setDefaultOption("Do Nothing", 0);
     _autoChooser.addOption("Loading Side Link + Balance", Automode.LOADING_SIDE_LINK_BALANCE);
@@ -94,6 +99,7 @@ public class Robot extends TimedRobot {
     _autoChooser.addOption("Loading Side Link", Automode.LOADING_SIDE_LINK_NOBALANCE);
     _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK_CONE_NOBALANCE);
     _autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
+    _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
     SmartDashboard.putData(_autoChooser);
   }
@@ -131,8 +137,8 @@ public class Robot extends TimedRobot {
         _pathFollower.setLoadingSideLinkConeNoBalance();
         break;
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
+      case Automode.MIDDLE_YEET_BALANCE:
         _pathFollower.setLoadsidePickupBalance();
-        break;
       default:
         break;
     }
@@ -146,6 +152,7 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_LINK_NOBALANCE:
       case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
+      case Automode.MIDDLE_YEET_BALANCE:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
@@ -176,6 +183,9 @@ public class Robot extends TimedRobot {
         break;
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
         loadSidePickupBalance();
+        break;
+      case Automode.MIDDLE_YEET_BALANCE:
+        yeet();
         break;
       default:
         break;
@@ -713,7 +723,6 @@ public class Robot extends TimedRobot {
     }
   }
 
-  
   public void loadSidePickupBalance() {
     switch (_autonomousCase) {
       case 0:
@@ -815,7 +824,98 @@ public class Robot extends TimedRobot {
           _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
         } else {
           // Otherwise stop and turn the wheels very slightly to lock position.
+          
           _drivetrain.robotOrientedDrive(0, 0, 0.10);
+          if (DriverStation.getAlliance() == Alliance.Red) {
+            _ledController.setUpperLED(_ledController.kStrobeRed);
+          } else {
+            _ledController.setUpperLED(_ledController.kStrobeBlue);
+          }
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void yeet() {
+    switch (_autonomousCase) {
+      case 0:
+        // Init Elevator 
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        _autoLoops = 0;
+        _autonomousCase++;
+        break;
+      case 1:
+        // If elevator is fully extended.
+        if (_placerDowner.atSetpoint()) {
+          // Wait 1 second then stop and eject.
+          if (_autoLoops >= 50) {            
+            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          } else if (_autoLoops >= 15 && _autoLoops < 50){
+            // Wait .5 seconds, then drive for .5 seconds
+            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+          }
+        } else {
+          // Don't move until the elevator is extended.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _autoLoops = 0;
+        }
+        break;
+      case 2:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
+        // Wait .5 seconds, then start the elevator reset.
+        if (_autoLoops > 25) {
+          _drivetrain.resetWallFacingController();
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        if (_autoLoops > 100) {
+          // Start path to cone/cube after 2 full seconds
+          _autoLoops = 0;
+          _drivetrain.resetWallFacingController();
+          _autonomousCase++;
+        } else if (_autoLoops <= 25) {
+          // Back away for .5 seconds.
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+        } else {
+          // Stop for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0, 0, 0);
+        }
+        break;
+      case 4:
+        _drivetrain.fieldOrientedDrive(0.25 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+
+        if (_autoLoops > 200) {
+          // Set next path, prepare for pickup
+          _drivetrain.resetWallFacingController();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
+        if (!_drivetrain.isLevel() || _autoLoops <= 150) {
+          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+        } else {
+          // Otherwise stop and turn the wheels very slightly to lock position.
+          _drivetrain.robotOrientedDrive(0, 0, 0.10);
+          if (DriverStation.getAlliance() == Alliance.Red) {
+            _ledController.setUpperLED(_ledController.kStrobeRed);
+          } else {
+            _ledController.setUpperLED(_ledController.kStrobeBlue);
+          }
         }
         break;
       default:
@@ -845,7 +945,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-
+    _ledController.setLowerLED(_ledController.bpmCustom);
+    _ledController.setUpperLED(_ledController.kHotPink);
   }
 
   @Override
@@ -938,12 +1039,21 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopGamePieceManagement() {
+    if ( _operatorController.getStartButton() ) {
+      _ledController.setUpperLED(_ledController.kGold);
+    }else if ( _operatorController.getBackButton() ) {
+      _ledController.setUpperLED(_ledController.kViolet);
+    }
+
     if (_operatorController.getYButton()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+
+      _ledController.setLowerLED(_ledController.kStrobeRed);
     } else if (_operatorController.getXButton()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+      _ledController.setLowerLED(_ledController.kStrobeBlue);
     } else if (_operatorController.getBButton()) {
       _placerDowner.setWantedState(PlacerDownerState.STOW);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
@@ -962,8 +1072,11 @@ public class Robot extends TimedRobot {
 
     if (eject) {
       _placerDowner.setWantedState(PlacerDownerState.EJECT);
+
+      _ledController.setLowerLED(_ledController.kFireMedium);
     } else if (_ejectHeld) {
       _placerDowner.setWantedState(PlacerDownerState.RESET);
+      _ledController.setLowerLED(_ledController.kHotPink);
     }
 
     _ejectHeld = eject;

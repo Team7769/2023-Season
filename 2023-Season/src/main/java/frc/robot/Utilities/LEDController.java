@@ -22,6 +22,12 @@ public class LEDController {
     public final double kBlueStrobe = -0.09;
     public final double kBlueShot = -0.83;
     public final double kConfetti = -0.87;
+    public final double kViolet = 0.91;
+    public final double kBlueViolet = 0.89;
+    public final double kHotPink = 0.57;
+    public final double kGold = 0.67;
+    public final double kStrobeRed = -0.11;
+    public final double kStrobeBlue = -0.09;
 
     public static LEDController GetInstance()
     {
