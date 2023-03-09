@@ -32,6 +32,12 @@ public class LEDController {
     public final double kStrobeRed = -0.11;
     public final double kStrobeBlue = -0.09;
 
+    public LEDController() {
+        _bellyPanBlinkin = new Spark(1);
+        _elevatorBlinkin = new Spark(0);
+    }
+
+
     public static LEDController GetInstance()
     {
         if (_instance == null)
@@ -48,7 +54,7 @@ public class LEDController {
 
     public void setUpperLED(double value)
     {
-        _elevatorBlinkin.set(value);
+       _elevatorBlinkin.set(value);
     }
 
     public void setTeleopIdle()
