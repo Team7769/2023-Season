@@ -2,6 +2,9 @@ package frc.robot.Utilities;
 
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+
 public class LEDController {
     private static Spark _bellyPanBlinkin;
     private static Spark _elevatorBlinkin;
@@ -51,6 +54,50 @@ public class LEDController {
     public void setTeleopIdle()
     {
         _elevatorBlinkin.set(sinelonCustom);
+    }
+
+    public void changeToAlliance() 
+    {
+        setUpperLED(
+            DriverStation.getAlliance() == Alliance.Red ? kStrobeRed : kStrobeBlue
+        );
+
+    }
+
+    public void eject() 
+    {
+        setLowerLED(kFireMedium);
+    }
+
+    public void ejectHeld()
+    {
+        setLowerLED(kHotPink);
+    }
+
+    public void startHit()
+    {
+        setUpperLED(kGold);
+    }
+
+    public void backHit()
+    {
+        setUpperLED(kViolet);
+    }
+
+    public void yHit()
+    {
+        setLowerLED(kStrobeRed);
+    }
+
+    public void xHit()
+    {
+        setLowerLED(kStrobeBlue);
+    }
+
+    public void tellopInit()
+    {
+        setLowerLED(bpmCustom);
+        setUpperLED(kHotPink);
     }
 
 }

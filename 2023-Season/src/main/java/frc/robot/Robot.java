@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Automode;
@@ -826,11 +825,9 @@ public class Robot extends TimedRobot {
           // Otherwise stop and turn the wheels very slightly to lock position.
           
           _drivetrain.robotOrientedDrive(0, 0, 0.10);
-          if (DriverStation.getAlliance() == Alliance.Red) {
-            _ledController.setUpperLED(_ledController.kStrobeRed);
-          } else {
-            _ledController.setUpperLED(_ledController.kStrobeBlue);
-          }
+
+          _ledController.changeToAlliance();
+
         }
         break;
       default:
@@ -911,11 +908,8 @@ public class Robot extends TimedRobot {
         } else {
           // Otherwise stop and turn the wheels very slightly to lock position.
           _drivetrain.robotOrientedDrive(0, 0, 0.10);
-          if (DriverStation.getAlliance() == Alliance.Red) {
-            _ledController.setUpperLED(_ledController.kStrobeRed);
-          } else {
-            _ledController.setUpperLED(_ledController.kStrobeBlue);
-          }
+
+          _ledController.changeToAlliance();
         }
         break;
       default:
@@ -945,8 +939,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    _ledController.setLowerLED(_ledController.bpmCustom);
-    _ledController.setUpperLED(_ledController.kHotPink);
+    _ledController.tellopInit();
   }
 
   @Override
@@ -1040,20 +1033,20 @@ public class Robot extends TimedRobot {
 
   private void teleopGamePieceManagement() {
     if ( _operatorController.getStartButton() ) {
-      _ledController.setUpperLED(_ledController.kGold);
+      _ledController.startHit();
     }else if ( _operatorController.getBackButton() ) {
-      _ledController.setUpperLED(_ledController.kViolet);
+      _ledController.backHit();
     }
 
     if (_operatorController.getYButton()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
 
-      _ledController.setLowerLED(_ledController.kStrobeRed);
+      _ledController.yHit();
     } else if (_operatorController.getXButton()) {
       _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
-      _ledController.setLowerLED(_ledController.kStrobeBlue);
+      _ledController.xHit();
     } else if (_operatorController.getBButton()) {
       _placerDowner.setWantedState(PlacerDownerState.STOW);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
@@ -1073,10 +1066,10 @@ public class Robot extends TimedRobot {
     if (eject) {
       _placerDowner.setWantedState(PlacerDownerState.EJECT);
 
-      _ledController.setLowerLED(_ledController.kFireMedium);
+      _ledController.eject();
     } else if (_ejectHeld) {
       _placerDowner.setWantedState(PlacerDownerState.RESET);
-      _ledController.setLowerLED(_ledController.kHotPink);
+      _ledController.ejectHeld();
     }
 
     _ejectHeld = eject;
