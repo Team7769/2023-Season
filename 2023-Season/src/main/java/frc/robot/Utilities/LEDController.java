@@ -2,6 +2,9 @@ package frc.robot.Utilities;
 
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+
 public class LEDController {
     private static Spark _bellyPanBlinkin;
     private static Spark _elevatorBlinkin;
@@ -29,6 +32,12 @@ public class LEDController {
     public final double kStrobeRed = -0.11;
     public final double kStrobeBlue = -0.09;
 
+    public LEDController() {
+        _bellyPanBlinkin = new Spark(1);
+        _elevatorBlinkin = new Spark(0);
+    }
+
+
     public static LEDController GetInstance()
     {
         if (_instance == null)
@@ -45,12 +54,56 @@ public class LEDController {
 
     public void setUpperLED(double value)
     {
-        _elevatorBlinkin.set(value);
+       _elevatorBlinkin.set(value);
     }
 
     public void setTeleopIdle()
     {
         _elevatorBlinkin.set(sinelonCustom);
+    }
+
+    public void changeToAlliance() 
+    {
+        setUpperLED(
+            DriverStation.getAlliance() == Alliance.Red ? kStrobeRed : kStrobeBlue
+        );
+
+    }
+
+    public void eject() 
+    {
+        setLowerLED(kFireMedium);
+    }
+
+    public void ejectHeld()
+    {
+        setLowerLED(kHotPink);
+    }
+
+    public void startHit()
+    {
+        setUpperLED(kGold);
+    }
+
+    public void backHit()
+    {
+        setUpperLED(kViolet);
+    }
+
+    public void yHit()
+    {
+        setLowerLED(kStrobeRed);
+    }
+
+    public void xHit()
+    {
+        setLowerLED(kStrobeBlue);
+    }
+
+    public void tellopInit()
+    {
+        setLowerLED(bpmCustom);
+        setUpperLED(kHotPink);
     }
 
 }
