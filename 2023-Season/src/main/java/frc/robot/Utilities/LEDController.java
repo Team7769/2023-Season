@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 public class LEDController {
     private static Spark _bellyPanBlinkin;
     private static Spark _elevatorBlinkin;
+    private Alliance _alliance;
     public static LEDController _instance;
 
     public final double kBlueHeartBeat = -.23;
@@ -35,6 +36,7 @@ public class LEDController {
     public LEDController() {
         _bellyPanBlinkin = new Spark(1);
         _elevatorBlinkin = new Spark(0);
+        _alliance = Alliance.Invalid;
     }
 
 
@@ -45,6 +47,13 @@ public class LEDController {
             _instance = new LEDController();
         }
         return _instance;
+    }
+
+    public void setAlliance() {
+        // Only set alliance if the 
+        if (_alliance == Alliance.Invalid) {
+            _alliance = DriverStation.getAlliance();
+        }
     }
 
     public void setLowerLED(double value)
@@ -65,19 +74,18 @@ public class LEDController {
     public void changeToAlliance() 
     {
         setUpperLED(
-            DriverStation.getAlliance() == Alliance.Red ? kStrobeRed : kStrobeBlue
+            _alliance == Alliance.Red ? kStrobeRed : kStrobeBlue
         );
-
     }
 
     public void eject() 
     {
-        setLowerLED(kFireMedium);
+        setUpperLED(kFireMedium);
     }
 
     public void ejectHeld()
     {
-        setLowerLED(kHotPink);
+        setUpperLED(kHotPink);
     }
 
     public void startHit()
@@ -92,15 +100,15 @@ public class LEDController {
 
     public void yHit()
     {
-        setLowerLED(kStrobeRed);
+        setUpperLED(kStrobeRed);
     }
 
     public void xHit()
     {
-        setLowerLED(kStrobeBlue);
+        setUpperLED(kStrobeBlue);
     }
 
-    public void tellopInit()
+    public void teleopInit()
     {
         setLowerLED(bpmCustom);
         setUpperLED(kHotPink);

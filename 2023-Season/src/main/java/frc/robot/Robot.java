@@ -92,11 +92,11 @@ public class Robot extends TimedRobot {
     _ledController = LEDController.GetInstance();
 
     _autoChooser.setDefaultOption("Do Nothing", 0);
-    _autoChooser.addOption("Loading Side Link + Balance", Automode.LOADING_SIDE_LINK_BALANCE);
-    _autoChooser.addOption("Cable Side Two Cone + Balance", Automode.CABLE_SIDE_TWO_CONE_BALANCE);
-    _autoChooser.addOption("Cable Side Link + Balance", Automode.CABLE_SIDE_LINK_BALANCE);
-    _autoChooser.addOption("Loading Side Link", Automode.LOADING_SIDE_LINK_NOBALANCE);
-    _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK_CONE_NOBALANCE);
+    // _autoChooser.addOption("Loading Side Link + Balance", Automode.LOADING_SIDE_LINK_BALANCE);
+    // _autoChooser.addOption("Cable Side Two Cone + Balance", Automode.CABLE_SIDE_TWO_CONE_BALANCE);
+    // _autoChooser.addOption("Cable Side Link + Balance", Automode.CABLE_SIDE_LINK_BALANCE);
+    // _autoChooser.addOption("Loading Side Link", Automode.LOADING_SIDE_LINK_NOBALANCE);
+    // _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK_CONE_NOBALANCE);
     _autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
     _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
@@ -143,7 +143,6 @@ public class Robot extends TimedRobot {
     }
 
     _drivetrain.resetOdometry();
-    SmartDashboard.putString("alliance", DriverStation.getAlliance().name());
     switch (_selectedAutoMode) {
       case Automode.LOADING_SIDE_LINK_BALANCE:
       case Automode.CABLE_SIDE_LINK_BALANCE:
@@ -939,7 +938,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    _ledController.tellopInit();
+    _ledController.teleopInit();
   }
 
   @Override
@@ -963,6 +962,7 @@ public class Robot extends TimedRobot {
     // _drivetrain.logPose();
     _drivetrain.robotOrientedDrive(0, 0, 0);
     _placerDowner.handleElevatorReset();
+    _ledController.setAlliance();
   }
 
   @Override
