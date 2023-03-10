@@ -16,6 +16,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.ADIS16448_IMU.CalibrationTime;
+import edu.wpi.first.wpilibj.ADIS16448_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -33,6 +37,7 @@ public class Drivetrain extends Subsystem {
 
     //private SwerveDriveKinematics _kinematics;
     private Gyro _gyro;
+    private AHRS _ahrs;
 
     private SwerveModule _frontLeftModule;
     private SwerveModule _frontRightModule;
@@ -50,7 +55,10 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putData("Field", m_field);
         ShuffleboardTab tab = Shuffleboard.getTab("Drivetrain");
 
-        _gyro = new AHRS(Port.kMXP);
+        _ahrs = new AHRS(Port.kMXP);
+        _gyro = _ahrs;
+
+        //_gyro = new AHRS(SerialPort.Port.kUSB);
 
         _frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
             tab.getLayout("Front Left Module", BuiltInLayouts.kList)
@@ -127,18 +135,18 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsWz", _chassisSpeeds.omegaRadiansPerSecond);
 
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleDistance", _frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleVelocity", _frontLeftModule.getDriveVelocity());
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleAngle", Math.toDegrees(_frontLeftModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainFrontRightModuleDistance", _frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
-        SmartDashboard.putNumber("drivetrainFrontRightModuleVelocity", _frontRightModule.getDriveVelocity());
-        SmartDashboard.putNumber("drivetrainFrontRightModuleAngle", Math.toDegrees(_frontRightModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainBackLeftModuleDistance", _backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
-        SmartDashboard.putNumber("drivetrainBackLeftModuleVelocity", _backLeftModule.getDriveVelocity());
-        SmartDashboard.putNumber("drivetrainBackLeftModuleAngle", Math.toDegrees(_backLeftModule.getSteerAngle()));
-        SmartDashboard.putNumber("drivetrainBackRightModuleDistance", _backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
-        SmartDashboard.putNumber("drivetrainBackRightModuleVelocity", _backRightModule.getDriveVelocity());
-        SmartDashboard.putNumber("drivetrainBackRightModuleAngle", Math.toDegrees(_backRightModule.getSteerAngle()));
+        // SmartDashboard.putNumber("drivetrainFrontLeftModuleDistance", _frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
+        // SmartDashboard.putNumber("drivetrainFrontLeftModuleVelocity", _frontLeftModule.getDriveVelocity());
+        // SmartDashboard.putNumber("drivetrainFrontLeftModuleAngle", Math.toDegrees(_frontLeftModule.getSteerAngle()));
+        // SmartDashboard.putNumber("drivetrainFrontRightModuleDistance", _frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
+        // SmartDashboard.putNumber("drivetrainFrontRightModuleVelocity", _frontRightModule.getDriveVelocity());
+        // SmartDashboard.putNumber("drivetrainFrontRightModuleAngle", Math.toDegrees(_frontRightModule.getSteerAngle()));
+        // SmartDashboard.putNumber("drivetrainBackLeftModuleDistance", _backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
+        // SmartDashboard.putNumber("drivetrainBackLeftModuleVelocity", _backLeftModule.getDriveVelocity());
+        // SmartDashboard.putNumber("drivetrainBackLeftModuleAngle", Math.toDegrees(_backLeftModule.getSteerAngle()));
+        // SmartDashboard.putNumber("drivetrainBackRightModuleDistance", _backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR);
+        // SmartDashboard.putNumber("drivetrainBackRightModuleVelocity", _backRightModule.getDriveVelocity());
+        // SmartDashboard.putNumber("drivetrainBackRightModuleAngle", Math.toDegrees(_backRightModule.getSteerAngle()));
 
         SmartDashboard.putNumber("drivetrainFrontLeftModuleTargetSpeed", _moduleStates[0].speedMetersPerSecond);
         SmartDashboard.putNumber("drivetrainFrontLeftModuleTargetAngle", _moduleStates[0].angle.getDegrees());
@@ -149,6 +157,7 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
         SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
         SmartDashboard.putNumber("drivetrainGyroOffset", _gyroOffset);
+        // SmartDashboard.putNumber("drivetrainPitch", _ahrs.getRoll());
 
         SmartDashboard.putNumber("drivetrainOdometryX", _odometry.getPoseMeters().getX());
         SmartDashboard.putNumber("drivetrainOdometryY", _odometry.getPoseMeters().getY());
@@ -157,7 +166,7 @@ public class Drivetrain extends Subsystem {
 
     public void logPose() {
         var currentState = _pathFollower.getInitialState();
-        PathPlannerServer.sendPathFollowingData(currentState.poseMeters, _odometry.getPoseMeters());
+        //PathPlannerServer.sendPathFollowingData(currentState.poseMeters, _odometry.getPoseMeters());
         SmartDashboard.putNumber("drivetrainPathStateInitialPoseX", currentState.poseMeters.getX());
         SmartDashboard.putNumber("drivetrainPathStateInitialPoseY", currentState.poseMeters.getY());
         SmartDashboard.putNumber("drivetrainPathStateInitialPoseZ", currentState.poseMeters.getRotation().getDegrees());
@@ -198,6 +207,9 @@ public class Drivetrain extends Subsystem {
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         });
     }
+    public boolean isLevel() {
+        return Math.abs(_ahrs.getRoll()) <= 13;
+    }
 
     public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {
         _chassisSpeeds = new ChassisSpeeds(translationX, translationY, rotationZ);
@@ -222,14 +234,14 @@ public class Drivetrain extends Subsystem {
         var output = _pathFollower.getPathTarget(_odometry.getPoseMeters());
         SwerveDriveKinematics.desaturateWheelSpeeds(output, Constants.MAX_VELOCITY_METERS_PER_SECOND);
 
-        SmartDashboard.putNumber("drivetrainOutputFrontLeftSpeed", output[0].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainOutputFrontRightSpeed", output[1].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainOutputBackLeftSpeed", output[2].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainOutputBackRightSpeed", output[3].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainOutputFrontLeftAngle", output[0].angle.getDegrees());
-        SmartDashboard.putNumber("drivetrainOutputFrontRightAngle", output[1].angle.getDegrees());
-        SmartDashboard.putNumber("drivetrainOutputBackLeftAngle", output[2].angle.getDegrees());
-        SmartDashboard.putNumber("drivetrainOutputBackRightAngle", output[3].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainOutputFrontLeftSpeed", output[0].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainOutputFrontRightSpeed", output[1].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainOutputBackLeftSpeed", output[2].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainOutputBackRightSpeed", output[3].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainOutputFrontLeftAngle", output[0].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainOutputFrontRightAngle", output[1].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainOutputBackLeftAngle", output[2].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainOutputBackRightAngle", output[3].angle.getDegrees());
         setModuleStates(output);
     }
 
@@ -244,7 +256,7 @@ public class Drivetrain extends Subsystem {
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         }, new Pose2d(pathInitialState.poseMeters.getTranslation(), pathInitialState.holonomicRotation));
 
-        SmartDashboard.putNumber("drivetrainInitialStateRotation", pathInitialState.holonomicRotation.getDegrees());
+        // SmartDashboard.putNumber("drivetrainInitialStateRotation", pathInitialState.holonomicRotation.getDegrees());
         m_field.getObject("traj").setTrajectory(_pathFollower.getCurrentTrajectory());
     }
 
@@ -255,8 +267,8 @@ public class Drivetrain extends Subsystem {
     public double getWallRotationTarget(double targetRotation) {
         var output = _wallFacingController.calculate(getGyroscopeRotationWithOffset().getDegrees(), targetRotation);
 
-        SmartDashboard.putNumber("drivetrainWallRotationTarget", targetRotation);
-        SmartDashboard.putNumber("drivetrainWallRotationOutput", output);
+        // SmartDashboard.putNumber("drivetrainWallRotationTarget", targetRotation);
+        // SmartDashboard.putNumber("drivetrainWallRotationOutput", output);
         return output;
     }
 

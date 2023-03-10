@@ -6,7 +6,6 @@ import edu.wpi.first.math.estimator.AngleStatistics;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
-
 public final class Constants {
     
     // Usb Slots
@@ -17,9 +16,9 @@ public final class Constants {
     public static final int kPlacerDownerKi = 0; // Change Later
     public static final int kPlacerDownerKd = 0; // Change Later
 
-    public static final int kPlacerDownerFeedforwardKs = 0; // Change Later
-    public static final int kPlacerDownerFeedforwardKg = 0; // Change Later
-    public static final int kPlacerDownerFeedforwardKv = 0; // Change Later
+    public static final double kPlacerDownerFeedforwardKs = 0.29736; // Change Later
+    public static final double kPlacerDownerFeedforwardKg = 0.26; // Change Later
+    public static final double kPlacerDownerFeedforwardKv = 0.066; // Change Later
 
     // Photo Eye
     public static final int kCollectorPort = 0; // change later this is a random number
@@ -60,10 +59,14 @@ public final class Constants {
     public static final int kFlexerReverse = 8;
 
     // Swerve Encoder Offsets
-    public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.73);
-    public static final double kFrontRightEncoderOffset = -Math.toRadians(239.06);
-    public static final double kBackLeftEncoderOffset = -Math.toRadians(22.324);
-    public static final double kBackRightEncoderOffset = -Math.toRadians(144.22);
+    // public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.73);
+    // public static final double kFrontRightEncoderOffset = -Math.toRadians(239.06);
+    // public static final double kBackLeftEncoderOffset = -Math.toRadians(22.324);
+    // public static final double kBackRightEncoderOffset = -Math.toRadians(144.22);
+    public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.469);
+    public static final double kFrontRightEncoderOffset = -Math.toRadians(239.502);
+    public static final double kBackLeftEncoderOffset = -Math.toRadians(23.112);
+    public static final double kBackRightEncoderOffset = -Math.toRadians(144.044);
 
     // Swerve Properties
     public static final double MAX_VOLTAGE = 12.0;

@@ -11,8 +11,10 @@ import com.revrobotics.SparkMaxLimitSwitch.Type;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
@@ -29,7 +31,7 @@ public class PlacerDowner extends Subsystem {
     private ElevatorFeedforward _feedForward;
     private DoubleSolenoid _tilter;
     private DoubleSolenoid _pivoter;
-    private SparkMaxLimitSwitch _limitSwitch;
+    private DigitalInput _elevatorBottomLimit;
 
     private SparkMaxPIDController _elevatorController;
 
@@ -41,39 +43,40 @@ public class PlacerDowner extends Subsystem {
     private Value _manualTiltValue = Value.kOff;
 
     private final double _placerDownerSpeed = 0.25;
-    private final double _placerDownerHoldSpeed = 0.1;
+    private final double _placerDownerEjectSpeed = .35;
+    private final double _placerDownerHoldSpeed = 0.10;
 
-    private final double kSmartMotionP = 0.0;
+    private final double kSmartMotionP = 0.015;
     private final double kSmartMotionI = 0.0;
-    private final double kSmartMotionD = 0.0;
+    private final double kSmartMotionD = 0.001;
     private final double kSmartMotionFF = 0.0;
     private final double kSmartMotionIz = 0.0;
-    private final double kSmartMotionMaxOutput = 1.0;
-    private final double kSmartMotionMinOutput = -1.0;
-    private final double kSmartMotionMaxVel = 2000;
-    private final double kSmartMotionMaxAccel = 1500;
-    private final double kSmartMotionAllowedError = 100;
-    private final double kArbFeedforward = 0.115;
-    private final double kAllowedError = 100;
+    private final double kSmartMotionMaxOutput = 1.00;
+    private final double kSmartMotionMinOutput = -1.00;
+    private final double kSmartMotionMaxVel = 225;
+    private final double kSmartMotionMaxAccel = 150;
+    private final double kAllowedError = 3;
 
     private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
     private TrapezoidProfile.State _goal = new TrapezoidProfile.State();
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
+    private Timer _deployTimer = new Timer();
 
     PlacerDowner() {
         _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
         _theClaw.setIdleMode(IdleMode.kBrake);
-        _theClaw.setSmartCurrentLimit(20);
-        _theClaw.burnFlash();
+        _theClaw.setInverted(true);
+        _theClaw.setSmartCurrentLimit(20, 100);
 
         _tilter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kTilterForward, Constants.kTilterReverse);
         _pivoter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kPivoterForward, Constants.kPivoterReverse);
 
+        _elevatorBottomLimit = new DigitalInput(1);
         _placerDownerElevator = new CANSparkMax(Constants.kPlacerDownerElevatorMotorDeviceId, MotorType.kBrushless);
-        _placerDownerElevator.setSmartCurrentLimit(20);
-        _placerDownerElevator.setSecondaryCurrentLimit(40);
+        _placerDownerElevator.setSmartCurrentLimit(20, 100);
         _placerDownerElevator.setIdleMode(IdleMode.kBrake);
-        _placerDownerElevatorEncoder = _theClaw.getEncoder();
+        _placerDownerElevator.setInverted(false);
+        _placerDownerElevatorEncoder = _placerDownerElevator.getEncoder();
 
         // WPILib Controller
         _placerDownerPID = new ProfiledPIDController(Constants.kPlacerDownerKp, Constants.kPlacerDownerKi,
@@ -89,9 +92,6 @@ public class PlacerDowner extends Subsystem {
         _elevatorController.setIZone(kSmartMotionIz);
         _elevatorController.setFF(kSmartMotionFF);
         _elevatorController.setOutputRange(kSmartMotionMinOutput, kSmartMotionMaxOutput);
-        _elevatorController.setSmartMotionMaxVelocity(kSmartMotionMaxVel, 0);
-        _elevatorController.setSmartMotionMaxAccel(kSmartMotionMaxAccel, 0);
-        _elevatorController.setSmartMotionAllowedClosedLoopError(kSmartMotionAllowedError, 0);
 
         //_limitSwitch = _hoodMotor.getForwardLimitSwitch(Type.kNormallyOpen); (Not hood motor but dont know what motor yet)
     }
@@ -115,60 +115,64 @@ public class PlacerDowner extends Subsystem {
         SmartDashboard.putNumber("placerDownerFF", _elevatorController.getFF());
         SmartDashboard.putNumber("placerDownerOutputRangeMax", _elevatorController.getOutputMax());
         SmartDashboard.putNumber("placerDownerOutputRangeMin", _elevatorController.getOutputMin());
-        SmartDashboard.putNumber("placerDownerSmartMotionMaxVelocity", _elevatorController.getSmartMotionMaxVelocity(0));
-        SmartDashboard.putNumber("placerDownerSmartMotionMaxAcceleration", _elevatorController.getSmartMotionMaxAccel(0));
-        SmartDashboard.putNumber("placerDownerSmartMotionAllowedClosedLoopError", _elevatorController.getSmartMotionAllowedClosedLoopError(0));
         SmartDashboard.putNumber("placerDownerCurrentPosition", _placerDownerElevatorEncoder.getPosition());
-        
         SmartDashboard.putNumber("placerDownerMotorVoltage", _theClaw.getAppliedOutput());
         SmartDashboard.putNumber("placerDownerMotorTemperature", _theClaw.getMotorTemperature());
         SmartDashboard.putNumber("placerDownerMotorOutputCurrent", _theClaw.getOutputCurrent());
         SmartDashboard.putString("placerDownerTilterCurrentState", _tilter.get().name());
         SmartDashboard.putString("placerDownerPivoterCurrentState", _pivoter.get().name());
-        
-        SmartDashboard.putBoolean("elevatorAtSetpoint", atSetpoint());
-        SmartDashboard.putBoolean("limitSwitchBlocked", _limitSwitch.isPressed());
+        SmartDashboard.putBoolean("placerDownerLimitSwitchBlocked", !_elevatorBottomLimit.get());
+        SmartDashboard.putNumber("placerDownerCurrentSetpoint", _setpoint);
+        SmartDashboard.putNumber("placerDownerGoal", _goal.position);
+        SmartDashboard.putNumber("placerDownerElevatorVoltage", _placerDownerElevator.getAppliedOutput());
+        SmartDashboard.putNumber("placerDownerElevatorTemperature", _placerDownerElevator.getMotorTemperature());
+        SmartDashboard.putNumber("placerDownerElevatorOutputCurrent", _placerDownerElevator.getOutputCurrent());
+
+    }
+
+    public void handleElevatorReset() {
+        if(!_elevatorBottomLimit.get()){
+            _placerDownerElevatorEncoder.setPosition(0);
+        }
     }
 
     private void intake() {
-        _setpoint = ElevatorPosition.PIZZA_DELIVERY;
+        setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
         _theClaw.set(_placerDownerSpeed);
         handleElevatorPosition();
 
         if (atSetpoint()) {
-            _setpoint = ElevatorPosition.DIGIORNO;
             setWantedState(PlacerDownerState.HOLD_POSITION);
         }
     }
 
     private void eject() {
-        _theClaw.set(-_placerDownerSpeed);
+        _theClaw.set(-_placerDownerEjectSpeed);
     }
 
     private void stop() {
         _theClaw.set(0);
     }
 
-    public void setSpeed(double speed) {
-        if (Math.abs(speed) <= 0.10) {
-            speed = 0;
-        }
-        _placerDownerElevator.set(speed);
-    }
-
     private void deploy() {
-        _tilter.set(Value.kForward);
-        _pivoter.set(Value.kForward);
-        holdPosition();
-    }
-
-    private void retract() {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (_currentState == PlacerDownerState.STOW) {
-            setWantedState(PlacerDownerState.HOLD_POSITION);
+        if (_deployTimer.hasElapsed(1)) {
+            _deployTimer.stop();
+            handleElevatorPosition();
         }
+    }
+
+    private void retract() {
+        handleElevatorPosition();
+
+        if (_deployTimer.hasElapsed(1)) {
+            _tilter.set(Value.kForward);
+            _pivoter.set(Value.kForward);
+
+            setWantedState(PlacerDownerState.HOLD_POSITION);
+        }        
     }
 
     private void holdPosition() {
@@ -177,9 +181,8 @@ public class PlacerDowner extends Subsystem {
     }
 
     private void reset() {
-        retract();
         setElevatorSetpoint(ElevatorPosition.DIGIORNO);
-        setWantedState(PlacerDownerState.HOLD_POSITION);
+        setWantedState(PlacerDownerState.STOW);
     }
 
     public void setManualElevatorSpeed(double speed) {
@@ -212,20 +215,32 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(_manualTiltValue);
     }
 
-    public void setElevatorSetpoint(double position) {
-        if (_tilter.get() != Value.kForward) {
-            position = _setpoint;
+    private void flipoff() {
+        handleElevatorPosition();
+        if (atSetpoint()) {
+            _pivoter.set(Value.kReverse);
+            setWantedState(PlacerDownerState.HOLD_POSITION);
         }
+    }
+
+    public void setElevatorSetpoint(double position) {
+        // if (_tilter.get() != Value.kForward) {
+        //     position = _setpoint;
+        // }
 
         switch (_currentState) {
+            case RESET:
+            case INTAKE:
             case HOLD_POSITION:
+            case DEPLOY:
+            case STOW:
                 setSetpoint(position);
             default:
                 break;
         }
     }
 
-    private boolean atSetpoint() {
+    public boolean atSetpoint() {
         var currentPosition = _placerDownerElevatorEncoder.getPosition();
         var error = _setpoint - currentPosition;
 
@@ -280,6 +295,9 @@ public class PlacerDowner extends Subsystem {
             case YEEHAW:
                 yeehaw();
                 break;
+            case LOW_SCORE:
+                flipoff();
+                break;
             case STOP:
             default:
                 stop();
@@ -288,6 +306,26 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void setWantedState(PlacerDownerState wantedState) {
+        switch (_currentState) {
+            case INTAKE:
+                if (wantedState == PlacerDownerState.INTAKE) {
+                    return;
+                }
+                break;
+            case DEPLOY:
+                if (wantedState == PlacerDownerState.DEPLOY) {
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
+
+        if (wantedState == PlacerDownerState.DEPLOY || wantedState == PlacerDownerState.STOW){
+            _deployTimer.reset();
+            _deployTimer.start();
+        }
+        
         _currentState = wantedState;
     }
 }

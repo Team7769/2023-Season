@@ -25,22 +25,25 @@ public class PickerUpper extends Subsystem {
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
 
-    private final double _collectSpeed = 0.5;
-    private final double _ejectSpeed = -0.5;
-    private final double _deliverySpeed = -0.15;
+    private final double _collectSpeed = 0.65;
+    private final double _ejectSpeed = -0.65;
+    private final double _deliverySpeed = -0.25;
 
     private double _manualSpeed = 0.0;
     private Value _manualFlex = Value.kOff;
+    private Value _manualBox = Value.kOff;
 
     PickerUpper() {
         _leftMotor = new CANSparkMax(Constants.kPickerUpperLeftMotorDeviceId, MotorType.kBrushless);
+        _leftMotor.setSmartCurrentLimit(5, 100);
         _rightMotor = new CANSparkMax(Constants.kPickerUpperRightMotorDeviceId, MotorType.kBrushless);
+        _rightMotor.setSmartCurrentLimit(5, 100);
 
-        _leftMotor.setInverted(true);
         _leftMotor.setIdleMode(IdleMode.kBrake);
+        _leftMotor.setInverted(false);
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
-        _rightMotor.follow(_leftMotor);
+        _rightMotor.setInverted(true);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
@@ -48,7 +51,7 @@ public class PickerUpper extends Subsystem {
         _collectorSensor = new Photoeye(Constants.kCollectorPort);
 
         _boxItTimer = new Timer();
-        //pizzaReady = false;
+        _currentState = PickerUpperState.PIZZAS_READY;
     }
 
     public static PickerUpper getInstance() {
@@ -74,11 +77,11 @@ public class PickerUpper extends Subsystem {
         
     }
     private void open() {
-        _boxer.set(Value.kForward);
+        _boxer.set(Value.kReverse);
     }
 
     private void close() {
-        _boxer.set(Value.kReverse);
+        _boxer.set(Value.kForward);
     }
 
     private void collect() {
@@ -94,14 +97,15 @@ public class PickerUpper extends Subsystem {
     }
 
     private void up() {
-        _flexer.set(Value.kForward);
-    }
-
-    private void down() {
         _flexer.set(Value.kReverse);
     }
 
+    private void down() {
+        _flexer.set(Value.kForward);
+    }
+
     private void stop() {
+        up();
         _leftMotor.set(0);
         _rightMotor.set(0);
     }
@@ -122,20 +126,35 @@ public class PickerUpper extends Subsystem {
 
     public void boxIt() {
         if (_boxItTimer.hasElapsed(2)) {
-            open();
-            _boxItTimer.stop();
             setWantedState(PickerUpperState.PIZZAS_READY);
         } else if (_boxItTimer.hasElapsed(0.5)) {
             up();
         } else {
             close();
         }
+
+        _leftMotor.set(_collectSpeed);
+        _rightMotor.set(_collectSpeed);
     }
 
     public void delivery() {
-        _leftMotor.set(_deliverySpeed);
-        _rightMotor.set(_deliverySpeed);
+        if (_boxItTimer.hasElapsed(2.5)) {
+            setWantedState(PickerUpperState.WERE_CLOSED);
+            _boxItTimer.stop();
+        } else if (_boxItTimer.hasElapsed(2.25)) {
+            _leftMotor.set(_deliverySpeed);
+            _rightMotor.set(_deliverySpeed);
+            open();
+        } 
+
         up();
+    }
+
+    private void fresh() {
+        up();
+        open();
+        _leftMotor.set(_collectSpeed);
+        _rightMotor.set(_collectSpeed);
     }
 
     public void pizzasReady(){
@@ -144,12 +163,15 @@ public class PickerUpper extends Subsystem {
 
     public void setManualCollect() {
         _manualSpeed = _collectSpeed;
+        _manualBox = Value.kReverse;
     }
     public void setManualEject() {
-        _manualSpeed = -_ejectSpeed;
+        _manualSpeed = _ejectSpeed;
+        _manualBox = Value.kReverse;
     }
     public void setManualStop() {
         _manualSpeed = 0.0;
+        _manualBox = Value.kForward;
     }
     public void setManualFlex(Value value) {
         _manualFlex = value;
@@ -159,11 +181,30 @@ public class PickerUpper extends Subsystem {
         _leftMotor.set(_manualSpeed);
         _rightMotor.set(_manualSpeed);
         _flexer.set(_manualFlex);
+        _boxer.set(_manualBox);
     }
     
-    // To be added when we get sensor  
     public boolean isPizzaReady() {
-       return _collectorSensor.isBlocked() && _currentState == PickerUpperState.PIZZAS_READY;
+       switch (_currentState) {
+            case PIZZAS_READY:
+            case DELIVERY:
+                return true;
+            case FRESH_FROM_THE_OVEN:
+                if (_collectorSensor.isBlocked()) {
+                    return true;
+                }
+                return false;
+            default:
+                return false;
+       }
+    }
+
+    public boolean isBoxing() {
+        return _currentState == PickerUpperState.BOX_IT;
+    }
+
+    public boolean isBusy() {
+        return isBoxing() || _currentState == PickerUpperState.FRESH_FROM_THE_OVEN;
     }
 
     public void handleCurrentState() {
@@ -176,6 +217,9 @@ public class PickerUpper extends Subsystem {
                 break;
             case BOX_IT:
                 boxIt();
+                break;
+            case FRESH_FROM_THE_OVEN:
+                fresh();
                 break;
             case PIZZAS_READY:
                 pizzasReady();
@@ -195,12 +239,26 @@ public class PickerUpper extends Subsystem {
     }
 
     public void setWantedState(PickerUpperState state) {
+        if (_currentState == PickerUpperState.BOX_IT && state == PickerUpperState.BOX_IT) {
+            return;
+        }
+
         switch (state) {
             case BOX_IT:
                 _boxItTimer.reset();
                 _boxItTimer.start();
                 break;
+            case PIZZAS_READY:
+            case DELIVERY:
+                if (_currentState == PickerUpperState.FRESH_FROM_THE_OVEN) {
+                    _boxItTimer.reset();
+                    _boxItTimer.start();
+                }
+                break;
             default:
+                if (isBoxing()){
+                    return;
+                }
                 break;
         }
 

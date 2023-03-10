@@ -3,7 +3,8 @@ package frc.robot.Utilities;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 
 public class LEDController {
-    
+    private static Spark _bellyPanBlinkin;
+    private static Spark _elevatorBlinkin;
     public static LEDController _instance;
 
     public final double kBlueHeartBeat = -.23;
@@ -21,6 +22,12 @@ public class LEDController {
     public final double kBlueStrobe = -0.09;
     public final double kBlueShot = -0.83;
     public final double kConfetti = -0.87;
+    public final double kViolet = 0.91;
+    public final double kBlueViolet = 0.89;
+    public final double kHotPink = 0.57;
+    public final double kGold = 0.67;
+    public final double kStrobeRed = -0.11;
+    public final double kStrobeBlue = -0.09;
 
     public static LEDController GetInstance()
     {
@@ -29,6 +36,21 @@ public class LEDController {
             _instance = new LEDController();
         }
         return _instance;
+    }
+
+    public void setLowerLED(double value)
+    {
+        _bellyPanBlinkin.set(value);
+    }
+
+    public void setUpperLED(double value)
+    {
+        _elevatorBlinkin.set(value);
+    }
+
+    public void setTeleopIdle()
+    {
+        _elevatorBlinkin.set(sinelonCustom);
     }
 
 }
