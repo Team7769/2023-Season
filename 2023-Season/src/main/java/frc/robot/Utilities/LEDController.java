@@ -157,7 +157,7 @@ public class LEDController {
     public void changeToAlliance() 
     {
         setUpperLED(
-            _alliance == Alliance.Red ? kStrobeRed : kStrobeBlue
+            _alliance == Alliance.Red ? kRed : kBlue
         );
     }
 
@@ -185,14 +185,14 @@ public class LEDController {
 
     public void yHit()
     {
-        setUpperLED(kColor1Strobe);
-        setLowerLED(kColor2Strobe);
+        setUpperLED(kBlue);
+        setLowerLED(kBlue);
     }
 
     public void xHit()
     {
-        setLowerLED(kColor1Strobe);
-        setUpperLED(kColor2Strobe);
+        setLowerLED(kGreen);
+        setUpperLED(kGreen);
     }
 
     public void lowHit() {

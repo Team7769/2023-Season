@@ -305,15 +305,17 @@ public class Robot extends TimedRobot {
         break;
       case 7:
         // For at least 2 seconds, drive forward until the measured roll is considered balanced.
-        if (!_drivetrain.isLevel() || _autoLoops <= 100) {
-          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
-        } else {
+        if (_autoLoops <= 100) {
+          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+        }
+        else {
           // Otherwise stop and turn the wheels very slightly to lock position.
-          
-          _drivetrain.robotOrientedDrive(0, 0, 0.10);
+          var speed = _drivetrain.getBalanceSpeed();
+          _drivetrain.fieldOrientedDrive(speed * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
 
-          _ledController.changeToAlliance();
-
+          if (_drivetrain.isLevel()) {
+            _ledController.changeToAlliance();          
+          }
         }
         break;
       default:

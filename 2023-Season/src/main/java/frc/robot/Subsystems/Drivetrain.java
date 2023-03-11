@@ -223,8 +223,8 @@ public class Drivetrain extends Subsystem {
             return 0.0;
         }
 
-        if (absRoll <= 13 && absRoll <= 5) {
-            return roll > 0 ? 0.10 : -0.10;
+        if (absRoll <= 13 && absRoll > 5) {
+            return roll > 0 ? -0.10 : 0.10;
         } else {
             return roll > 0 ? 0.18 : -0.18;
         }
