@@ -960,6 +960,7 @@ public class Robot extends TimedRobot {
   public void disabledInit() {
     // _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
     _pathFollower.setTestAuto();
+    _placerDowner.allowReset();
   }
 
   @Override

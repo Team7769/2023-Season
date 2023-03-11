@@ -62,6 +62,8 @@ public class PlacerDowner extends Subsystem {
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
     private Timer _deployTimer = new Timer();
 
+    private boolean hasReset = false;
+
     PlacerDowner() {
         _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
         _theClaw.setIdleMode(IdleMode.kBrake);
@@ -131,9 +133,16 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void handleElevatorReset() {
+        if ( hasReset ) return;
+
         if(!_elevatorBottomLimit.get()){
             _placerDownerElevatorEncoder.setPosition(0);
+            hasReset = true;
         }
+    }
+
+    public void allowReset() {
+        hasReset = false;
     }
 
     private void intake() {
