@@ -81,11 +81,13 @@ public class LEDController {
     public void eject() 
     {
         setUpperLED(kFireMedium);
+        setLowerLED(kFireMedium);
     }
 
     public void ejectHeld()
     {
         setUpperLED(kHotPink);
+        setLowerLED(kHotPink);
     }
 
     public void startHit()
