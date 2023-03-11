@@ -96,6 +96,22 @@ public class LEDController {
     public final double kTwinklesColor1and2 = 0.53;
     public final double kColorWavesColor1and2 = 0.55;
     public final double kDarkRed = 0.59;
+    public final double kRed = 0.61;
+    public final double kRedOrange = 0.63;
+    public final double kOrange = 0.65;
+    public final double kLawnGreen = 0.71;
+    public final double kLime = 0.73;
+    public final double kDarkGreen = 0.75;
+    public final double kGreen = 0.77;
+    public final double kBlueGreen = 0.79;
+    public final double kAqua = 0.81;
+    public final double kSkyBlue = 0.83;
+    public final double kDarkBlue = 0.85;
+    public final double kBlue = 0.87;
+    public final double kWhite = 0.93;
+    public final double kGray = 0.95;
+    public final double kDarkGray = 0.97;
+    public final double kBlack = 0.99;
 
 
     public LEDController() {
