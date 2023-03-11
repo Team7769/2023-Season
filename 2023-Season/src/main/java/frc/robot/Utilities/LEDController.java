@@ -67,7 +67,35 @@ public class LEDController {
     public final double kLightChaseRed = -0.31;
     public final double kLightChaseBlue = -0.29;
     public final double kLightChaseGray = -0.27;
-    
+    public final double kHeartbeatRed = -0.25;
+    public final double kHeartbeatBlue = -0.23;
+    public final double kHeartbeatWhite = -0.21;
+    public final double kHeartbeatGray = -0.19;
+    public final double kBreathRed = -0.17;
+    public final double kBreathBlue = -0.15;
+    public final double kBreathGray = -0.13;
+    public final double kStrobeGold = -0.07;
+    public final double kStrobeWhite = -0.05;
+    public final double kEndtoEndBlendtoBlack = -0.03;
+    public final double kLarsonScanner = -0.01;
+    public final double kLightChase = 0.01;
+    public final double kHeartbeatSlow = 0.03;
+    public final double kHeartbeatMedium = 0.05;
+    public final double kHeadbeatFast = 0.07;
+    public final double kBreathSlow = 0.09;
+    public final double kBreathFast = 0.11;
+    public final double kShot = 0.13;
+    public final double kStrobe = 0.15;
+    public final double kSparkleColor1onColor2 = 0.37;
+    public final double kSparkleColor2onColor1 = 0.39;
+    public final double kColorGradientColor1and2 = 0.41;
+    public final double kBeatsPerMinuteColor1on2 = 0.43;
+    public final double kEndToEndBlendColor1to2 = 0.45;
+    public final double kEndtoEndBlend = 0.47;
+    public final double kColor1andColor2NoBlending = 0.49;
+    public final double kTwinklesColor1and2 = 0.53;
+    public final double kColorWavesColor1and2 = 0.55;
+    public final double kDarkRed = 0.59;
 
 
     public LEDController() {
