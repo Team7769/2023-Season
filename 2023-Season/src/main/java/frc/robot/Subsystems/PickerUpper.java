@@ -150,6 +150,12 @@ public class PickerUpper extends Subsystem {
         up();
     }
 
+    public void release() {
+        _leftMotor.set(_deliverySpeed);
+        _rightMotor.set(_deliverySpeed);
+        open();
+    }
+
     private void fresh() {
         up();
         open();
@@ -232,6 +238,9 @@ public class PickerUpper extends Subsystem {
                 break;
             case WERE_CLOSED:
                 stop();
+                break;
+            case RELEASE:
+                release();
                 break;
             default:
                 break;

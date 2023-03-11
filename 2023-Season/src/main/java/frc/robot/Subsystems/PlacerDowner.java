@@ -167,7 +167,7 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (_deployTimer.hasElapsed(1)) {
+        if (_deployTimer.hasElapsed(1.5)) {
             _deployTimer.stop();
             handleElevatorPosition();
         }
@@ -229,6 +229,21 @@ public class PlacerDowner extends Subsystem {
         if (atSetpoint()) {
             _pivoter.set(Value.kReverse);
             setWantedState(PlacerDownerState.HOLD_POSITION);
+        }
+    }
+
+    public boolean isScoring() {
+        switch (_currentState) {
+            // case DEPLOY:
+            //     if (_deployTimer.hasElapsed(1.5)) {
+            //         return true;
+            //     } else {
+            //         return false;
+            //     }
+            case LOW_SCORE:
+                return true;
+            default:
+                return false;
         }
     }
 

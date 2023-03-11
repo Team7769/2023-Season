@@ -710,7 +710,9 @@ public class Robot extends TimedRobot {
     } else if (_pickerUpper.isPizzaReady()) {
       _placerDowner.setWantedState(PlacerDownerState.INTAKE);
       _pickerUpper.setWantedState(PickerUpperState.DELIVERY);
-    } else if (!_pickerUpper.isBusy()) {
+    } else if (_placerDowner.isScoring()) {
+      _pickerUpper.setWantedState(PickerUpperState.RELEASE);
+    }else if (!_pickerUpper.isBusy()) {
       // IsBusy covers the boxing process or if we are trying Human Player
       _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
     }
