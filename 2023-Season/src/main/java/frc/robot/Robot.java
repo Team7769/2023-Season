@@ -702,6 +702,11 @@ public class Robot extends TimedRobot {
     // } 
     else if (_operatorController.getRightBumper()) {
       _pickerUpper.setWantedState(PickerUpperState.WRONG_ORDER);
+    } else if (Math.abs(_operatorController.getLeftTriggerAxis()) >= 0.25){
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
+      _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+      _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
+      
     } else if (_pickerUpper.isPizzaReady()) {
       _placerDowner.setWantedState(PlacerDownerState.INTAKE);
       _pickerUpper.setWantedState(PickerUpperState.DELIVERY);

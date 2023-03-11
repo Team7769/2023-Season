@@ -196,8 +196,8 @@ public class LEDController {
     }
 
     public void lowHit() {
-        setUpperLED(kBeatsPerMinuteOceanPalette);
-        setLowerLED(kBeatsPerMinuteOceanPalette);
+        setUpperLED(kBeatsPerMinuteLavaPalette);
+        setLowerLED(kBeatsPerMinuteLavaPalette);
     }
 
     public void humanPlayerPickup() {
