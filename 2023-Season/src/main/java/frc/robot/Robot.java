@@ -98,6 +98,7 @@ public class Robot extends TimedRobot {
     // _autoChooser.addOption("Loading Side Link", Automode.LOADING_SIDE_LINK_NOBALANCE);
     // _autoChooser.addOption("Loading Side Link + Cone", Automode.LOADING_SIDE_LINK_CONE_NOBALANCE);
     _autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
+    _autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
     _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
     SmartDashboard.putData(_autoChooser);
@@ -138,6 +139,10 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
       case Automode.MIDDLE_YEET_BALANCE:
         _pathFollower.setLoadsidePickupBalance();
+        break;
+      case Automode.LOADING_SIDE_PICKUP_SCORE:
+        _pathFollower.setLoadsidePickupScore();
+        break;
       default:
         break;
     }
@@ -151,6 +156,7 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_LINK_CONE_NOBALANCE:
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
       case Automode.MIDDLE_YEET_BALANCE:
+      case Automode.LOADING_SIDE_PICKUP_SCORE:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
@@ -182,6 +188,9 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
         loadSidePickupBalance();
         break;
+      case Automode.LOADING_SIDE_PICKUP_SCORE:
+        loadSidePickupScore();
+        break;
       case Automode.MIDDLE_YEET_BALANCE:
         yeet();
         break;
@@ -199,6 +208,565 @@ public class Robot extends TimedRobot {
     _autoLoops++;
   }
 
+  public void loadSidePickupBalance() {
+    switch (_autonomousCase) {
+      case 0:
+        // Init Elevator 
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        _autonomousCase++;
+        break;
+      case 1:
+        // If elevator is fully extended.
+        if (_placerDowner.atSetpoint()) {
+
+          // Wait 1 second then stop and eject.
+          if (_autoLoops >= 50) {            
+            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          } else if (_autoLoops >= 15 && _autoLoops < 50){
+            // Wait .5 seconds, then drive for .5 seconds
+            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+          }
+        } else {
+          // Don't move until the elevator is extended.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _autoLoops = 0;
+        }
+        break;
+      case 2:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
+        // Wait .5 seconds, then start the elevator reset.
+        if (_autoLoops > 25) {
+          _drivetrain.resetWallFacingController();
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        
+        if (_autoLoops > 100) {
+          // Start path to cone/cube after 2 full seconds
+          _autoLoops = 0;
+          _pathFollower.startPath();
+          _autonomousCase++;
+        } else if (_autoLoops <= 25) {
+          // Back away for .5 seconds.
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+        } else {
+          // Stop for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0, 0, 0);
+        }
+        break;
+      case 4:
+        _drivetrain.followTrajectory();
+        if (_autoLoops > 55 && _autoLoops <= 60) {
+          // After around 1 second drop the collector
+          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+        }
+
+        if (_pathFollower.isPathFinished()) {
+          // Set next path, prepare for pickup
+          _drivetrain.resetWallFacingController();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        if (_autoLoops > 40) {
+          // Start the path to the charge station.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _pathFollower.startPath();
+          _autonomousCase++;
+          _autoLoops = 0;
+        } else {
+          // Drive slowly towards the gamepiece for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
+        }
+        break;
+      case 6:
+        // Follow path to charge station.
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          // Prepare to balance walk
+          _drivetrain.resetWallFacingController();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autonomousCase++;
+          _autoLoops = 0;
+        }
+        break;
+      case 7:
+        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
+        if (!_drivetrain.isLevel() || _autoLoops <= 100) {
+          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
+        } else {
+          // Otherwise stop and turn the wheels very slightly to lock position.
+          
+          _drivetrain.robotOrientedDrive(0, 0, 0.10);
+
+          _ledController.changeToAlliance();
+
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void yeet() {
+    switch (_autonomousCase) {
+      case 0:
+        // Init Elevator 
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        _autoLoops = 0;
+        _autonomousCase++;
+        break;
+      case 1:
+        // If elevator is fully extended.
+        if (_placerDowner.atSetpoint()) {
+          // Wait 1 second then stop and eject.
+          if (_autoLoops >= 50) {            
+            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          } else if (_autoLoops >= 15 && _autoLoops < 50){
+            // Wait .5 seconds, then drive for .5 seconds
+            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+          }
+        } else {
+          // Don't move until the elevator is extended.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _autoLoops = 0;
+        }
+        break;
+      case 2:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
+        // Wait .5 seconds, then start the elevator reset.
+        if (_autoLoops > 25) {
+          _drivetrain.resetWallFacingController();
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+        if (_autoLoops > 100) {
+          // Start path to cone/cube after 2 full seconds
+          _autoLoops = 0;
+          _drivetrain.resetWallFacingController();
+          _autonomousCase++;
+        } else if (_autoLoops <= 25) {
+          // Back away for .5 seconds.
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+        } else {
+          // Stop for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0, 0, 0);
+        }
+        break;
+      case 4:
+        _drivetrain.fieldOrientedDrive(0.25 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+
+        if (_autoLoops > 200) {
+          // Set next path, prepare for pickup
+          _drivetrain.resetWallFacingController();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
+        if (_autoLoops <= 150) {
+          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+        }
+        else {
+          // Otherwise stop and turn the wheels very slightly to lock position.
+          var speed = _drivetrain.getBalanceSpeed();
+          _drivetrain.fieldOrientedDrive(speed * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+
+          if (_drivetrain.isLevel()) {
+            _ledController.changeToAlliance();          
+          }
+        }
+
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void loadSidePickupScore() {
+    switch (_autonomousCase) {
+      case 0:
+        // Init Elevator
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        _autonomousCase++;
+        break;
+      case 1:
+        // If elevator is fully extended.
+        if (_placerDowner.atSetpoint()) {
+
+          // Wait 1 second then stop and eject.
+          if (_autoLoops >= 50) {
+            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          } else if (_autoLoops >= 15 && _autoLoops < 50) {
+            // Wait .5 seconds, then drive for .5 seconds
+            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+          }
+        } else {
+          // Don't move until the elevator is extended.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _autoLoops = 0;
+        }
+        break;
+      case 2:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
+        // Wait .5 seconds, then start the elevator reset.
+        if (_autoLoops > 25) {
+          _drivetrain.resetWallFacingController();
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      case 3:
+
+        if (_autoLoops > 100) {
+          // Start path to cone/cube after 2 full seconds
+          _autoLoops = 0;
+          _pathFollower.startPath();
+          _autonomousCase++;
+        } else if (_autoLoops <= 25) {
+          // Back away for .5 seconds.
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
+              _drivetrain.getWallRotationTarget(180));
+        } else {
+          // Stop for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0, 0, 0);
+        }
+        break;
+      case 4:
+        _drivetrain.followTrajectory();
+        if (_autoLoops > 55 && _autoLoops <= 60) {
+          // After around 1 second drop the collector
+          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+        }
+
+        if (_pathFollower.isPathFinished()) {
+          // Set next path, prepare for pickup
+          _drivetrain.resetWallFacingController();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _autoLoops = 0;
+          _pathFollower.setNextPath();
+          _autonomousCase++;
+        }
+        break;
+      case 5:
+        if (_autoLoops > 40) {
+          // Start the path back to the grid.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _pathFollower.startPath();
+          _autonomousCase++;
+          _autoLoops = 0;
+        } else {
+          // Drive slowly towards the gamepiece for 1.5 seconds
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
+              _drivetrain.getWallRotationTarget(0));
+        }
+        break;
+      case 6:
+        // Follow path to the grid.
+        _drivetrain.followTrajectory();
+
+        if (_pathFollower.isPathFinished()) {
+          // Prepare to score
+          _drivetrain.resetWallFacingController();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          //_autonomousCase++;
+          _autonomousCase = 7769; // No faith
+          _autoLoops = 0;
+        }
+        break;
+      case 7:
+        // Init Elevator
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        _autonomousCase++;
+        break;
+      case 8:
+        // If elevator is fully extended.
+        if (_placerDowner.atSetpoint()) {
+
+          // Wait 1 second then stop and eject.
+          if (_autoLoops >= 50) {
+            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+            _placerDowner.setWantedState(PlacerDownerState.EJECT);
+            _autoLoops = 0;
+            _autonomousCase++;
+          } else if (_autoLoops >= 15 && _autoLoops < 50) {
+            // Wait .5 seconds, then drive for .5 seconds
+            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
+          }
+        } else {
+          // Don't move until the elevator is extended.
+          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+          _autoLoops = 0;
+        }
+        break;
+      case 9:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+
+        // Wait .5 seconds, then start the elevator reset.
+        if (_autoLoops > 25) {
+          _drivetrain.resetWallFacingController();
+          _placerDowner.setWantedState(PlacerDownerState.RESET);
+          _autoLoops = 0;
+          _autonomousCase++;
+        }
+        break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  @Override
+  public void teleopInit() {
+    _ledController.teleopInit();
+  }
+
+  @Override
+  public void teleopPeriodic() {
+    teleopDrive();
+    teleopGamePieceManagement();
+
+    if (_driverController.getStartButtonPressed()) {
+      _drivetrain.resetGyro();
+    }
+  }
+
+  @Override
+  public void disabledInit() {
+    // _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+    _pathFollower.setTestAuto();
+    _placerDowner.allowReset();
+  }
+
+  @Override
+  public void disabledPeriodic() {
+    // _drivetrain.logPose();
+    _drivetrain.robotOrientedDrive(0, 0, 0);
+    _placerDowner.handleElevatorReset();
+    _ledController.setAlliance();
+  }
+
+  @Override
+  public void testInit() {
+    _placerDowner.setWantedState(PlacerDownerState.YEEHAW);
+    _pickerUpper.setWantedState(PickerUpperState.YEEHAW);
+  }
+
+  @Override
+  public void testPeriodic() {
+    teleopDrive();
+    testPeriodicPickerUpper();
+    testPeriodicPlacerDowner();
+  }
+
+  private void testPeriodicPlacerDowner() {
+    _placerDowner.setManualElevatorSpeed(-_operatorController.getLeftY());
+
+    if (_operatorController.getLeftBumper()) {
+      _placerDowner.setTiltValue(Value.kForward);
+    } else if (_operatorController.getRightBumper()) {
+      _placerDowner.setTiltValue(Value.kReverse);
+    }
+
+    if (_operatorController.getAButton()){
+      _placerDowner.setManualIntake();
+    } else if (_operatorController.getBButton()){
+      _placerDowner.setManualEject();
+    } else {
+      _placerDowner.setManualStop();
+    }
+
+    if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
+      _placerDowner.setPivotValue(Value.kForward);
+    } else if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
+      _placerDowner.setPivotValue(Value.kReverse);
+    }
+
+    _placerDowner.handleCurrentState();
+  }
+
+  private void testPeriodicPickerUpper() {
+
+    if (_driverController.getLeftBumper()) {
+      _pickerUpper.setManualCollect();
+    } else if (_driverController.getRightBumper()) {
+      _pickerUpper.setManualEject();
+    } else {
+      _pickerUpper.setManualStop();
+    }
+
+    if (Math.abs(_driverController.getLeftTriggerAxis()) > 0.25) {
+      _pickerUpper.setManualFlex(Value.kForward);
+    } else if (Math.abs(_driverController.getRightTriggerAxis()) > 0.25) {
+      _pickerUpper.setManualFlex(Value.kReverse);
+    }
+
+    _pickerUpper.handleCurrentState();
+  }
+
+  @Override
+  public void simulationInit() {
+  }
+
+  @Override
+  public void simulationPeriodic() {
+  }
+
+  private void teleopGamePieceManagement() {
+    if ( _operatorController.getStartButton() ) {
+      _ledController.startHit();
+    }else if ( _operatorController.getBackButton() ) {
+      _ledController.backHit();
+    }
+
+    if (_operatorController.getYButton()) {
+      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+
+      _ledController.yHit();
+    } else if (_operatorController.getXButton()) {
+      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+      _ledController.xHit();
+    } else if (_operatorController.getBButton()) {
+      _placerDowner.setWantedState(PlacerDownerState.STOW);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
+    } else if (_operatorController.getAButton()) {
+      // Human Player Pickup mode
+      _placerDowner.setWantedState(PlacerDownerState.STOW);
+      _pickerUpper.setWantedState(PickerUpperState.FRESH_FROM_THE_OVEN);
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.FRESH_FROM_THE_OVEN);
+      _ledController.humanPlayerPickup();
+    } else if (Math.abs(_operatorController.getRightTriggerAxis()) >= 0.25) {
+      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
+      _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
+      _ledController.lowHit();
+    }
+    
+
+    var eject = Math.abs(_driverController.getRightTriggerAxis()) > 0.25;
+
+    if (eject) {
+      _placerDowner.setWantedState(PlacerDownerState.EJECT);
+
+      _ledController.eject();
+    } else if (_ejectHeld) {
+      _placerDowner.setWantedState(PlacerDownerState.RESET);
+      _ledController.ejectHeld();
+    }
+
+    _ejectHeld = eject;
+
+    if (_operatorController.getLeftBumper()) {
+      _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+    } 
+    // else if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
+    //   _pickerUpper.setWantedState(PickerUpperState.BOX_IT);
+    // } 
+    else if (_operatorController.getRightBumper()) {
+      _pickerUpper.setWantedState(PickerUpperState.WRONG_ORDER);
+    } else if (_pickerUpper.isPizzaReady()) {
+      _placerDowner.setWantedState(PlacerDownerState.INTAKE);
+      _pickerUpper.setWantedState(PickerUpperState.DELIVERY);
+    } else if (!_pickerUpper.isBusy()) {
+      // IsBusy covers the boxing process or if we are trying Human Player
+      _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+    }
+
+    _pickerUpper.handleCurrentState();
+    _placerDowner.handleCurrentState();
+  }
+
+  private void teleopDrive() {
+    var translationX = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
+        Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    var translationY = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
+        Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    var rotationZ = -OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints,
+        Constants.RotAxis_outputTable,
+        _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
+
+    if (_driverController.getAButtonPressed() || _driverController.getYButtonPressed() || _driverController.getXButtonPressed() || _driverController.getBButtonPressed() || _driverController.getLeftBumperPressed() || _driverController.getRightBumperPressed()){
+      _drivetrain.resetWallFacingController();
+    }
+
+    if (_driverController.getAButton()) {
+      // Turn To The wall facing us
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+    } else if (_driverController.getYButton()) {
+      // Turn to the wall infront of us
+      rotationZ = _drivetrain.getWallRotationTarget(0);
+    } else if (_driverController.getXButton()) {
+      // Turn to the wall left of us
+      rotationZ = _drivetrain.getWallRotationTarget(90);
+    } else if (_driverController.getBButton()) {
+      // Turn to the wall right of us
+      rotationZ = _drivetrain.getWallRotationTarget(-90);
+    } else {
+      rotationZ = rotationZ / 1.25;
+    }
+
+    if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
+      translationX /= 4;
+      translationY /= 4;
+    }
+
+    // Strafing for scoring.
+    if (_driverController.getLeftBumper()) {
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+      translationX = 0;
+      translationY = 0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    } else if (_driverController.getRightBumper()) {
+      rotationZ = _drivetrain.getWallRotationTarget(180);
+      translationX = 0;
+      translationY = -0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
+    }
+
+    // Field orientated speed
+    _drivetrain.fieldOrientedDrive(translationX / 1.3, translationY / 1.3, rotationZ);
+
+    SmartDashboard.putNumber("driveControllerTranslationX", translationX);
+    SmartDashboard.putNumber("driveControllerTranslationY", translationY);
+    SmartDashboard.putNumber("driveControllerRotationZ", rotationZ);
+  }
+
+  // Graveyard - R.I.P
+  
   public void cableSideTwoConeBalanceAuto() {
     switch (_autonomousCase) {
       case 0:
@@ -719,439 +1287,5 @@ public class Robot extends TimedRobot {
         _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
         break;
     }
-  }
-
-  public void loadSidePickupBalance() {
-    switch (_autonomousCase) {
-      case 0:
-        // Init Elevator 
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
-        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-        _autonomousCase++;
-        break;
-      case 1:
-        // If elevator is fully extended.
-        if (_placerDowner.atSetpoint()) {
-
-          // Wait 1 second then stop and eject.
-          if (_autoLoops >= 50) {            
-            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-            _placerDowner.setWantedState(PlacerDownerState.EJECT);
-            _autoLoops = 0;
-            _autonomousCase++;
-          } else if (_autoLoops >= 15 && _autoLoops < 50){
-            // Wait .5 seconds, then drive for .5 seconds
-            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
-          }
-        } else {
-          // Don't move until the elevator is extended.
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _autoLoops = 0;
-        }
-        break;
-      case 2:
-        // Stop
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-
-        // Wait .5 seconds, then start the elevator reset.
-        if (_autoLoops > 25) {
-          _drivetrain.resetWallFacingController();
-          _placerDowner.setWantedState(PlacerDownerState.RESET);
-          _autoLoops = 0;
-          _autonomousCase++;
-        }
-        break;
-      case 3:
-        
-        if (_autoLoops > 100) {
-          // Start path to cone/cube after 2 full seconds
-          _autoLoops = 0;
-          _pathFollower.startPath();
-          _autonomousCase++;
-        } else if (_autoLoops <= 25) {
-          // Back away for .5 seconds.
-          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-        } else {
-          // Stop for 1.5 seconds
-          _drivetrain.fieldOrientedDrive(0, 0, 0);
-        }
-        break;
-      case 4:
-        _drivetrain.followTrajectory();
-        if (_autoLoops > 55 && _autoLoops <= 60) {
-          // After around 1 second drop the collector
-          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
-        }
-
-        if (_pathFollower.isPathFinished()) {
-          // Set next path, prepare for pickup
-          _drivetrain.resetWallFacingController();
-          _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autoLoops = 0;
-          _pathFollower.setNextPath();
-          _autonomousCase++;
-        }
-        break;
-      case 5:
-        if (_autoLoops > 40) {
-          // Start the path to the charge station.
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _pathFollower.startPath();
-          _autonomousCase++;
-          _autoLoops = 0;
-        } else {
-          // Drive slowly towards the gamepiece for 1.5 seconds
-          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
-        }
-        break;
-      case 6:
-        // Follow path to charge station.
-        _drivetrain.followTrajectory();
-
-        if (_pathFollower.isPathFinished()) {
-          // Prepare to balance walk
-          _drivetrain.resetWallFacingController();
-          _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autonomousCase++;
-          _autoLoops = 0;
-        }
-        break;
-      case 7:
-        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
-        if (!_drivetrain.isLevel() || _autoLoops <= 100) {
-          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
-        } else {
-          // Otherwise stop and turn the wheels very slightly to lock position.
-          
-          _drivetrain.robotOrientedDrive(0, 0, 0.10);
-
-          _ledController.changeToAlliance();
-
-        }
-        break;
-      default:
-        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
-        break;
-    }
-  }
-
-  public void yeet() {
-    switch (_autonomousCase) {
-      case 0:
-        // Init Elevator 
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
-        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-        _autoLoops = 0;
-        _autonomousCase++;
-        break;
-      case 1:
-        // If elevator is fully extended.
-        if (_placerDowner.atSetpoint()) {
-          // Wait 1 second then stop and eject.
-          if (_autoLoops >= 50) {            
-            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-            _placerDowner.setWantedState(PlacerDownerState.EJECT);
-            _autoLoops = 0;
-            _autonomousCase++;
-          } else if (_autoLoops >= 15 && _autoLoops < 50){
-            // Wait .5 seconds, then drive for .5 seconds
-            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
-          }
-        } else {
-          // Don't move until the elevator is extended.
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _autoLoops = 0;
-        }
-        break;
-      case 2:
-        // Stop
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-
-        // Wait .5 seconds, then start the elevator reset.
-        if (_autoLoops > 25) {
-          _drivetrain.resetWallFacingController();
-          _placerDowner.setWantedState(PlacerDownerState.RESET);
-          _autoLoops = 0;
-          _autonomousCase++;
-        }
-        break;
-      case 3:
-        if (_autoLoops > 100) {
-          // Start path to cone/cube after 2 full seconds
-          _autoLoops = 0;
-          _drivetrain.resetWallFacingController();
-          _autonomousCase++;
-        } else if (_autoLoops <= 25) {
-          // Back away for .5 seconds.
-          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-        } else {
-          // Stop for 1.5 seconds
-          _drivetrain.fieldOrientedDrive(0, 0, 0);
-        }
-        break;
-      case 4:
-        _drivetrain.fieldOrientedDrive(0.25 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-
-        if (_autoLoops > 200) {
-          // Set next path, prepare for pickup
-          _drivetrain.resetWallFacingController();
-          _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autoLoops = 0;
-          _autonomousCase++;
-        }
-        break;
-      case 5:
-        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
-        if ((!_drivetrain.isLevel() && !_drivetrain.isTilting()) || _autoLoops <= 150) {
-          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-        }
-        else if(_drivetrain.isTilting()){
-          _drivetrain.fieldOrientedDrive(0.10 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-
-        }
-        else {
-          // Otherwise stop and turn the wheels very slightly to lock position.
-          _drivetrain.robotOrientedDrive(0, 0, 0.10);
-
-          _ledController.changeToAlliance();
-        }
-        break;
-      default:
-        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
-        break;
-    }
-  }
-
-  public void blueSideTwoConeAuto() {
-    switch (_autonomousCase) {
-      case 0:
-        _pathFollower.startPath();
-        _autonomousCase++;
-        break;
-      case 1:
-        _drivetrain.followTrajectory();
-
-        if (_pathFollower.isPathFinished()) {
-          _autonomousCase = 7769;
-          break;
-        }
-      default:
-        // _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
-        break;
-    }
-  }
-
-  @Override
-  public void teleopInit() {
-    _ledController.teleopInit();
-  }
-
-  @Override
-  public void teleopPeriodic() {
-    teleopDrive();
-    teleopGamePieceManagement();
-
-    if (_driverController.getStartButtonPressed()) {
-      _drivetrain.resetGyro();
-    }
-  }
-
-  @Override
-  public void disabledInit() {
-    // _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
-    _pathFollower.setTestAuto();
-    _placerDowner.allowReset();
-  }
-
-  @Override
-  public void disabledPeriodic() {
-    // _drivetrain.logPose();
-    _drivetrain.robotOrientedDrive(0, 0, 0);
-    _placerDowner.handleElevatorReset();
-    _ledController.setAlliance();
-  }
-
-  @Override
-  public void testInit() {
-    _placerDowner.setWantedState(PlacerDownerState.YEEHAW);
-    _pickerUpper.setWantedState(PickerUpperState.YEEHAW);
-  }
-
-  @Override
-  public void testPeriodic() {
-    teleopDrive();
-    testPeriodicPickerUpper();
-    testPeriodicPlacerDowner();
-  }
-
-  private void testPeriodicPlacerDowner() {
-    _placerDowner.setManualElevatorSpeed(-_operatorController.getLeftY());
-
-    if (_operatorController.getLeftBumper()) {
-      _placerDowner.setTiltValue(Value.kForward);
-    } else if (_operatorController.getRightBumper()) {
-      _placerDowner.setTiltValue(Value.kReverse);
-    }
-
-    if (_operatorController.getAButton()){
-      _placerDowner.setManualIntake();
-    } else if (_operatorController.getBButton()){
-      _placerDowner.setManualEject();
-    } else {
-      _placerDowner.setManualStop();
-    }
-
-    if (Math.abs(_operatorController.getLeftTriggerAxis()) > 0.25) {
-      _placerDowner.setPivotValue(Value.kForward);
-    } else if (Math.abs(_operatorController.getRightTriggerAxis()) > 0.25) {
-      _placerDowner.setPivotValue(Value.kReverse);
-    }
-
-    _placerDowner.handleCurrentState();
-  }
-
-  private void testPeriodicPickerUpper() {
-
-    if (_driverController.getLeftBumper()) {
-      _pickerUpper.setManualCollect();
-    } else if (_driverController.getRightBumper()) {
-      _pickerUpper.setManualEject();
-    } else {
-      _pickerUpper.setManualStop();
-    }
-
-    if (Math.abs(_driverController.getLeftTriggerAxis()) > 0.25) {
-      _pickerUpper.setManualFlex(Value.kForward);
-    } else if (Math.abs(_driverController.getRightTriggerAxis()) > 0.25) {
-      _pickerUpper.setManualFlex(Value.kReverse);
-    }
-
-    _pickerUpper.handleCurrentState();
-  }
-
-  @Override
-  public void simulationInit() {
-  }
-
-  @Override
-  public void simulationPeriodic() {
-  }
-
-  private void teleopGamePieceManagement() {
-    if ( _operatorController.getStartButton() ) {
-      _ledController.startHit();
-    }else if ( _operatorController.getBackButton() ) {
-      _ledController.backHit();
-    }
-
-    if (_operatorController.getYButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
-
-      _ledController.yHit();
-    } else if (_operatorController.getXButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
-      _ledController.xHit();
-    } else if (_operatorController.getBButton()) {
-      _placerDowner.setWantedState(PlacerDownerState.STOW);
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
-    } else if (_operatorController.getAButton()) {
-      // Human Player Pickup mode
-      _placerDowner.setWantedState(PlacerDownerState.STOW);
-      _pickerUpper.setWantedState(PickerUpperState.FRESH_FROM_THE_OVEN);
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.FRESH_FROM_THE_OVEN);
-      _ledController.humanPlayerPickup();
-    } else if (Math.abs(_operatorController.getRightTriggerAxis()) >= 0.25) {
-      _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
-      _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
-      _ledController.lowHit();
-    }
-    
-
-    var eject = Math.abs(_driverController.getRightTriggerAxis()) > 0.25;
-
-    if (eject) {
-      _placerDowner.setWantedState(PlacerDownerState.EJECT);
-
-      _ledController.eject();
-    } else if (_ejectHeld) {
-      _placerDowner.setWantedState(PlacerDownerState.RESET);
-      _ledController.ejectHeld();
-    }
-
-    _ejectHeld = eject;
-
-    if (_operatorController.getLeftBumper()) {
-      _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
-    } 
-    // else if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
-    //   _pickerUpper.setWantedState(PickerUpperState.BOX_IT);
-    // } 
-    else if (_operatorController.getRightBumper()) {
-      _pickerUpper.setWantedState(PickerUpperState.WRONG_ORDER);
-    } else if (_pickerUpper.isPizzaReady()) {
-      _placerDowner.setWantedState(PlacerDownerState.INTAKE);
-      _pickerUpper.setWantedState(PickerUpperState.DELIVERY);
-    } else if (!_pickerUpper.isBusy()) {
-      // IsBusy covers the boxing process or if we are trying Human Player
-      _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
-    }
-
-    _pickerUpper.handleCurrentState();
-    _placerDowner.handleCurrentState();
-  }
-
-  private void teleopDrive() {
-    var translationX = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
-        Constants.XY_Axis_outputTable, _driverController.getLeftY()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var translationY = -OneDimensionalLookup.interpLinear(Constants.XY_Axis_inputBreakpoints,
-        Constants.XY_Axis_outputTable, _driverController.getLeftX()) * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    var rotationZ = -OneDimensionalLookup.interpLinear(Constants.RotAxis_inputBreakpoints,
-        Constants.RotAxis_outputTable,
-        _driverController.getRightX()) * Constants.MAX_ANGULAR_VELOCITY_PER_SECOND;
-
-    if (_driverController.getAButtonPressed() || _driverController.getYButtonPressed() || _driverController.getXButtonPressed() || _driverController.getBButtonPressed() || _driverController.getLeftBumperPressed() || _driverController.getRightBumperPressed()){
-      _drivetrain.resetWallFacingController();
-    }
-
-    if (_driverController.getAButton()) {
-      // Turn To The wall facing us
-      rotationZ = _drivetrain.getWallRotationTarget(180);
-    } else if (_driverController.getYButton()) {
-      // Turn to the wall infront of us
-      rotationZ = _drivetrain.getWallRotationTarget(0);
-    } else if (_driverController.getXButton()) {
-      // Turn to the wall left of us
-      rotationZ = _drivetrain.getWallRotationTarget(90);
-    } else if (_driverController.getBButton()) {
-      // Turn to the wall right of us
-      rotationZ = _drivetrain.getWallRotationTarget(-90);
-    } else {
-      rotationZ = rotationZ / 1.25;
-    }
-
-    if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
-      translationX /= 4;
-      translationY /= 4;
-    }
-
-    // Strafing for scoring.
-    if (_driverController.getLeftBumper()) {
-      rotationZ = _drivetrain.getWallRotationTarget(180);
-      translationX = 0;
-      translationY = 0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    } else if (_driverController.getRightBumper()) {
-      rotationZ = _drivetrain.getWallRotationTarget(180);
-      translationX = 0;
-      translationY = -0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND;
-    }
-
-    // Field orientated speed
-    _drivetrain.fieldOrientedDrive(translationX / 1.3, translationY / 1.3, rotationZ);
-
-    SmartDashboard.putNumber("driveControllerTranslationX", translationX);
-    SmartDashboard.putNumber("driveControllerTranslationY", translationY);
-    SmartDashboard.putNumber("driveControllerRotationZ", rotationZ);
   }
 }
