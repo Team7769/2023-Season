@@ -902,9 +902,14 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         // For at least 2 seconds, drive forward until the measured roll is considered balanced.
-        if (!_drivetrain.isLevel() || _autoLoops <= 150) {
+        if ((!_drivetrain.isLevel() && !_drivetrain.isTilting()) || _autoLoops <= 150) {
           _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-        } else {
+        }
+        else if(_drivetrain.isTilting()){
+          _drivetrain.fieldOrientedDrive(0.10 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
+
+        }
+        else {
           // Otherwise stop and turn the wheels very slightly to lock position.
           _drivetrain.robotOrientedDrive(0, 0, 0.10);
 
@@ -1055,9 +1060,11 @@ public class Robot extends TimedRobot {
       _placerDowner.setWantedState(PlacerDownerState.STOW);
       _pickerUpper.setWantedState(PickerUpperState.FRESH_FROM_THE_OVEN);
       _placerDowner.setElevatorSetpoint(ElevatorPosition.FRESH_FROM_THE_OVEN);
+      _ledController.humanPlayerPickup();
     } else if (Math.abs(_operatorController.getRightTriggerAxis()) >= 0.25) {
       _placerDowner.setElevatorSetpoint(ElevatorPosition.DIGIORNO);
       _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
+      _ledController.lowHit();
     }
     
 

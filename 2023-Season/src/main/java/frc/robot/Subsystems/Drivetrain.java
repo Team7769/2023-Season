@@ -208,7 +208,11 @@ public class Drivetrain extends Subsystem {
         });
     }
     public boolean isLevel() {
-        return Math.abs(_ahrs.getRoll()) <= 13;
+        return Math.abs(_ahrs.getRoll()) <= 5;
+    }
+
+    public boolean isTilting(){
+        return Math.abs(_ahrs.getRoll()) <= 13 && Math.abs(_ahrs.getRoll()) > 5;
     }
 
     public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {

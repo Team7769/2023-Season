@@ -67,7 +67,8 @@ public class LEDController {
     public final double kLightChaseRed = -0.31;
     public final double kLightChaseBlue = -0.29;
     public final double kLightChaseGray = -0.27;
-    
+    public final double kColor1Strobe = 0.15;
+    public final double kColor2Strobe = 0.35;
 
 
     public LEDController() {
@@ -139,12 +140,23 @@ public class LEDController {
 
     public void yHit()
     {
-        setUpperLED(kStrobeRed);
+        setUpperLED(kColor1Strobe);
+        setLowerLED(kColor2Strobe);
     }
 
     public void xHit()
     {
-        setUpperLED(kStrobeBlue);
+        setLowerLED(kColor1Strobe);
+        setUpperLED(kColor2Strobe);
+    }
+
+    public void lowHit() {
+        setUpperLED(kBeatsPerMinuteOceanPalette);
+        setLowerLED(kBeatsPerMinuteOceanPalette);
+    }
+
+    public void humanPlayerPickup() {
+        setLowerLED(kColorWavesPartyPalette);
     }
 
     public void teleopInit()
