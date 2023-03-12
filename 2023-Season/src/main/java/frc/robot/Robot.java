@@ -486,6 +486,7 @@ public class Robot extends TimedRobot {
       case 5:
         if (_autoLoops > 40) {
           // Start the path back to the grid.
+          _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
           _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
           _pathFollower.startPath();
           _autonomousCase++;
