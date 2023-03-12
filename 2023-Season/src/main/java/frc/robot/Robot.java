@@ -305,7 +305,7 @@ public class Robot extends TimedRobot {
         break;
       case 7:
         // For at least 2 seconds, drive forward until the measured roll is considered balanced.
-        if (_autoLoops <= 100) {
+        if (_autoLoops <= 135) {
           _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
         }
         else {
