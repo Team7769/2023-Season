@@ -167,7 +167,7 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (_deployTimer.hasElapsed(1.5)) {
+        if (_deployTimer.hasElapsed(1.0)) {
             _deployTimer.stop();
             handleElevatorPosition();
         }
