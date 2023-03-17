@@ -651,10 +651,13 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopGamePieceManagement() {
-    if ( _operatorController.getStartButton() ) {
-      _ledController.startHit();
+    if ( _operatorController.getStartButton() && _operatorController.getBackButton() ) {
+      _ledController.anyHuman();
     }else if ( _operatorController.getBackButton() ) {
       _ledController.backHit();
+    }
+    else if (_operatorController.getStartButton()){
+      _ledController.startHit();
     }
 
     if (_operatorController.getYButton()) {

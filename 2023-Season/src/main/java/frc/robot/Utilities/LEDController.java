@@ -210,4 +210,8 @@ public class LEDController {
         setUpperLED(kHotPink);
     }
 
+    public void anyHuman(){
+        setUpperLED(kGreen);
+    }
+
 }
