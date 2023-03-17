@@ -37,4 +37,9 @@ public enum PickerUpperState {
      * Manual
      */
     YEEHAW,
+
+    /**
+     * Release
+     */
+    RELEASE
 }

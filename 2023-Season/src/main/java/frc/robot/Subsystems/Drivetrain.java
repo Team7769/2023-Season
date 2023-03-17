@@ -208,7 +208,26 @@ public class Drivetrain extends Subsystem {
         });
     }
     public boolean isLevel() {
-        return Math.abs(_ahrs.getRoll()) <= 13;
+        return Math.abs(_ahrs.getRoll()) <= 5;
+    }
+
+    public boolean isTilting(){
+        return Math.abs(_ahrs.getRoll()) <= 13 && Math.abs(_ahrs.getRoll()) > 5;
+    }
+
+    public double getBalanceSpeed() {
+        var roll = _ahrs.getRoll();
+        var absRoll = Math.abs(roll);
+
+        if (absRoll <= 5) {
+            return 0.0;
+        }
+
+        if (absRoll <= 13 && absRoll > 5) {
+            return roll > 0 ? -0.10 : 0.10;
+        } else {
+            return roll > 0 ? 0.18 : -0.18;
+        }
     }
 
     public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {

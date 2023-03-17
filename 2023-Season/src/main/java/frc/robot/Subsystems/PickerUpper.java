@@ -25,7 +25,7 @@ public class PickerUpper extends Subsystem {
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
 
-    private final double _collectSpeed = 0.65;
+    private final double _collectSpeed = 1;
     private final double _ejectSpeed = -0.65;
     private final double _deliverySpeed = -0.25;
 
@@ -150,6 +150,12 @@ public class PickerUpper extends Subsystem {
         up();
     }
 
+    public void release() {
+        _leftMotor.set(_deliverySpeed);
+        _rightMotor.set(_deliverySpeed);
+        open();
+    }
+
     private void fresh() {
         up();
         open();
@@ -232,6 +238,9 @@ public class PickerUpper extends Subsystem {
                 break;
             case WERE_CLOSED:
                 stop();
+                break;
+            case RELEASE:
+                release();
                 break;
             default:
                 break;

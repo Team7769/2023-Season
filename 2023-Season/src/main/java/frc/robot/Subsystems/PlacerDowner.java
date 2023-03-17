@@ -62,6 +62,8 @@ public class PlacerDowner extends Subsystem {
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
     private Timer _deployTimer = new Timer();
 
+    private boolean hasReset = false;
+
     PlacerDowner() {
         _theClaw = new CANSparkMax(Constants.kTheClawDeviceId, MotorType.kBrushless);
         _theClaw.setIdleMode(IdleMode.kBrake);
@@ -131,9 +133,16 @@ public class PlacerDowner extends Subsystem {
     }
 
     public void handleElevatorReset() {
+        if ( hasReset ) return;
+
         if(!_elevatorBottomLimit.get()){
             _placerDownerElevatorEncoder.setPosition(0);
+            hasReset = true;
         }
+    }
+
+    public void allowReset() {
+        hasReset = false;
     }
 
     private void intake() {
@@ -158,7 +167,7 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (_deployTimer.hasElapsed(1)) {
+        if (_deployTimer.hasElapsed(1.0)) {
             _deployTimer.stop();
             handleElevatorPosition();
         }
@@ -220,6 +229,21 @@ public class PlacerDowner extends Subsystem {
         if (atSetpoint()) {
             _pivoter.set(Value.kReverse);
             setWantedState(PlacerDownerState.HOLD_POSITION);
+        }
+    }
+
+    public boolean isScoring() {
+        switch (_currentState) {
+            // case DEPLOY:
+            //     if (_deployTimer.hasElapsed(1.5)) {
+            //         return true;
+            //     } else {
+            //         return false;
+            //     }
+            case LOW_SCORE:
+                return true;
+            default:
+                return false;
         }
     }
 
