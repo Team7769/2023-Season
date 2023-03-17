@@ -112,7 +112,7 @@ public class Robot extends TimedRobot {
     }
     _pathFollower.logData();
 
-    _drivetrain.updateOdomery();
+    _drivetrain.updateOdometry();
   }
 
   @Override

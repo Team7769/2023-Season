@@ -7,6 +7,7 @@ import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -18,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.ADIS16448_IMU.CalibrationTime;
 import edu.wpi.first.wpilibj.ADIS16448_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.SPI.Port;
@@ -28,14 +30,15 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Configuration.Constants;
+import frc.robot.Utilities.Limelight;
 import frc.robot.Utilities.PathFollower;
 
 public class Drivetrain extends Subsystem {
 
     private static Drivetrain _instance = null;
     private static PathFollower _pathFollower;
+    private static Limelight _limelight;
 
-    //private SwerveDriveKinematics _kinematics;
     private Gyro _gyro;
     private AHRS _ahrs;
 
@@ -43,7 +46,7 @@ public class Drivetrain extends Subsystem {
     private SwerveModule _frontRightModule;
     private SwerveModule _backLeftModule;
     private SwerveModule _backRightModule;
-    private SwerveDriveOdometry _odometry;
+    private SwerveDrivePoseEstimator _drivePoseEstimator;
     private SwerveModuleState[] _moduleStates = new SwerveModuleState[4];
     private PIDController _wallFacingController;
 
@@ -57,8 +60,6 @@ public class Drivetrain extends Subsystem {
 
         _ahrs = new AHRS(Port.kMXP);
         _gyro = _ahrs;
-
-        //_gyro = new AHRS(SerialPort.Port.kUSB);
 
         _frontLeftModule = Mk4SwerveModuleHelper.createFalcon500(
             tab.getLayout("Front Left Module", BuiltInLayouts.kList)
@@ -101,14 +102,16 @@ public class Drivetrain extends Subsystem {
                Constants.kBackRightEncoderOffset);
 
         _moduleStates = Constants._kinematics.toSwerveModuleStates(new ChassisSpeeds(0.0, 0.0, 0.0));
-        _odometry = new SwerveDriveOdometry(Constants._kinematics, Rotation2d.fromDegrees(0.0), new SwerveModulePosition[] {
+        
+        _drivePoseEstimator = new SwerveDrivePoseEstimator(Constants._kinematics, getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(),
             new SwerveModulePosition(),
             new SwerveModulePosition(),
             new SwerveModulePosition()
-        });
+        }, new Pose2d());
 
         _pathFollower = PathFollower.getInstance();
+        _limelight = Limelight.getInstance();
         _wallFacingController = new PIDController(0.125, 0.02, .01);
         _wallFacingController.setIntegratorRange(-0.1, 0.1);
         _wallFacingController.enableContinuousInput(-180, 180);
@@ -129,7 +132,8 @@ public class Drivetrain extends Subsystem {
 
     @Override
     public void logTelemetry() {
-        m_field.setRobotPose(_odometry.getPoseMeters());
+        var pose = _drivePoseEstimator.getEstimatedPosition();
+        m_field.setRobotPose(pose);
         SmartDashboard.putNumber("drivetrainGyroAngle", getGyroscopeRotation().getDegrees());
         SmartDashboard.putNumber("drivetrainChassisSpeedsVx", _chassisSpeeds.vxMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
@@ -148,20 +152,20 @@ public class Drivetrain extends Subsystem {
         // SmartDashboard.putNumber("drivetrainBackRightModuleVelocity", _backRightModule.getDriveVelocity());
         // SmartDashboard.putNumber("drivetrainBackRightModuleAngle", Math.toDegrees(_backRightModule.getSteerAngle()));
 
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleTargetSpeed", _moduleStates[0].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainFrontLeftModuleTargetAngle", _moduleStates[0].angle.getDegrees());
-        SmartDashboard.putNumber("drivetrainFrontRightModuleTargetSpeed", _moduleStates[1].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainFrontRightModuleTargetAngle", _moduleStates[1].angle.getDegrees());
-        SmartDashboard.putNumber("drivetrainBackLeftModuleTargetSpeed", _moduleStates[2].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainBackLeftModuleTargetAngle", _moduleStates[2].angle.getDegrees());
-        SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
-        SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainFrontLeftModuleTargetSpeed", _moduleStates[0].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainFrontLeftModuleTargetAngle", _moduleStates[0].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainFrontRightModuleTargetSpeed", _moduleStates[1].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainFrontRightModuleTargetAngle", _moduleStates[1].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainBackLeftModuleTargetSpeed", _moduleStates[2].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainBackLeftModuleTargetAngle", _moduleStates[2].angle.getDegrees());
+        // SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
+        // SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
         SmartDashboard.putNumber("drivetrainGyroOffset", _gyroOffset);
         // SmartDashboard.putNumber("drivetrainPitch", _ahrs.getRoll());
 
-        SmartDashboard.putNumber("drivetrainOdometryX", _odometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("drivetrainOdometryY", _odometry.getPoseMeters().getY());
-        SmartDashboard.putNumber("drivetrainOdometryZ", _odometry.getPoseMeters().getRotation().getDegrees());
+        SmartDashboard.putNumber("drivetrainOdometryX", pose.getX());
+        SmartDashboard.putNumber("drivetrainOdometryY", pose.getY());
+        SmartDashboard.putNumber("drivetrainOdometryZ", pose.getRotation().getDegrees());
     }
 
     public void logPose() {
@@ -175,12 +179,12 @@ public class Drivetrain extends Subsystem {
 
     public void resetOdometry() {
         resetGyro();
-        _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
+        _drivePoseEstimator.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
             new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
             new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
-        }, new Pose2d(0, 0, new Rotation2d()));
+        }, new Pose2d());
     }
 
     public void resetGyro() {
@@ -199,13 +203,17 @@ public class Drivetrain extends Subsystem {
         return Rotation2d.fromDegrees(_gyro.getRotation2d().getDegrees() + _gyroOffset);
     }
 
-    public void updateOdomery() {
-        _odometry.update(getGyroscopeRotation(), new SwerveModulePosition[] {
+    public void updateOdometry() {
+        _drivePoseEstimator.updateWithTime(Timer.getFPGATimestamp(),getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
             new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
             new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         });
+
+        // if (_limelight.hasPose()) {
+        //     _drivePoseEstimator.addVisionMeasurement(_limelight.getPose(), Timer.getFPGATimestamp());
+        // }
     }
     public boolean isLevel() {
         return Math.abs(_ahrs.getRoll()) <= 5;
@@ -250,7 +258,7 @@ public class Drivetrain extends Subsystem {
     }
 
     public void followTrajectory() {
-        var output = _pathFollower.getPathTarget(_odometry.getPoseMeters());
+        var output = _pathFollower.getPathTarget(_drivePoseEstimator.getEstimatedPosition());
         SwerveDriveKinematics.desaturateWheelSpeeds(output, Constants.MAX_VELOCITY_METERS_PER_SECOND);
 
         // SmartDashboard.putNumber("drivetrainOutputFrontLeftSpeed", output[0].speedMetersPerSecond);
@@ -268,7 +276,7 @@ public class Drivetrain extends Subsystem {
         resetGyro();
         var pathInitialState = _pathFollower.getInitialState();
         _gyroOffset = pathInitialState.holonomicRotation.getDegrees();
-        _odometry.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
+        _drivePoseEstimator.resetPosition(getGyroscopeRotation(), new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
             new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
             new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
