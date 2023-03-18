@@ -212,8 +212,9 @@ public class Drivetrain extends Subsystem {
             new SwerveModulePosition(_backRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backRightModule.getSteerAngle()))
         });
 
-        // if (_limelight.hasPose()) {
-        //     _drivePoseEstimator.addVisionMeasurement(_limelight.getPose(), Timer.getFPGATimestamp());
+        // var visionPose = _limelight.getPose();
+        // if (visionPose != null) {
+        //     _drivePoseEstimator.addVisionMeasurement(visionPose.pose, visionPose.latencyAdjustedTimestamp);
         // }
     }
     public boolean isLevel() {
