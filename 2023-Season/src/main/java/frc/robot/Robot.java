@@ -108,9 +108,9 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     for (var x : _subsystems) {
       x.logTelemetry();
-      x.readDashboardData();
+      //x.readDashboardData();
     }
-    _pathFollower.logData();
+    //_pathFollower.logData();
 
     _drivetrain.updateOdometry();
   }

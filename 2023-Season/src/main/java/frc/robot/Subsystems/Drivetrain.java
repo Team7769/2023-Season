@@ -134,6 +134,7 @@ public class Drivetrain extends Subsystem {
     public void logTelemetry() {
         var pose = _drivePoseEstimator.getEstimatedPosition();
         m_field.setRobotPose(pose);
+        //SmartDashboard.putData("Field", m_field);
         SmartDashboard.putNumber("drivetrainGyroAngle", getGyroscopeRotation().getDegrees());
         SmartDashboard.putNumber("drivetrainChassisSpeedsVx", _chassisSpeeds.vxMetersPerSecond);
         SmartDashboard.putNumber("drivetrainChassisSpeedsVy", _chassisSpeeds.vyMetersPerSecond);
