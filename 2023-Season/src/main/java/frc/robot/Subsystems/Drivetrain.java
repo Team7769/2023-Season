@@ -205,7 +205,8 @@ public class Drivetrain extends Subsystem {
     }
 
     public void updateOdometry() {
-        _drivePoseEstimator.updateWithTime(Timer.getFPGATimestamp(),getGyroscopeRotation(), new SwerveModulePosition[] {
+        var currentRotation = getGyroscopeRotation();
+        _drivePoseEstimator.updateWithTime(Timer.getFPGATimestamp(), currentRotation, new SwerveModulePosition[] {
             new SwerveModulePosition(_frontLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontLeftModule.getSteerAngle())),
             new SwerveModulePosition(_frontRightModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_frontRightModule.getSteerAngle())),
             new SwerveModulePosition(_backLeftModule.getDistance() * Constants.DRIVE_ENCODER_CONVERSION_FACTOR, new Rotation2d(_backLeftModule.getSteerAngle())),
@@ -262,15 +263,7 @@ public class Drivetrain extends Subsystem {
     public void followTrajectory() {
         var output = _pathFollower.getPathTarget(_drivePoseEstimator.getEstimatedPosition());
         SwerveDriveKinematics.desaturateWheelSpeeds(output, Constants.MAX_VELOCITY_METERS_PER_SECOND);
-
-        // SmartDashboard.putNumber("drivetrainOutputFrontLeftSpeed", output[0].speedMetersPerSecond);
-        // SmartDashboard.putNumber("drivetrainOutputFrontRightSpeed", output[1].speedMetersPerSecond);
-        // SmartDashboard.putNumber("drivetrainOutputBackLeftSpeed", output[2].speedMetersPerSecond);
-        // SmartDashboard.putNumber("drivetrainOutputBackRightSpeed", output[3].speedMetersPerSecond);
-        // SmartDashboard.putNumber("drivetrainOutputFrontLeftAngle", output[0].angle.getDegrees());
-        // SmartDashboard.putNumber("drivetrainOutputFrontRightAngle", output[1].angle.getDegrees());
-        // SmartDashboard.putNumber("drivetrainOutputBackLeftAngle", output[2].angle.getDegrees());
-        // SmartDashboard.putNumber("drivetrainOutputBackRightAngle", output[3].angle.getDegrees());
+        
         setModuleStates(output);
     }
 
