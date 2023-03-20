@@ -100,6 +100,7 @@ public class Robot extends TimedRobot {
     _autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
     _autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
     _autoChooser.addOption("Loading Side Pickup + Score 3 Pieces", Automode.LOADING_SIDE_PICKUP_SCORE_THREE);
+    _autoChooser.addOption("Loading Side Pickup + Score Mid Link", Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
     SmartDashboard.putData(_autoChooser);
@@ -147,6 +148,9 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE_THREE:
         _pathFollower.setLoadsidePickupScoreThree();
         break;
+      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+        _pathFollower.setLoadsidePickupScoreMidLink();
+        break;
       default:
         break;
     }
@@ -162,6 +166,7 @@ public class Robot extends TimedRobot {
       case Automode.MIDDLE_YEET_BALANCE:
       case Automode.LOADING_SIDE_PICKUP_SCORE:
       case Automode.LOADING_SIDE_PICKUP_SCORE_THREE:
+      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
@@ -196,8 +201,8 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE:
         loadSidePickupScore();
         break;
-      case Automode.LOADING_SIDE_PICKUP_SCORE_THREE:
-          loadSidePickupScoreThree();
+      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+          loadSidePickupScoreThreeMid();
           break;
       case Automode.MIDDLE_YEET_BALANCE:
         yeet();
@@ -209,11 +214,39 @@ public class Robot extends TimedRobot {
     if (_pickerUpper.isPizzaReady()) {
       _placerDowner.setWantedState(PlacerDownerState.INTAKE);
       _pickerUpper.setWantedState(PickerUpperState.DELIVERY);
+    } else if (_placerDowner.isScoring()) {
+      _pickerUpper.setWantedState(PickerUpperState.RELEASE);
     }
 
     _pickerUpper.handleCurrentState();
     _placerDowner.handleCurrentState();
+    incrementAutoLoopTimer();
+  }
+
+  public void incrementAutoLoopTimer() {
     _autoLoops++;
+  }
+
+  public void resetAutoLoopTimer() {
+    _autoLoops = 0;
+  }
+
+  /**
+   * Determines if a timeframe has elapsed.
+   * 50 loops = 1 second.
+   * @param seconds
+   * @return
+   */
+  public boolean autoHasElapsed(double seconds) {
+    return (_autoLoops / 50) >= seconds;
+  }
+
+  public void nextAutoStep() {
+    _autonomousCase++;
+  }
+
+  public void goToAutoStep(int step) {
+    _autonomousCase = step;
   }
 
   public void loadSidePickupBalance() {
@@ -566,152 +599,121 @@ public class Robot extends TimedRobot {
     switch (_autonomousCase) {
       case 0:
         // Init Elevator
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-        _autonomousCase++;
+        nextAutoStep();
         break;
       case 1:
-        // If elevator is fully extended.
+        // If elevator is fully extended, eject gamepiece
         if (_placerDowner.atSetpoint()) {
-
-          // Wait 1 second then stop and eject.
-          if (_autoLoops >= 50) {
-            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-            _placerDowner.setWantedState(PlacerDownerState.EJECT);
-            _autoLoops = 0;
-            _autonomousCase++;
-          } else if (_autoLoops >= 15 && _autoLoops < 50) {
-            // Wait .5 seconds, then drive for .5 seconds
-            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
-          }
-        } else {
-          // Don't move until the elevator is extended.
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _autoLoops = 0;
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          nextAutoStep();
         }
+
+        // Don't move
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
       case 2:
         // Stop
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-
-        // Wait .5 seconds, then start the elevator reset.
-        if (_autoLoops > 25) {
-          _drivetrain.resetWallFacingController();
-          _placerDowner.setWantedState(PlacerDownerState.RESET);
-          _autoLoops = 0;
-          _autonomousCase++;
-        }
+        _placerDowner.setWantedState(PlacerDownerState.RESET);
+        _pathFollower.startPath();
+        resetAutoLoopTimer();
+        nextAutoStep();
         break;
       case 3:
-        if (_autoLoops > 25) {
-          // Start path to cone/cube after 2 full seconds
-          _autoLoops = 0;
-          _pathFollower.startPath();
-          _autonomousCase++;
-        } else if (_autoLoops <= 25) {
-          // Back away for .5 seconds.
-          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
-              _drivetrain.getWallRotationTarget(180));
-        } else {
-          // Stop for 1.5 seconds
-          _drivetrain.fieldOrientedDrive(0, 0, 0);
-        }
-        break;
-      case 4:
         _drivetrain.followTrajectory();
-        if (_autoLoops > 25 && _autoLoops <= 30) {
-          // After around 1 second drop the collector
+        if (autoHasElapsed(.5) && !autoHasElapsed(.55)) {
+          // After half a second drop the collector
           _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
         }
 
         if (_pathFollower.isPathFinished()) {
           // Set next path, prepare for pickup
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autoLoops = 0;
           _pathFollower.setNextPath();
-          _autonomousCase++;
+          resetAutoLoopTimer();
+          nextAutoStep();
         }
         break;
-      case 5:
-        if (_autoLoops > 100) {
+      case 4:
+        // Transfer game piece
+        // if (autoHasElapsed(2)) {
+        //   // Start the path back to the grid.
+        //   _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+        //   _pathFollower.startPath();
+        //   resetAutoLoopTimer();
+        //   nextAutoStep();
+        // }
+        
           // Start the path back to the grid.
           _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
           _pathFollower.startPath();
-          _autonomousCase++;
-          _autoLoops = 0;
-        } else {
-          // Drive slowly towards the gamepiece for 1.5 seconds
-          _drivetrain.fieldOrientedDrive(0.0, 0.0,
-              _drivetrain.getWallRotationTarget(0));
-        }
+          resetAutoLoopTimer();
+          nextAutoStep();
+
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
-      case 6:
+      case 5:
         // Follow path to the grid.
         _drivetrain.followTrajectory();
-        if (_autoLoops > 75 && _autoLoops <= 80) {
+        
+        // Bring elevator to scoring position.
+        if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
           _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
           _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
         }
 
         if (_pathFollower.isPathFinished()) {
-          // Prepare to score
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autonomousCase++;
-          _autoLoops = 0;
+          resetAutoLoopTimer();
+          nextAutoStep();
         }
+        break;
+      case 6:
+        // Score Cube
+        if (_placerDowner.atSetpoint()) {
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          nextAutoStep();
+        }
+
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
       case 7:
-        // If elevator is fully extended.
-        if (_placerDowner.atSetpoint()) {
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _placerDowner.setWantedState(PlacerDownerState.EJECT);
-          _autoLoops = 0;
-          _autonomousCase++;
-        } else {
-          // Don't move until the elevator is extended.
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _autoLoops = 0;
-        }
+        // Reset
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _placerDowner.setWantedState(PlacerDownerState.RESET);
+        resetAutoLoopTimer();
+        _pathFollower.startPath();
+        nextAutoStep();
         break;
       case 8:
-        // Stop
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        if (_autoLoops > 25) {
-          _placerDowner.setWantedState(PlacerDownerState.RESET);
-          _autoLoops = 0;
-          _pathFollower.startPath();
-          _autonomousCase++;
-        }
-        break;
-      case 9:
       _drivetrain.followTrajectory();
-      if (_autoLoops > 55 && _autoLoops <= 60) {
-        // After around 1 second drop the collector
+      if (autoHasElapsed(.5) && !autoHasElapsed(.55)) {
         _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
       }
 
       if (_pathFollower.isPathFinished()) {
         // Set next path, prepare for pickup
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        _autoLoops = 0;
         _pathFollower.setNextPath();
-        _autonomousCase++;
+        nextAutoStep();
       }
       break;
-    case 10:
+    case 9:
         // Start the path back to the grid.
         _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         _pathFollower.startPath();
-        _autonomousCase++;
-        _autoLoops = 0;
+        resetAutoLoopTimer();
+        nextAutoStep();
       break;
-    case 11:
+    case 10:
       // Follow path to the grid.
       _drivetrain.followTrajectory();
-      if (_autoLoops > 75 && _autoLoops <= 80) {
+      if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
         _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
         _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
       }
@@ -719,29 +721,171 @@ public class Robot extends TimedRobot {
       if (_pathFollower.isPathFinished()) {
         // Prepare to score
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        _autonomousCase++;
-        _autoLoops = 0;
+        nextAutoStep();
       }
       break;
-    case 12:
+    case 11:
       // If elevator is fully extended.
       if (_placerDowner.atSetpoint()) {
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         _placerDowner.setWantedState(PlacerDownerState.EJECT);
-        _autoLoops = 0;
-        _autonomousCase++;
-      } else {
-        // Don't move until the elevator is extended.
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _autoLoops = 0;
+        nextAutoStep();
       }
+      _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
       break;
-    case 13:
+    case 12:
       // Stop
       _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
       _placerDowner.setWantedState(PlacerDownerState.RESET);
-      _autoLoops = 0;
-      _autonomousCase++;
+      nextAutoStep();
+      break;
+      default:
+        _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
+        break;
+    }
+  }
+
+  public void loadSidePickupScoreThreeMid() {
+    switch (_autonomousCase) {
+      case 0:
+        // Init Elevator
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+        nextAutoStep();
+        break;
+      case 1:
+        // If elevator is fully extended, eject gamepiece
+        if (_placerDowner.atSetpoint()) {
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          nextAutoStep();
+        }
+
+        // Don't move
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        break;
+      case 2:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _placerDowner.setWantedState(PlacerDownerState.RESET);
+        _pathFollower.startPath();
+        resetAutoLoopTimer();
+        nextAutoStep();
+        break;
+      case 3:
+        _drivetrain.followTrajectory();
+        if (autoHasElapsed(.5) && !autoHasElapsed(.55)) {
+          // After half a second drop the collector
+          _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+        }
+
+        if (_pathFollower.isPathFinished()) {
+          // Set next path, prepare for pickup
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          _pathFollower.setNextPath();
+          resetAutoLoopTimer();
+          nextAutoStep();
+        }
+        break;
+      case 4:
+        // Transfer game piece
+        // if (autoHasElapsed(2)) {
+        //   // Start the path back to the grid.
+        //   _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+        //   _pathFollower.startPath();
+        //   resetAutoLoopTimer();
+        //   nextAutoStep();
+        // }
+        
+          // Start the path back to the grid.
+          _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+          _pathFollower.startPath();
+          resetAutoLoopTimer();
+          nextAutoStep();
+
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        break;
+      case 5:
+        // Follow path to the grid.
+        _drivetrain.followTrajectory();
+        
+        // Bring elevator to scoring position.
+        if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+          _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
+        }
+
+        if (_pathFollower.isPathFinished()) {
+          _pathFollower.setNextPath();
+          _drivetrain.robotOrientedDrive(0, 0, 0);
+          resetAutoLoopTimer();
+          nextAutoStep();
+        }
+        break;
+      case 6:
+        // Score Cube
+        if (_placerDowner.atSetpoint()) {
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          nextAutoStep();
+        }
+
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        break;
+      case 7:
+        // Reset
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _placerDowner.setWantedState(PlacerDownerState.RESET);
+        resetAutoLoopTimer();
+        _pathFollower.startPath();
+        nextAutoStep();
+        break;
+      case 8:
+      _drivetrain.followTrajectory();
+      if (autoHasElapsed(.5) && !autoHasElapsed(.55)) {
+        _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
+      }
+
+      if (_pathFollower.isPathFinished()) {
+        // Set next path, prepare for pickup
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        _pathFollower.setNextPath();
+        nextAutoStep();
+      }
+      break;
+    case 9:
+        // Start the path back to the grid.
+        _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _pathFollower.startPath();
+        resetAutoLoopTimer();
+        nextAutoStep();
+      break;
+    case 10:
+      // Follow path to the grid.
+      _drivetrain.followTrajectory();
+      if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+      }
+
+      if (_pathFollower.isPathFinished()) {
+        // Prepare to score
+        _drivetrain.robotOrientedDrive(0, 0, 0);
+        nextAutoStep();
+      }
+      break;
+    case 11:
+      // If elevator is fully extended.
+      if (_placerDowner.atSetpoint()) {
+        _placerDowner.setWantedState(PlacerDownerState.EJECT);
+        nextAutoStep();
+      }
+      _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+      break;
+    case 12:
+      // Stop
+      _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+      _placerDowner.setWantedState(PlacerDownerState.RESET);
+      nextAutoStep();
       break;
       default:
         _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);

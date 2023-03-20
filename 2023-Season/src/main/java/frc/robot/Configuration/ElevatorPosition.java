@@ -8,6 +8,11 @@ public final class ElevatorPosition {
    * High Cone.
    */
     public static final double JETS = 90;
+    
+    /**
+   * Mid Cone Auto.
+   */
+    public static final double BUDDYS = 75;
 
     /**
     * Mid Cone.

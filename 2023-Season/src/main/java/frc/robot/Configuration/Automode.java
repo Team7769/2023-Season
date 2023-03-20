@@ -11,4 +11,5 @@ public final class Automode {
     public static final int MIDDLE_YEET_BALANCE = 7;
     public static final int LOADING_SIDE_PICKUP_SCORE = 8;
     public static final int LOADING_SIDE_PICKUP_SCORE_THREE = 9;
+    public static final int LOADING_SIDE_PICKUP_SCORE_MID_LINK = 10;
 }
