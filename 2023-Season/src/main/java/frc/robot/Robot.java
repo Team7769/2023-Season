@@ -755,8 +755,8 @@ public class Robot extends TimedRobot {
     }
 
     if (Math.abs(_driverController.getLeftTriggerAxis()) >= 0.25) {
-      translationX /= 4;
-      translationY /= 4;
+      translationX /= 2;
+      translationY /= 2;
     }
 
     // Strafing for scoring.
@@ -771,7 +771,7 @@ public class Robot extends TimedRobot {
     }
 
     // Field orientated speed
-    _drivetrain.fieldOrientedDrive(translationX / 1.3, translationY / 1.3, rotationZ);
+    _drivetrain.fieldOrientedDrive(translationX, translationY, rotationZ);
 
     SmartDashboard.putNumber("driveControllerTranslationX", translationX);
     SmartDashboard.putNumber("driveControllerTranslationY", translationY);
