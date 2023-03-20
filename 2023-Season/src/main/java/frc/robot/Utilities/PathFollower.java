@@ -7,6 +7,7 @@ import java.util.List;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.PathPlannerTrajectory.PathPlannerState;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryUtil;
@@ -52,10 +54,17 @@ public class PathFollower {
     private List<PathPlannerTrajectory> _loadSideLinkBalance;
     private List<PathPlannerTrajectory> _loadSidePickupBalance;
     private List<PathPlannerTrajectory> _loadSidePickupScore;
+    private List<PathPlannerTrajectory> _loadSidePickupScoreThree;
+    private List<PathPlannerTrajectory> _loadSidePickupScoreMidLink;
     private List<PathPlannerTrajectory> _cableSideTwoConeBalance;
     private List<PathPlannerTrajectory> _cableSideLinkBalance;
     private List<PathPlannerTrajectory> _loadingSideLinkNoBalance;
     private List<PathPlannerTrajectory> _loadingSideLinkConeNoBalance;
+    private PathPlannerTrajectory _pathToHumanPlayer;
+    private PathPlannerTrajectory _pathToGrid;
+
+    private PathPoint _humanPlayerStation = new PathPoint(new Translation2d(13.55, 7.65), Rotation2d.fromDegrees(30), Rotation2d.fromDegrees(90));
+    private PathPoint _gridLoadingSide = new PathPoint(new Translation2d(3.31, 4.57), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(180));
 
     //private ArrayList<SwerveTrajectory> _currentAutonomous;
 
@@ -79,6 +88,8 @@ public class PathFollower {
         _loadSideLinkBalance = PathPlanner.loadPathGroup("LoadSideLinkBalance", true, new PathConstraints(2.25, 3));
         _loadSidePickupBalance = PathPlanner.loadPathGroup("LoadSidePickupBalance", true, new PathConstraints(2.25, 3));
         _loadSidePickupScore = PathPlanner.loadPathGroup("LoadSidePickupScore", true, new PathConstraints(2.25, 3));
+        _loadSidePickupScoreThree = PathPlanner.loadPathGroup("LoadSidePickupScore3", true, new PathConstraints(3, 3));
+        _loadSidePickupScoreMidLink = PathPlanner.loadPathGroup("LoadSidePickupScoreMidLink", true, new PathConstraints(3, 3));
         _cableSideLinkBalance = PathPlanner.loadPathGroup("CableSide-Link-Balance", true, new PathConstraints(2.25, 3));
         _loadingSideLinkNoBalance = PathPlanner.loadPathGroup("LoadingSide-Link-NoBalance", true, new PathConstraints(2.25, 3));
         _loadingSideLinkConeNoBalance = PathPlanner.loadPathGroup("LoadingSide-LinkCone-NoBalance", true, new PathConstraints(2.25, 3));
@@ -98,6 +109,18 @@ public class PathFollower {
 
     public void setTestAuto() {
         initializeTrajectory(_testTrajectory);
+    }
+
+    public void setPathToHumanPlayer(Pose2d currentPose, Rotation2d holonomicRotation) {
+        var startPoint = new PathPoint(currentPose.getTranslation(), currentPose.getRotation(), holonomicRotation);
+        _pathToHumanPlayer = PathPlanner.generatePath(new PathConstraints(2.25, 3), startPoint, _humanPlayerStation);
+        initializeTrajectory(_pathToHumanPlayer);
+    }
+    
+    public void setPathToGrid(Pose2d currentPose, Rotation2d holonomicRotation) {
+        var startPoint = new PathPoint(currentPose.getTranslation(), currentPose.getRotation(), holonomicRotation);
+        _pathToGrid = PathPlanner.generatePath(new PathConstraints(2.25, 3), startPoint, _gridLoadingSide);
+        initializeTrajectory(_pathToGrid);
     }
 
     public void setCableSideLinkBalance() {
@@ -135,6 +158,18 @@ public class PathFollower {
         _currentSegmentedPath = _loadSidePickupScore;
         initializeTrajectory(_loadSidePickupScore.get(_pathIndex));
     }
+    
+    public void setLoadsidePickupScoreThree() {
+        _pathIndex = 0;
+        _currentSegmentedPath = _loadSidePickupScoreThree;
+        initializeTrajectory(_loadSidePickupScoreThree.get(_pathIndex));
+    }
+    
+    public void setLoadsidePickupScoreMidLink() {
+        _pathIndex = 0;
+        _currentSegmentedPath = _loadSidePickupScoreMidLink;
+        initializeTrajectory(_loadSidePickupScoreMidLink.get(_pathIndex));
+    }
 
     public void setCableSideTwoConeBalance() {
         _pathIndex = 0;
@@ -148,7 +183,7 @@ public class PathFollower {
                 trajectory, DriverStation.getAlliance());
         _timer.stop();
         _timer.reset();
-        PathPlannerServer.sendActivePath(_currentPath.getStates());
+        //PathPlannerServer.sendActivePath(_currentPath.getStates());
     }
 
     public void setNextPath() {
