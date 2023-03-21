@@ -12,7 +12,7 @@ public final class ElevatorPosition {
     /**
    * Mid Cone Auto.
    */
-    public static final double BUDDYS = 75;
+    public static final double BUDDYS = 72;
 
     /**
     * Mid Cone.

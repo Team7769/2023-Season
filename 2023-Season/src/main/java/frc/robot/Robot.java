@@ -238,7 +238,7 @@ public class Robot extends TimedRobot {
    * @return
    */
   public boolean autoHasElapsed(double seconds) {
-    return (_autoLoops / 50) >= seconds;
+    return ((double)_autoLoops / 50) >= seconds;
   }
 
   public void nextAutoStep() {
@@ -757,6 +757,7 @@ public class Robot extends TimedRobot {
         // If elevator is fully extended, eject gamepiece
         if (_placerDowner.atSetpoint()) {
           _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          resetAutoLoopTimer();
           nextAutoStep();
         }
 
@@ -764,16 +765,21 @@ public class Robot extends TimedRobot {
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
       case 2:
-        // Stop
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         _placerDowner.setWantedState(PlacerDownerState.RESET);
-        _pathFollower.startPath();
-        resetAutoLoopTimer();
         nextAutoStep();
         break;
       case 3:
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        if (autoHasElapsed(1.5)) {
+          _pathFollower.startPath();
+          resetAutoLoopTimer();
+          nextAutoStep();
+        }
+        break;
+      case 4:
         _drivetrain.followTrajectory();
-        if (autoHasElapsed(.5) && !autoHasElapsed(.55)) {
+        if (autoHasElapsed(.25) && !autoHasElapsed(.30)) {
           // After half a second drop the collector
           _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
         }
@@ -783,35 +789,37 @@ public class Robot extends TimedRobot {
           _drivetrain.robotOrientedDrive(0, 0, 0);
           _pathFollower.setNextPath();
           resetAutoLoopTimer();
+          _drivetrain.resetWallFacingController();
           nextAutoStep();
         }
         break;
-      case 4:
+      case 5:
         // Transfer game piece
-        // if (autoHasElapsed(2)) {
-        //   // Start the path back to the grid.
-        //   _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
-        //   _pathFollower.startPath();
-        //   resetAutoLoopTimer();
-        //   nextAutoStep();
-        // }
-        
+        if (autoHasElapsed(.75)) {
           // Start the path back to the grid.
           _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
           _pathFollower.startPath();
           resetAutoLoopTimer();
           nextAutoStep();
+        } else {
+          _drivetrain.fieldOrientedDrive(0.1 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
+        }
 
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        
+          // // Start the path back to the grid.
+          // _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
+          // _pathFollower.startPath();
+          // resetAutoLoopTimer();
+          // nextAutoStep();
         break;
-      case 5:
+      case 6:
         // Follow path to the grid.
         _drivetrain.followTrajectory();
         
         // Bring elevator to scoring position.
         if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
-          _placerDowner.setWantedState(PlacerDownerState.LOW_SCORE);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
@@ -821,7 +829,7 @@ public class Robot extends TimedRobot {
           nextAutoStep();
         }
         break;
-      case 6:
+      case 7:
         // Score Cube
         if (_placerDowner.atSetpoint()) {
           _placerDowner.setWantedState(PlacerDownerState.EJECT);
@@ -830,17 +838,24 @@ public class Robot extends TimedRobot {
 
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
-      case 7:
-        // Reset
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+      case 8:
         _placerDowner.setWantedState(PlacerDownerState.RESET);
-        resetAutoLoopTimer();
-        _pathFollower.startPath();
         nextAutoStep();
         break;
-      case 8:
+      case 9:
+        // Reset
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        
+        if (autoHasElapsed(1.5)) {
+          _pathFollower.startPath();
+          resetAutoLoopTimer();
+          nextAutoStep();
+        }
+        break;
+      case 10:
+
       _drivetrain.followTrajectory();
-      if (autoHasElapsed(.5) && !autoHasElapsed(.55)) {
+      if (autoHasElapsed(1) && !autoHasElapsed(1.05)) {
         _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
       }
 
@@ -851,7 +866,7 @@ public class Robot extends TimedRobot {
         nextAutoStep();
       }
       break;
-    case 9:
+    case 11:
         // Start the path back to the grid.
         _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
@@ -859,21 +874,22 @@ public class Robot extends TimedRobot {
         resetAutoLoopTimer();
         nextAutoStep();
       break;
-    case 10:
+    case 12:
       // Follow path to the grid.
       _drivetrain.followTrajectory();
-      if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
-        _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-      }
+      // if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
+      //   _placerDowner.setElevatorSetpoint(ElevatorPosition.SHIELDS);
+      //   _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
+      // }
 
       if (_pathFollower.isPathFinished()) {
         // Prepare to score
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        nextAutoStep();
+        //nextAutoStep();
+        goToAutoStep(7769);
       }
       break;
-    case 11:
+    case 13:
       // If elevator is fully extended.
       if (_placerDowner.atSetpoint()) {
         _placerDowner.setWantedState(PlacerDownerState.EJECT);
@@ -881,7 +897,7 @@ public class Robot extends TimedRobot {
       }
       _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
       break;
-    case 12:
+    case 14:
       // Stop
       _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
       _placerDowner.setWantedState(PlacerDownerState.RESET);

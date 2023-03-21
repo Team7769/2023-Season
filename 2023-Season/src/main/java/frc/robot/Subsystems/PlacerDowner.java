@@ -234,12 +234,12 @@ public class PlacerDowner extends Subsystem {
 
     public boolean isScoring() {
         switch (_currentState) {
-            // case DEPLOY:
-            //     if (_deployTimer.hasElapsed(1.5)) {
-            //         return true;
-            //     } else {
-            //         return false;
-            //     }
+            case DEPLOY:
+                if (_deployTimer.hasElapsed(1.0)) {
+                    return true;
+                } else {
+                    return false;
+                }
             case LOW_SCORE:
                 return true;
             default:
