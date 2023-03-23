@@ -56,6 +56,7 @@ public class PathFollower {
     private List<PathPlannerTrajectory> _loadSidePickupScore;
     private List<PathPlannerTrajectory> _loadSidePickupScoreThree;
     private List<PathPlannerTrajectory> _loadSidePickupScoreMidLink;
+    private List<PathPlannerTrajectory> _loadSidePickupScoreMidBalance;
     private List<PathPlannerTrajectory> _cableSideTwoConeBalance;
     private List<PathPlannerTrajectory> _cableSideLinkBalance;
     private List<PathPlannerTrajectory> _loadingSideLinkNoBalance;
@@ -90,6 +91,7 @@ public class PathFollower {
         _loadSidePickupScore = PathPlanner.loadPathGroup("LoadSidePickupScore", true, new PathConstraints(2.25, 3));
         _loadSidePickupScoreThree = PathPlanner.loadPathGroup("LoadSidePickupScore3", true, new PathConstraints(3, 3));
         _loadSidePickupScoreMidLink = PathPlanner.loadPathGroup("LoadSidePickupScoreMidLink", true, new PathConstraints(3, 3));
+        _loadSidePickupScoreMidBalance = PathPlanner.loadPathGroup("LoadSidePickupScoreMidBalance", true, new PathConstraints(3, 3));
         _cableSideLinkBalance = PathPlanner.loadPathGroup("CableSide-Link-Balance", true, new PathConstraints(2.25, 3));
         _loadingSideLinkNoBalance = PathPlanner.loadPathGroup("LoadingSide-Link-NoBalance", true, new PathConstraints(2.25, 3));
         _loadingSideLinkConeNoBalance = PathPlanner.loadPathGroup("LoadingSide-LinkCone-NoBalance", true, new PathConstraints(2.25, 3));
@@ -169,6 +171,12 @@ public class PathFollower {
         _pathIndex = 0;
         _currentSegmentedPath = _loadSidePickupScoreMidLink;
         initializeTrajectory(_loadSidePickupScoreMidLink.get(_pathIndex));
+    }
+    
+    public void setLoadsidePickupScoreMidBalance() {
+        _pathIndex = 0;
+        _currentSegmentedPath = _loadSidePickupScoreMidBalance;
+        initializeTrajectory(_loadSidePickupScoreMidBalance.get(_pathIndex));
     }
 
     public void setCableSideTwoConeBalance() {

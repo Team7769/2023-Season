@@ -5,6 +5,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
@@ -24,10 +25,11 @@ public class PickerUpper extends Subsystem {
     private DoubleSolenoid _flexer;
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
+   // private DigitalInput _dugLimit; // from the move UP (this is our UP limit)
 
     private final double _collectSpeed = 1;
     private final double _ejectSpeed = -0.65;
-    private final double _deliverySpeed = -0.25;
+    private final double _deliverySpeed = -0.4;
 
     private double _manualSpeed = 0.0;
     private Value _manualFlex = Value.kOff;
@@ -44,6 +46,8 @@ public class PickerUpper extends Subsystem {
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
         _rightMotor.setInverted(true);
+
+        //_pickerUpperLimit = new DigitalInput(1);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
@@ -76,6 +80,13 @@ public class PickerUpper extends Subsystem {
         SmartDashboard.putNumber("pickerUppersTimer", _boxItTimer.get());
         
     }
+
+   // public boolean isDug() {
+
+     //   return (!_dugLimit.get());
+ 
+    //}
+
     private void open() {
         _boxer.set(Value.kReverse);
     }
@@ -125,9 +136,9 @@ public class PickerUpper extends Subsystem {
     }
 
     public void boxIt() {
-        if (_boxItTimer.hasElapsed(2)) {
+        if (_boxItTimer.hasElapsed(1.5)) {
             setWantedState(PickerUpperState.PIZZAS_READY);
-        } else if (_boxItTimer.hasElapsed(0.5)) {
+        } else if (_boxItTimer.hasElapsed(0.25)) {
             up();
         } else {
             close();

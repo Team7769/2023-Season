@@ -6,6 +6,7 @@ import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper;
 import com.swervedrivespecialties.swervelib.SdsModuleConfigurations;
 import com.swervedrivespecialties.swervelib.SwerveModule;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -230,15 +231,11 @@ public class Drivetrain extends Subsystem {
         var roll = _ahrs.getRoll();
         var absRoll = Math.abs(roll);
 
-        if (absRoll <= 5) {
+        if (absRoll <= 12) {
             return 0.0;
         }
 
-        if (absRoll <= 13 && absRoll > 5) {
-            return roll > 0 ? -0.10 : 0.10;
-        } else {
-            return roll > 0 ? 0.18 : -0.18;
-        }
+        return roll > 0 ? -0.05 : 0.05;
     }
 
     public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {
@@ -291,7 +288,8 @@ public class Drivetrain extends Subsystem {
 
         // SmartDashboard.putNumber("drivetrainWallRotationTarget", targetRotation);
         // SmartDashboard.putNumber("drivetrainWallRotationOutput", output);
-        return output;
+
+        return MathUtil.clamp(output, -Constants.MAX_ANGULAR_VELOCITY_PER_SECOND, Constants.MAX_ANGULAR_VELOCITY_PER_SECOND);
     }
 
     private void setModuleStates(SwerveModuleState[] moduleStates) {
