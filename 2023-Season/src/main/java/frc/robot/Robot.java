@@ -622,11 +622,11 @@ public class Robot extends TimedRobot {
       case 3:
         // Stop
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        if (!_placerDowner.isSteve()) {
+        //if (!_placerDowner.isSteve()) {
           _pathFollower.startPath();
           resetAutoLoopTimer();
           nextAutoStep();
-        }
+        //}
         break;
       case 4:
         _drivetrain.followTrajectory();
@@ -699,11 +699,11 @@ public class Robot extends TimedRobot {
         // Reset
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         
-        if (!_placerDowner.isSteve()) {
+        //if (!_placerDowner.isSteve()) {
           _pathFollower.startPath();
           resetAutoLoopTimer();
           nextAutoStep();
-        }
+        //}
         break;
       case 10:
 
