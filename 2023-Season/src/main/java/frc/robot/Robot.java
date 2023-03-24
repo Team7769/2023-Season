@@ -204,6 +204,9 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
           loadSidePickupScoreThreeMid();
           break;
+      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+          loadSidePickupScoreThreeMid();
+          break;
       case Automode.MIDDLE_YEET_BALANCE:
         yeet();
         break;
@@ -708,7 +711,7 @@ public class Robot extends TimedRobot {
       case 10:
 
       _drivetrain.followTrajectory();
-      if (autoHasElapsed(1) && !autoHasElapsed(1.05)) {
+      if (autoHasElapsed(1.2) && !autoHasElapsed(1.25)) {
         _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
       }
 
