@@ -101,6 +101,7 @@ public class Robot extends TimedRobot {
     _autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
     _autoChooser.addOption("Loading Side Pickup + Score Mid Balance", Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
     _autoChooser.addOption("Loading Side Pickup + Score Mid Link", Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK);
+    _autoChooser.addOption("Cable Side Pickup + Score Mid Link", Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
     SmartDashboard.putData(_autoChooser);
@@ -151,6 +152,9 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
         _pathFollower.setLoadsidePickupScoreMidLink();
         break;
+      case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      _pathFollower.setCableSidePickupScoreMidLink();
+      break;
       default:
         break;
     }
@@ -167,6 +171,7 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE:
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
@@ -201,11 +206,12 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE:
         loadSidePickupScore();
         break;
+      case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
           loadSidePickupScoreThreeMid();
           break;
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
-          loadSidePickupScoreThreeMid();
+          loadSidePickupScoreMidBalance();
           break;
       case Automode.MIDDLE_YEET_BALANCE:
         yeet();
@@ -649,7 +655,7 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         // Transfer game piece
-        if (autoHasElapsed(1)) {
+        if (autoHasElapsed(1.25)) {
           // Start the path back to the grid.
           _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
           _pathFollower.startPath();
@@ -671,7 +677,7 @@ public class Robot extends TimedRobot {
         _drivetrain.followTrajectory();
         
         // Bring elevator to scoring position.
-        if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
+        if (_placerDowner.transferComplete()) {
           _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
@@ -802,11 +808,11 @@ public class Robot extends TimedRobot {
       case 3:
         // Stop
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        if (!_placerDowner.isSteve()) {
+        //if (!_placerDowner.isSteve()) {
           _pathFollower.startPath();
           resetAutoLoopTimer();
           nextAutoStep();
-        }
+        //}
         break;
       case 4:
         _drivetrain.followTrajectory();
@@ -826,7 +832,7 @@ public class Robot extends TimedRobot {
         break;
       case 5:
         // Transfer game piece
-        if (autoHasElapsed(1)) {
+        if (autoHasElapsed(1.25)) {
           // Start the path back to the grid.
           _pickerUpper.setWantedState(PickerUpperState.WERE_CLOSED);
           _pathFollower.startPath();
@@ -848,7 +854,7 @@ public class Robot extends TimedRobot {
         _drivetrain.followTrajectory();
         
         // Bring elevator to scoring position.
-        if (autoHasElapsed(1.5) && !autoHasElapsed(1.55)) {
+        if (_placerDowner.transferComplete()) {
           _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
@@ -892,7 +898,6 @@ public class Robot extends TimedRobot {
       if (_pathFollower.isPathFinished()) {
         // Set next path, prepare for pickup
         _drivetrain.robotOrientedDrive(0, 0, 0);
-        _pathFollower.setNextPath();
         nextAutoStep();
       }
       break;

@@ -163,7 +163,7 @@ public class Drivetrain extends Subsystem {
         // SmartDashboard.putNumber("drivetrainBackRightModuleTargetSpeed", _moduleStates[3].speedMetersPerSecond);
         // SmartDashboard.putNumber("drivetrainBackRightModuleTargetAngle", _moduleStates[3].angle.getDegrees());
         SmartDashboard.putNumber("drivetrainGyroOffset", _gyroOffset);
-        // SmartDashboard.putNumber("drivetrainPitch", _ahrs.getRoll());
+        SmartDashboard.putNumber("drivetrainPitch", _ahrs.getRoll());
 
         SmartDashboard.putNumber("drivetrainOdometryX", pose.getX());
         SmartDashboard.putNumber("drivetrainOdometryY", pose.getY());
@@ -231,11 +231,11 @@ public class Drivetrain extends Subsystem {
         var roll = _ahrs.getRoll();
         var absRoll = Math.abs(roll);
 
-        if (absRoll <= 12) {
+        if (absRoll <= 10) {
             return 0.0;
         }
 
-        return roll > 0 ? -0.05 : 0.05;
+        return roll > 0 ? -0.08 : 0.08;
     }
 
     public void robotOrientedDrive(double translationX, double translationY, double rotationZ) {

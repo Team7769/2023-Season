@@ -169,13 +169,13 @@ public class LEDController {
 
     public void ejectHeld()
     {
-        setUpperLED(kHotPink);
-        setLowerLED(kHotPink);
+        setUpperLED(kRainbowPartyPalette);
+        setLowerLED(kColorWavesPartyPalette);
     }
 
     public void startHit()
     {
-        setUpperLED(kGold);
+        setUpperLED(kGoldStrobe);
     }
 
     public void backHit()
@@ -185,19 +185,19 @@ public class LEDController {
 
     public void yHit()
     {
-        setUpperLED(kBlue);
-        setLowerLED(kBlue);
+        setUpperLED(kRainbowOceanPalette);
+        setLowerLED(kRainbowOceanPalette);
     }
 
     public void xHit()
     {
-        setLowerLED(kGreen);
-        setUpperLED(kGreen);
+        setLowerLED(kRainbowForestPalette);
+        setUpperLED(kRainbowForestPalette);
     }
 
     public void lowHit() {
-        setUpperLED(kBeatsPerMinuteLavaPalette);
-        setLowerLED(kBeatsPerMinuteLavaPalette);
+        setUpperLED(kRainbowLavePalette);
+        setLowerLED(kRainbowLavePalette);
     }
 
     public void humanPlayerPickup() {
@@ -207,11 +207,11 @@ public class LEDController {
     public void teleopInit()
     {
         setLowerLED(bpmCustom);
-        setUpperLED(kHotPink);
+        setUpperLED(kFireLarge);
     }
 
     public void anyHuman(){
-        setUpperLED(kGreen);
+        setUpperLED(kRainbowGlitter);
     }
 
 }

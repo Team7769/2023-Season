@@ -144,9 +144,11 @@ public class PlacerDowner extends Subsystem {
     }
 
     public boolean isSteve() {
-
         return (!_tiltLimit.get());
- 
+    }
+
+    public boolean transferComplete(){
+        return (atSetpoint() && _setpoint == ElevatorPosition.PIZZA_DELIVERY);    
     }
 
     public void allowReset() {
