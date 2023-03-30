@@ -214,6 +214,7 @@ public class PickerUpper extends Subsystem {
        switch (_currentState) {
             case PIZZAS_READY:
             case DELIVERY:
+                return true;
             case FRESH_FROM_THE_OVEN:
                 return hasPiece;
             default:
