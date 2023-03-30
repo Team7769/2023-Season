@@ -32,6 +32,7 @@ public class PlacerDowner extends Subsystem {
     private DoubleSolenoid _tilter;
     private DoubleSolenoid _pivoter;
     private DigitalInput _elevatorBottomLimit;
+    private DigitalInput _tiltLimit;
 
     private SparkMaxPIDController _elevatorController;
 
@@ -60,7 +61,6 @@ public class PlacerDowner extends Subsystem {
     private final TrapezoidProfile.Constraints _constraints = new TrapezoidProfile.Constraints(kSmartMotionMaxVel, kSmartMotionMaxAccel);
     private TrapezoidProfile.State _goal = new TrapezoidProfile.State();
     private TrapezoidProfile.State _profileSetpoint = new TrapezoidProfile.State();
-    private Timer _deployTimer = new Timer();
 
     private boolean hasReset = false;
 
@@ -74,6 +74,7 @@ public class PlacerDowner extends Subsystem {
         _pivoter = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kPivoterForward, Constants.kPivoterReverse);
 
         _elevatorBottomLimit = new DigitalInput(1);
+        _tiltLimit = new DigitalInput(2);
         _placerDownerElevator = new CANSparkMax(Constants.kPlacerDownerElevatorMotorDeviceId, MotorType.kBrushless);
         _placerDownerElevator.setSmartCurrentLimit(20, 100);
         _placerDownerElevator.setIdleMode(IdleMode.kBrake);
@@ -129,6 +130,7 @@ public class PlacerDowner extends Subsystem {
         SmartDashboard.putNumber("placerDownerElevatorVoltage", _placerDownerElevator.getAppliedOutput());
         SmartDashboard.putNumber("placerDownerElevatorTemperature", _placerDownerElevator.getMotorTemperature());
         SmartDashboard.putNumber("placerDownerElevatorOutputCurrent", _placerDownerElevator.getOutputCurrent());
+        SmartDashboard.putBoolean("placerDownerSteve", isSteve());
 
     }
 
@@ -141,6 +143,14 @@ public class PlacerDowner extends Subsystem {
         }
     }
 
+    public boolean isSteve() {
+        return (!_tiltLimit.get());
+    }
+
+    public boolean transferComplete(){
+        return (atSetpoint() && _setpoint == ElevatorPosition.PIZZA_DELIVERY);    
+    }
+
     public void allowReset() {
         hasReset = false;
     }
@@ -149,6 +159,7 @@ public class PlacerDowner extends Subsystem {
         setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
         _theClaw.set(_placerDownerSpeed);
         handleElevatorPosition();
+        _pivoter.set(Value.kForward);
 
         if (atSetpoint()) {
             setWantedState(PlacerDownerState.HOLD_POSITION);
@@ -167,8 +178,7 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (_deployTimer.hasElapsed(1.0)) {
-            _deployTimer.stop();
+        if (isSteve()) {
             handleElevatorPosition();
         }
     }
@@ -176,7 +186,7 @@ public class PlacerDowner extends Subsystem {
     private void retract() {
         handleElevatorPosition();
 
-        if (_deployTimer.hasElapsed(1)) {
+        if (_placerDownerElevatorEncoder.getPosition() <= 50) {
             _tilter.set(Value.kForward);
             _pivoter.set(Value.kForward);
 
@@ -234,12 +244,12 @@ public class PlacerDowner extends Subsystem {
 
     public boolean isScoring() {
         switch (_currentState) {
-            // case DEPLOY:
-            //     if (_deployTimer.hasElapsed(1.5)) {
-            //         return true;
-            //     } else {
-            //         return false;
-            //     }
+            case DEPLOY:
+                if (isSteve()) {
+                    return true;
+                } else {
+                    return false;
+                }
             case LOW_SCORE:
                 return true;
             default:
@@ -343,11 +353,6 @@ public class PlacerDowner extends Subsystem {
                 break;
             default:
                 break;
-        }
-
-        if (wantedState == PlacerDownerState.DEPLOY || wantedState == PlacerDownerState.STOW){
-            _deployTimer.reset();
-            _deployTimer.start();
         }
         
         _currentState = wantedState;

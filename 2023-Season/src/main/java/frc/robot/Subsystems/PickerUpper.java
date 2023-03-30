@@ -5,6 +5,9 @@ import com.revrobotics.CANSparkMax.IdleMode;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
@@ -24,10 +27,13 @@ public class PickerUpper extends Subsystem {
     private DoubleSolenoid _flexer;
     private Timer _boxItTimer;
     private Photoeye _collectorSensor;
+    private DigitalInput _dugLimit; // from the move UP (this is our UP limit)
+    private Debouncer _debouncer;
+    private Debouncer _photoeyeDebouncer;
 
     private final double _collectSpeed = 1;
     private final double _ejectSpeed = -0.65;
-    private final double _deliverySpeed = -0.25;
+    private final double _deliverySpeed = -0.4;
 
     private double _manualSpeed = 0.0;
     private Value _manualFlex = Value.kOff;
@@ -44,6 +50,10 @@ public class PickerUpper extends Subsystem {
 
         _rightMotor.setIdleMode(IdleMode.kBrake);
         _rightMotor.setInverted(true);
+
+        _dugLimit = new DigitalInput(3);
+        _debouncer = new Debouncer(0.75, DebounceType.kBoth);
+        _photoeyeDebouncer = new Debouncer(0.75, DebounceType.kBoth);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
@@ -76,6 +86,13 @@ public class PickerUpper extends Subsystem {
         SmartDashboard.putNumber("pickerUppersTimer", _boxItTimer.get());
         
     }
+
+   // public boolean isDug() {
+
+     //   return (!_dugLimit.get());
+ 
+    //}
+
     private void open() {
         _boxer.set(Value.kReverse);
     }
@@ -125,9 +142,10 @@ public class PickerUpper extends Subsystem {
     }
 
     public void boxIt() {
-        if (_boxItTimer.hasElapsed(2)) {
+        var isDug = _debouncer.calculate(!_dugLimit.get());
+        if (isDug || _boxItTimer.hasElapsed(1.5)) {
             setWantedState(PickerUpperState.PIZZAS_READY);
-        } else if (_boxItTimer.hasElapsed(0.5)) {
+        } else if (_boxItTimer.hasElapsed(0.25)) {
             up();
         } else {
             close();
@@ -138,10 +156,12 @@ public class PickerUpper extends Subsystem {
     }
 
     public void delivery() {
+        var isDug = _debouncer.calculate(!_dugLimit.get());
+        var hasPiece = _photoeyeDebouncer.calculate(_collectorSensor.isBlocked());
         if (_boxItTimer.hasElapsed(2.5)) {
             setWantedState(PickerUpperState.WERE_CLOSED);
             _boxItTimer.stop();
-        } else if (_boxItTimer.hasElapsed(2.25)) {
+        } else if (isDug && hasPiece) {
             _leftMotor.set(_deliverySpeed);
             _rightMotor.set(_deliverySpeed);
             open();
