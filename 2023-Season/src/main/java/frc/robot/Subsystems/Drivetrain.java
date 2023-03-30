@@ -189,6 +189,17 @@ public class Drivetrain extends Subsystem {
         }, new Pose2d());
     }
 
+    public void holdPosition() {
+        SwerveModuleState[] moduleStates = new SwerveModuleState[] {
+            new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(45))
+        };
+        _moduleStates = moduleStates;
+        setModuleStates(moduleStates);
+    }
+
     public void resetGyro() {
         _gyro.reset();
         _gyroOffset = 0.0;

@@ -92,7 +92,7 @@ public class PathFollower {
         _loadSidePickupScore = PathPlanner.loadPathGroup("LoadSidePickupScore", true, new PathConstraints(2.25, 3));
         _loadSidePickupScoreThree = PathPlanner.loadPathGroup("LoadSidePickupScore3", true, new PathConstraints(3, 3));
         _loadSidePickupScoreMidLink = PathPlanner.loadPathGroup("LoadSidePickupScoreMidLink", true, new PathConstraints(3, 3));
-        _cableSidePickupScoreMidLink = PathPlanner.loadPathGroup("CableSidePickupScoreMidLink", true, new PathConstraints(3, 3));
+        _cableSidePickupScoreMidLink = PathPlanner.loadPathGroup("CableSidePickupScoreMidLink", true, new PathConstraints(2.25, 2.25));
         _loadSidePickupScoreMidBalance = PathPlanner.loadPathGroup("LoadSidePickupScoreMidBalance", true, new PathConstraints(3, 3));
         _cableSideLinkBalance = PathPlanner.loadPathGroup("CableSide-Link-Balance", true, new PathConstraints(2.25, 3));
         _loadingSideLinkNoBalance = PathPlanner.loadPathGroup("LoadingSide-Link-NoBalance", true, new PathConstraints(2.25, 3));

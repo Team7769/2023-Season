@@ -159,6 +159,7 @@ public class PlacerDowner extends Subsystem {
         setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
         _theClaw.set(_placerDownerSpeed);
         handleElevatorPosition();
+        _pivoter.set(Value.kForward);
 
         if (atSetpoint()) {
             setWantedState(PlacerDownerState.HOLD_POSITION);
