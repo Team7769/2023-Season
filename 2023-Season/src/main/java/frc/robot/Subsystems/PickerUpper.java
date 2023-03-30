@@ -52,8 +52,8 @@ public class PickerUpper extends Subsystem {
         _rightMotor.setInverted(true);
 
         _dugLimit = new DigitalInput(3);
-        _debouncer = new Debouncer(0.75, DebounceType.kBoth);
-        _photoeyeDebouncer = new Debouncer(0.75, DebounceType.kBoth);
+        _debouncer = new Debouncer(0.75);
+        _photoeyeDebouncer = new Debouncer(0.75);
 
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
@@ -157,11 +157,10 @@ public class PickerUpper extends Subsystem {
 
     public void delivery() {
         var isDug = _debouncer.calculate(!_dugLimit.get());
-        var hasPiece = _photoeyeDebouncer.calculate(_collectorSensor.isBlocked());
         if (_boxItTimer.hasElapsed(2.5)) {
             setWantedState(PickerUpperState.WERE_CLOSED);
             _boxItTimer.stop();
-        } else if (isDug && hasPiece) {
+        } else if (isDug) {
             _leftMotor.set(_deliverySpeed);
             _rightMotor.set(_deliverySpeed);
             open();
@@ -211,15 +210,12 @@ public class PickerUpper extends Subsystem {
     }
     
     public boolean isPizzaReady() {
+        var hasPiece = _photoeyeDebouncer.calculate(_collectorSensor.isBlocked());
        switch (_currentState) {
             case PIZZAS_READY:
             case DELIVERY:
-                return true;
             case FRESH_FROM_THE_OVEN:
-                if (_collectorSensor.isBlocked()) {
-                    return true;
-                }
-                return false;
+                return hasPiece;
             default:
                 return false;
        }
