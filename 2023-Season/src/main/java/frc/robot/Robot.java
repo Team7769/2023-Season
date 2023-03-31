@@ -92,8 +92,8 @@ public class Robot extends TimedRobot {
     _ledController = LEDController.GetInstance();
 
     _autoChooser.setDefaultOption("Do Nothing", 0);
-    _autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
-    _autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
+    //_autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
+    //_autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
     _autoChooser.addOption("Loading Side Pickup + Score Mid Balance", Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
     _autoChooser.addOption("Loading Side Pickup + Score Mid Link", Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("Cable Side Pickup + Score Mid Link", Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK);
@@ -1110,7 +1110,7 @@ public class Robot extends TimedRobot {
   }
 
   private void teleopGamePieceManagement() {
-    if ( _operatorController.getStartButton() && _operatorController.getBackButton() ) {
+    if (Math.abs(_operatorController.getLeftY()) >= 0.25) {
       _ledController.anyHuman();
     }else if ( _operatorController.getBackButton() ) {
       _ledController.backHit();

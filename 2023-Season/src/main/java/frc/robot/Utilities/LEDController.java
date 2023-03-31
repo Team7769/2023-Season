@@ -211,7 +211,7 @@ public class LEDController {
     }
 
     public void anyHuman(){
-        setUpperLED(kRainbowGlitter);
+        setUpperLED(kGreen);
     }
 
 }
