@@ -1021,7 +1021,7 @@ public class Robot extends TimedRobot {
         break;
       case 7:
         // Score Cube
-        if (_placerDowner.atSetpoint() && _placerDowner.isSteve()) {
+        if ((_placerDowner.atSetpoint() && _placerDowner.isSteve()) || autoHasElapsed(3)) {
           _placerDowner.setWantedState(PlacerDownerState.EJECT);
           nextAutoStep();
         }
@@ -1030,13 +1030,14 @@ public class Robot extends TimedRobot {
         break;
       case 8:
         _placerDowner.setWantedState(PlacerDownerState.RESET);
+        resetAutoLoopTimer();
         nextAutoStep();
         break;
       case 9:
         // Reset
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         
-        if (!_placerDowner.isSteve()) {
+        if (!_placerDowner.isSteve() || autoHasElapsed(2)) {
           _pathFollower.startPath();
           resetAutoLoopTimer();
           nextAutoStep();
