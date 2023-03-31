@@ -160,6 +160,7 @@ public class PickerUpper extends Subsystem {
         if (_boxItTimer.hasElapsed(2.5)) {
             setWantedState(PickerUpperState.WERE_CLOSED);
             _boxItTimer.stop();
+            open();
         } else if (isDug) {
             _leftMotor.set(_deliverySpeed);
             _rightMotor.set(_deliverySpeed);
