@@ -96,6 +96,8 @@ public class Robot extends TimedRobot {
     //_autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
     _autoChooser.addOption("Loading Side Pickup + Score Mid Balance", Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
     _autoChooser.addOption("Loading Side Pickup + Score Mid Link", Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK);
+    _autoChooser.addOption("Red Loading Side Pickup + Score Mid Balance", Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
+    _autoChooser.addOption("Red Loading Side Pickup + Score Mid Link", Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("Cable Side Pickup + Score Mid Link", Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
@@ -135,6 +137,12 @@ public class Robot extends TimedRobot {
       case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
       _pathFollower.setCableSidePickupScoreMidLink();
       break;
+      case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+        _pathFollower.setRedLoadsidePickupScoreMidBalance();
+        break;
+      case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+        _pathFollower.setRedLoadsidePickupScoreMidLink();
+        break;
       default:
         break;
     }
@@ -146,6 +154,8 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE:
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+      case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
       case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
@@ -170,9 +180,11 @@ public class Robot extends TimedRobot {
           cableSidePickupScoreThreeMid();
           break;
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
           loadSidePickupScoreThreeMid();
           break;
       case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+      case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
           loadSidePickupScoreMidBalance();
           break;
       case Automode.MIDDLE_YEET_BALANCE:

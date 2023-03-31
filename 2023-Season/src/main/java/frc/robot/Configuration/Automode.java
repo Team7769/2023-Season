@@ -8,4 +8,6 @@ public final class Automode {
     public static final int LOADING_SIDE_PICKUP_SCORE_MID_BALANCE = 4;
     public static final int LOADING_SIDE_PICKUP_SCORE_MID_LINK = 5;
     public static final int CABLE_SIDE_PICKUP_SCORE_MID_LINK = 6;
+    public static final int RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE = 7;
+    public static final int RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK = 8;
 }
