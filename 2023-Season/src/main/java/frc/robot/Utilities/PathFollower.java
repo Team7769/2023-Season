@@ -56,7 +56,9 @@ public class PathFollower {
     private List<PathPlannerTrajectory> _loadSidePickupScore;
     private List<PathPlannerTrajectory> _loadSidePickupScoreThree;
     private List<PathPlannerTrajectory> _loadSidePickupScoreMidLink;
+    private List<PathPlannerTrajectory> _redloadSidePickupScoreMidLink;
     private List<PathPlannerTrajectory> _loadSidePickupScoreMidBalance;
+    private List<PathPlannerTrajectory> _redloadSidePickupScoreMidBalance;
     private List<PathPlannerTrajectory> _cableSidePickupScoreMidLink;
     private List<PathPlannerTrajectory> _cableSideTwoConeBalance;
     private List<PathPlannerTrajectory> _cableSideLinkBalance;
@@ -92,7 +94,9 @@ public class PathFollower {
         _loadSidePickupScore = PathPlanner.loadPathGroup("LoadSidePickupScore", true, new PathConstraints(2.25, 3));
         _loadSidePickupScoreThree = PathPlanner.loadPathGroup("LoadSidePickupScore3", true, new PathConstraints(3, 3));
         _loadSidePickupScoreMidLink = PathPlanner.loadPathGroup("LoadSidePickupScoreMidLink", true, new PathConstraints(3, 3));
+        _redloadSidePickupScoreMidLink = PathPlanner.loadPathGroup("Red-LoadSidePickupScoreMidLink", true, new PathConstraints(3, 3));
         _cableSidePickupScoreMidLink = PathPlanner.loadPathGroup("CableSidePickupScoreMidLink", true, new PathConstraints(2.25, 2.25));
+        _redloadSidePickupScoreMidBalance = PathPlanner.loadPathGroup("Red-LoadSidePickupScoreMidBalance", true, new PathConstraints(3, 3));        
         _loadSidePickupScoreMidBalance = PathPlanner.loadPathGroup("LoadSidePickupScoreMidBalance", true, new PathConstraints(3, 3));
         _cableSideLinkBalance = PathPlanner.loadPathGroup("CableSide-Link-Balance", true, new PathConstraints(2.25, 3));
         _loadingSideLinkNoBalance = PathPlanner.loadPathGroup("LoadingSide-Link-NoBalance", true, new PathConstraints(2.25, 3));
@@ -185,6 +189,18 @@ public class PathFollower {
         _pathIndex = 0;
         _currentSegmentedPath = _loadSidePickupScoreMidBalance;
         initializeTrajectory(_loadSidePickupScoreMidBalance.get(_pathIndex));
+    }
+
+    public void setRedLoadsidePickupScoreMidLink() {
+        _pathIndex = 0;
+        _currentSegmentedPath = _redloadSidePickupScoreMidLink;
+        initializeTrajectory(_redloadSidePickupScoreMidLink.get(_pathIndex));
+    }
+    
+    public void setRedLoadsidePickupScoreMidBalance() {
+        _pathIndex = 0;
+        _currentSegmentedPath = _redloadSidePickupScoreMidBalance;
+        initializeTrajectory(_redloadSidePickupScoreMidBalance.get(_pathIndex));
     }
 
     public void setCableSideTwoConeBalance() {
