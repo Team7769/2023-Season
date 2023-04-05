@@ -8,6 +8,7 @@ public enum PlacerDownerState {
     STOP,
     HOLD_POSITION,
     RESET,
+    RESET_WITHOUT_TILT,
     YEEHAW,
     LOW_SCORE
 }

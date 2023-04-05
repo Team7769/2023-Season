@@ -583,7 +583,7 @@ public class Robot extends TimedRobot {
       case 0:
         // Init Elevator
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         nextAutoStep();
         break;
@@ -652,14 +652,14 @@ public class Robot extends TimedRobot {
         
         // Bring elevator to scoring position.
         if (_placerDowner.transferComplete()) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
           resetAutoLoopTimer();
           nextAutoStep();
@@ -760,7 +760,7 @@ public class Robot extends TimedRobot {
       case 0:
         // Init Elevator
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         nextAutoStep();
         break;
@@ -829,14 +829,14 @@ public class Robot extends TimedRobot {
         
         // Bring elevator to scoring position.
         if (_placerDowner.transferComplete()) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
           resetAutoLoopTimer();
           nextAutoStep();
@@ -937,7 +937,7 @@ public class Robot extends TimedRobot {
       case 0:
         // Init Elevator
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         nextAutoStep();
         break;
@@ -1006,14 +1006,14 @@ public class Robot extends TimedRobot {
         
         // Bring elevator to scoring position.
         if (_placerDowner.transferComplete()) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
           resetAutoLoopTimer();
           nextAutoStep();

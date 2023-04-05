@@ -204,6 +204,12 @@ public class PlacerDowner extends Subsystem {
         setWantedState(PlacerDownerState.STOW);
     }
 
+    private void resetWithoutTilt(){
+        _pivoter.set(Value.kForward);
+        setElevatorSetpoint(ElevatorPosition.DIGIORNO);
+        setWantedState(PlacerDownerState.HOLD_POSITION);
+    }
+
     public void setManualElevatorSpeed(double speed) {
         if (Math.abs(speed) <= 0.10) {
             speed = 0.0;
@@ -268,6 +274,7 @@ public class PlacerDowner extends Subsystem {
             case HOLD_POSITION:
             case DEPLOY:
             case STOW:
+            case RESET_WITHOUT_TILT:
                 setSetpoint(position);
             default:
                 break;
@@ -331,6 +338,9 @@ public class PlacerDowner extends Subsystem {
                 break;
             case LOW_SCORE:
                 flipoff();
+                break;
+            case RESET_WITHOUT_TILT:
+                resetWithoutTilt();
                 break;
             case STOP:
             default:
