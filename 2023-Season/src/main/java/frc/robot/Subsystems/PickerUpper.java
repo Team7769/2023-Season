@@ -157,7 +157,7 @@ public class PickerUpper extends Subsystem {
 
     public void delivery() {
         var isDug = _debouncer.calculate(!_dugLimit.get());
-        if (_boxItTimer.hasElapsed(1.5)) {
+        if (_boxItTimer.hasElapsed(1.75)) {
             setWantedState(PickerUpperState.WERE_CLOSED);
             _boxItTimer.stop();
             open();
