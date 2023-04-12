@@ -33,6 +33,7 @@ public class PlacerDowner extends Subsystem {
     private DoubleSolenoid _pivoter;
     private DigitalInput _elevatorBottomLimit;
     private DigitalInput _tiltLimit;
+    private Timer _deployTimer;
 
     private SparkMaxPIDController _elevatorController;
 
@@ -96,7 +97,7 @@ public class PlacerDowner extends Subsystem {
         _elevatorController.setFF(kSmartMotionFF);
         _elevatorController.setOutputRange(kSmartMotionMinOutput, kSmartMotionMaxOutput);
 
-        //_limitSwitch = _hoodMotor.getForwardLimitSwitch(Type.kNormallyOpen); (Not hood motor but dont know what motor yet)
+        _deployTimer = new Timer();
     }
 
     public static PlacerDowner getInstance() {
@@ -178,7 +179,8 @@ public class PlacerDowner extends Subsystem {
         _tilter.set(Value.kReverse);
         _pivoter.set(Value.kReverse);
 
-        if (isSteve()) {
+        if (isSteve() || _deployTimer.hasElapsed(2.5)) {
+            _deployTimer.stop();
             handleElevatorPosition();
         }
     }
@@ -242,8 +244,8 @@ public class PlacerDowner extends Subsystem {
 
     private void flipoff() {
         handleElevatorPosition();
+        _pivoter.set(Value.kReverse);
         if (atSetpoint()) {
-            _pivoter.set(Value.kReverse);
             setWantedState(PlacerDownerState.HOLD_POSITION);
         }
     }
@@ -358,6 +360,8 @@ public class PlacerDowner extends Subsystem {
                 break;
             case DEPLOY:
                 if (wantedState == PlacerDownerState.DEPLOY) {
+                    _deployTimer.reset();
+                    _deployTimer.start();
                     return;
                 }
                 break;

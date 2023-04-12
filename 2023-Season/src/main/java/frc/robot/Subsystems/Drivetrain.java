@@ -238,6 +238,14 @@ public class Drivetrain extends Subsystem {
         return Math.abs(_ahrs.getRoll()) <= 13 && Math.abs(_ahrs.getRoll()) > 5;
     }
 
+    public boolean onBridge() {
+        return Math.abs(_ahrs.getRoll()) >= 13.5;
+    }
+
+    public boolean isLeveling() {
+        return Math.abs(_ahrs.getRoll()) <= 12.5;
+    }
+
     public double getBalanceSpeed() {
         var roll = _ahrs.getRoll();
         var absRoll = Math.abs(roll);
