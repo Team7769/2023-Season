@@ -65,7 +65,8 @@ public final class Constants {
     // public static final double kBackRightEncoderOffset = -Math.toRadians(144.22);
     public static final double kFrontLeftEncoderOffset = -Math.toRadians(89.469);
     public static final double kFrontRightEncoderOffset = -Math.toRadians(239.502);
-    public static final double kBackLeftEncoderOffset = -Math.toRadians(23.112);
+    //public static final double kBackLeftEncoderOffset = -Math.toRadians(23.112);
+    public static final double kBackLeftEncoderOffset = -Math.toRadians(16.52);
     public static final double kBackRightEncoderOffset = -Math.toRadians(144.044);
 
     // Swerve Properties

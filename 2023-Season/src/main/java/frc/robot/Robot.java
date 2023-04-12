@@ -94,11 +94,12 @@ public class Robot extends TimedRobot {
     _autoChooser.setDefaultOption("Do Nothing", 0);
     //_autoChooser.addOption("Loading Side Pickup + Balance", Automode.LOADING_SIDE_PICKUP_BALANCE);
     //_autoChooser.addOption("Loading Side Pickup + Score", Automode.LOADING_SIDE_PICKUP_SCORE);
-    _autoChooser.addOption("Loading Side Pickup + Score Mid Balance", Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
-    _autoChooser.addOption("Loading Side Pickup + Score Mid Link", Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK);
+    _autoChooser.addOption("Blue Loading Side Pickup + Score Mid Balance", Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
+    _autoChooser.addOption("Blue Loading Side Pickup + Score Mid Link", Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_LINK);
+    _autoChooser.addOption("Blue Cable Side Pickup + Score Mid Link", Automode.BLUE_CABLE_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("Red Loading Side Pickup + Score Mid Balance", Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE);
     _autoChooser.addOption("Red Loading Side Pickup + Score Mid Link", Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK);
-    _autoChooser.addOption("Cable Side Pickup + Score Mid Link", Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK);
+    _autoChooser.addOption("Red Cable Side Pickup + Score Mid Link", Automode.RED_CABLE_SIDE_PICKUP_SCORE_MID_LINK);
     _autoChooser.addOption("YEET", Automode.MIDDLE_YEET_BALANCE);
 
     SmartDashboard.putData(_autoChooser);
@@ -128,14 +129,17 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE:
         _pathFollower.setLoadsidePickupScore();
         break;
-      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
-        _pathFollower.setLoadsidePickupScoreMidBalance();
+      case Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+        _pathFollower.setBlueLoadsidePickupScoreMidBalance();
         break;
-      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
-        _pathFollower.setLoadsidePickupScoreMidLink();
+      case Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+        _pathFollower.setBlueLoadsidePickupScoreMidLink();
         break;
-      case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
-      _pathFollower.setCableSidePickupScoreMidLink();
+      case Automode.BLUE_CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      _pathFollower.setBlueCableSidePickupScoreMidLink();
+      break;
+      case Automode.RED_CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      _pathFollower.setRedCableSidePickupScoreMidLink();
       break;
       case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
         _pathFollower.setRedLoadsidePickupScoreMidBalance();
@@ -152,11 +156,12 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_BALANCE:
       case Automode.MIDDLE_YEET_BALANCE:
       case Automode.LOADING_SIDE_PICKUP_SCORE:
-      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
-      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+      case Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
       case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
       case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
-      case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.BLUE_CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.RED_CABLE_SIDE_PICKUP_SCORE_MID_LINK:
         _drivetrain.initAutonPosition();
         _placerDowner.setWantedState(PlacerDownerState.HOLD_POSITION);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.PIZZA_DELIVERY);
@@ -176,14 +181,15 @@ public class Robot extends TimedRobot {
       case Automode.LOADING_SIDE_PICKUP_SCORE:
         loadSidePickupScore();
         break;
-      case Automode.CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.BLUE_CABLE_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.RED_CABLE_SIDE_PICKUP_SCORE_MID_LINK:
           cableSidePickupScoreThreeMid();
           break;
-      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_LINK:
+      case Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
       case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_LINK:
           loadSidePickupScoreThreeMid();
           break;
-      case Automode.LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
+      case Automode.BLUE_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
       case Automode.RED_LOADING_SIDE_PICKUP_SCORE_MID_BALANCE:
           loadSidePickupScoreMidBalance();
           break;
@@ -583,7 +589,7 @@ public class Robot extends TimedRobot {
       case 0:
         // Init Elevator
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         nextAutoStep();
         break;
@@ -652,14 +658,14 @@ public class Robot extends TimedRobot {
         
         // Bring elevator to scoring position.
         if (_placerDowner.transferComplete()) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
           resetAutoLoopTimer();
           nextAutoStep();
@@ -760,7 +766,7 @@ public class Robot extends TimedRobot {
       case 0:
         // Init Elevator
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         nextAutoStep();
         break;
@@ -829,14 +835,14 @@ public class Robot extends TimedRobot {
         
         // Bring elevator to scoring position.
         if (_placerDowner.transferComplete()) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
           resetAutoLoopTimer();
           nextAutoStep();
@@ -937,7 +943,7 @@ public class Robot extends TimedRobot {
       case 0:
         // Init Elevator
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+        _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         nextAutoStep();
         break;
@@ -1006,14 +1012,14 @@ public class Robot extends TimedRobot {
         
         // Bring elevator to scoring position.
         if (_placerDowner.transferComplete()) {
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
         }
 
         if (_pathFollower.isPathFinished()) {
           _pathFollower.setNextPath();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _placerDowner.setElevatorSetpoint(ElevatorPosition.BUDDYS);
+          _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
           _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
           resetAutoLoopTimer();
           nextAutoStep();
