@@ -796,7 +796,7 @@ public class Robot extends TimedRobot {
         break;
       case 4:
         _drivetrain.followTrajectory();
-        if (autoHasElapsed(1.4) && !autoHasElapsed(1.45)) {
+        if (autoHasElapsed(1.75) && !autoHasElapsed(1.80)) {
           // After time drop the collector
           _pickerUpper.setWantedState(PickerUpperState.SHAKE_N_BAKE);
         }
@@ -1043,11 +1043,14 @@ public class Robot extends TimedRobot {
         // Reset
         _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         
-        if (!_placerDowner.isSteve() || autoHasElapsed(2)) {
+        // if (!_placerDowner.isSteve() || autoHasElapsed(2)) {
+        //   _pathFollower.startPath();
+        //   resetAutoLoopTimer();
+        //   nextAutoStep();
+        // }
           _pathFollower.startPath();
           resetAutoLoopTimer();
           nextAutoStep();
-        }
         break;
       case 10:
 
@@ -1056,14 +1059,31 @@ public class Robot extends TimedRobot {
       if (_pathFollower.isPathFinished()) {
         // Set next path, prepare for pickup
         _drivetrain.robotOrientedDrive(0, 0, 0);
+        _drivetrain.resetWallFacingController();
         nextAutoStep();
       }
       break;
     case 11:
-      // Otherwise stop and turn the wheels very slightly to lock position.
-      // var speed = _drivetrain.getBalanceSpeed();
-      // _drivetrain.fieldOrientedDrive(speed * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
-      //     _drivetrain.getWallRotationTarget(180));
+
+      if (_drivetrain.chargeStationDown()) {
+        _drivetrain.resetWallFacingController();
+        nextAutoStep();
+      } else {
+        _drivetrain.fieldOrientedDrive(0.24 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
+        _drivetrain.getWallRotationTarget(180));
+      }
+      break;
+    case 12:
+    
+    if (_drivetrain.isLeveling()) {
+      _drivetrain.holdPosition();
+      nextAutoStep();
+    } else {
+      _drivetrain.fieldOrientedDrive(0.12 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
+      _drivetrain.getWallRotationTarget(180));
+    }
+      break;
+    case 13:
       _drivetrain.holdPosition();
 
       if (_drivetrain.isLevel()) {

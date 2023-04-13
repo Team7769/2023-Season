@@ -233,6 +233,12 @@ public class Drivetrain extends Subsystem {
     public boolean isLevel() {
         return Math.abs(_ahrs.getRoll()) <= 5;
     }
+    public boolean chargeStationDown() {
+        return Math.abs(_ahrs.getRoll()) >= 14;
+    }
+    public boolean isLeveling() {
+        return Math.abs(_ahrs.getRoll()) <= 12.0;
+    }
 
     public boolean isTilting(){
         return Math.abs(_ahrs.getRoll()) <= 13 && Math.abs(_ahrs.getRoll()) > 5;
