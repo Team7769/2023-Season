@@ -357,84 +357,81 @@ public class Robot extends TimedRobot {
   public void yeet() {
     switch (_autonomousCase) {
       case 0:
-        // Init Elevator 
+        // Init Elevator
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         _placerDowner.setElevatorSetpoint(ElevatorPosition.JETS);
         _placerDowner.setWantedState(PlacerDownerState.DEPLOY);
-        _autoLoops = 0;
-        _autonomousCase++;
+        nextAutoStep();
         break;
       case 1:
-        // If elevator is fully extended.
+        // If elevator is fully extended, eject gamepiece
         if (_placerDowner.atSetpoint()) {
-          // Wait 1 second then stop and eject.
-          if (_autoLoops >= 50) {            
-            _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-            _placerDowner.setWantedState(PlacerDownerState.EJECT);
-            _autoLoops = 0;
-            _autonomousCase++;
-          } else if (_autoLoops >= 15 && _autoLoops < 50){
-            // Wait .5 seconds, then drive for .5 seconds
-            _drivetrain.fieldOrientedDrive(-0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, 0.0);
-          }
-        } else {
-          // Don't move until the elevator is extended.
-          _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-          _autoLoops = 0;
+          _placerDowner.setWantedState(PlacerDownerState.EJECT);
+          resetAutoLoopTimer();
+          nextAutoStep();
         }
+
+        // Don't move
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
       case 2:
-        // Stop
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-
-        // Wait .5 seconds, then start the elevator reset.
-        if (_autoLoops > 25) {
-          _drivetrain.resetWallFacingController();
-          _placerDowner.setWantedState(PlacerDownerState.RESET);
-          _autoLoops = 0;
-          _autonomousCase++;
-        }
+        _placerDowner.setWantedState(PlacerDownerState.RESET);
+        nextAutoStep();
         break;
       case 3:
-        if (_autoLoops > 100) {
-          // Start path to cone/cube after 2 full seconds
-          _autoLoops = 0;
-          _drivetrain.resetWallFacingController();
-          _autonomousCase++;
-        } else if (_autoLoops <= 25) {
-          // Back away for .5 seconds.
-          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-        } else {
-          // Stop for 1.5 seconds
-          _drivetrain.fieldOrientedDrive(0, 0, 0);
-        }
+        // Stop
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
+        _drivetrain.resetWallFacingController();
+          resetAutoLoopTimer();
+          nextAutoStep();
         break;
       case 4:
         _drivetrain.fieldOrientedDrive(0.25 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
 
-        if (_autoLoops > 200) {
+        if (autoHasElapsed(4)) {
           // Set next path, prepare for pickup
           _drivetrain.resetWallFacingController();
           _drivetrain.robotOrientedDrive(0, 0, 0);
-          _autoLoops = 0;
-          _autonomousCase++;
+          resetAutoLoopTimer();
+          nextAutoStep();
         }
         break;
-      case 5:
-        // For at least 2 seconds, drive forward until the measured roll is considered balanced.
-        if (_autoLoops <= 150) {
-          _drivetrain.fieldOrientedDrive(-0.18 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-        }
-        else {
-          // Otherwise stop and turn the wheels very slightly to lock position.
-          var speed = _drivetrain.getBalanceSpeed();
-          _drivetrain.fieldOrientedDrive(speed * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
-
-          if (_drivetrain.isLevel()) {
-            _ledController.changeToAlliance();          
+        case 5:
+          if (autoHasElapsed(2)) {
+            _drivetrain.resetWallFacingController();
+            resetAutoLoopTimer();
+            nextAutoStep();
+          } else {
+            _drivetrain.robotOrientedDrive(0, 0, 0);
           }
+          break;
+        case 6:
+    
+          if (_drivetrain.chargeStationDown()) {
+            _drivetrain.resetWallFacingController();
+            nextAutoStep();
+          } else {
+            _drivetrain.fieldOrientedDrive(-0.24 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
+            _drivetrain.getWallRotationTarget(180));
+          }
+          break;
+        case 7:
+        
+        if (_drivetrain.isLeveling()) {
+          _drivetrain.holdPosition();
+          nextAutoStep();
+        } else {
+          _drivetrain.fieldOrientedDrive(-0.12 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0,
+          _drivetrain.getWallRotationTarget(180));
         }
-
-        break;
+          break;
+        case 8:
+          _drivetrain.holdPosition();
+    
+          if (_drivetrain.isLevel()) {
+            _ledController.changeToAlliance();
+          }
+          break;
       default:
         _drivetrain.robotOrientedDrive(0.0, 0.0, 0.0);
         break;
@@ -642,7 +639,7 @@ public class Robot extends TimedRobot {
           resetAutoLoopTimer();
           nextAutoStep();
         } else {
-          _drivetrain.fieldOrientedDrive(0.1 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
+          _drivetrain.fieldOrientedDrive(0.15 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(0));
         }
 
         
