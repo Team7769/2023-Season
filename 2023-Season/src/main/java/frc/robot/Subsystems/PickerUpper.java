@@ -26,7 +26,9 @@ public class PickerUpper extends Subsystem {
     private DoubleSolenoid _boxer;
     private DoubleSolenoid _flexer;
     private Timer _boxItTimer;
-    private Photoeye _collectorSensor;
+    private Photoeye _rightCollectorSensor;
+    private Photoeye _leftCollectorSensor;
+
     private DigitalInput _dugLimit; // from the move UP (this is our UP limit)
     private Debouncer _debouncer;
     private Debouncer _photoeyeDebouncer;
@@ -58,7 +60,9 @@ public class PickerUpper extends Subsystem {
         _boxer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kBoxerForward, Constants.kBoxerReverse);
         _flexer = new DoubleSolenoid(PneumaticsModuleType.REVPH, Constants.kFlexerForward, Constants.kFlexerReverse);
 
-        _collectorSensor = new Photoeye(Constants.kCollectorPort);
+        _rightCollectorSensor = new Photoeye(Constants.kRightCollectorPort);
+        _leftCollectorSensor = new Photoeye(Constants.kLeftCollectorPort);
+
 
         _boxItTimer = new Timer();
         _currentState = PickerUpperState.PIZZAS_READY;
@@ -75,7 +79,8 @@ public class PickerUpper extends Subsystem {
     public void logTelemetry() { 
         SmartDashboard.putString("pickerUpperBoxerCurrentState", _boxer.get().name()); 
         SmartDashboard.putString("pickerUpperFlexerCurrentState", _flexer.get().name());
-        SmartDashboard.putBoolean("pickerUpperCollectorSensorIsBlocked", _collectorSensor.isBlocked());
+        SmartDashboard.putBoolean("rightPickerUpperCollectorSensorIsBlocked", _rightCollectorSensor.isBlocked());
+        SmartDashboard.putBoolean("leftPickerUpperCollectorSensorIsBlocked", _leftCollectorSensor.isBlocked());
         SmartDashboard.putString("pickerUpperCurrentState", _currentState.name());
         SmartDashboard.putNumber("pickerUpperLeftMotorCurrentSpeed", _leftMotor.getAppliedOutput());
         SmartDashboard.putNumber("pickerUpperRightMotorCurrentSpeed", _rightMotor.getAppliedOutput());
@@ -131,7 +136,7 @@ public class PickerUpper extends Subsystem {
         open();
         collect();
 
-        if (_collectorSensor.isBlocked()){
+        if (_rightCollectorSensor.isBlocked() || _leftCollectorSensor.isBlocked()){
             setWantedState(PickerUpperState.BOX_IT);
         }
     }
@@ -157,7 +162,7 @@ public class PickerUpper extends Subsystem {
 
     public void delivery() {
         var isDug = _debouncer.calculate(!_dugLimit.get());
-        if (_boxItTimer.hasElapsed(1.75)) {
+        if (_boxItTimer.hasElapsed(1)) {
             setWantedState(PickerUpperState.WERE_CLOSED);
             _boxItTimer.stop();
             open();
@@ -212,7 +217,7 @@ public class PickerUpper extends Subsystem {
     }
     
     public boolean isPizzaReady() {
-        var hasPiece = _photoeyeDebouncer.calculate(_collectorSensor.isBlocked());
+        var hasPiece = _photoeyeDebouncer.calculate(_rightCollectorSensor.isBlocked() || _leftCollectorSensor.isBlocked());
        switch (_currentState) {
             case PIZZAS_READY:
             case DELIVERY:

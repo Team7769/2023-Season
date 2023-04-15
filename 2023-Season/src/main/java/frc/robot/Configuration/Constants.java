@@ -21,7 +21,8 @@ public final class Constants {
     public static final double kPlacerDownerFeedforwardKv = 0.066; // Change Later
 
     // Photo Eye
-    public static final int kCollectorPort = 0; // change later this is a random number
+    public static final int kRightCollectorPort = 0; // change later this is a random number
+    public static final int kLeftCollectorPort = 4;
 
     // Swerve Slots
     public static final int kFrontLeftDriveId = 2;
