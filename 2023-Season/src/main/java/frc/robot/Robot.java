@@ -376,14 +376,17 @@ public class Robot extends TimedRobot {
         break;
       case 2:
         _placerDowner.setWantedState(PlacerDownerState.RESET);
+        resetAutoLoopTimer();
         nextAutoStep();
         break;
       case 3:
         // Stop
-        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
-        _drivetrain.resetWallFacingController();
+        if (!_placerDowner.isSteve() || autoHasElapsed(2)) {
+          _drivetrain.resetWallFacingController();
           resetAutoLoopTimer();
           nextAutoStep();
+        }
+        _drivetrain.fieldOrientedDrive(0.0, 0.0, 0.0);
         break;
       case 4:
         _drivetrain.fieldOrientedDrive(0.25 * Constants.MAX_VELOCITY_METERS_PER_SECOND, 0.0, _drivetrain.getWallRotationTarget(180));
@@ -397,7 +400,7 @@ public class Robot extends TimedRobot {
         }
         break;
         case 5:
-          if (autoHasElapsed(2)) {
+          if (autoHasElapsed(1)) {
             _drivetrain.resetWallFacingController();
             resetAutoLoopTimer();
             nextAutoStep();

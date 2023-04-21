@@ -237,7 +237,7 @@ public class Drivetrain extends Subsystem {
         return Math.abs(_ahrs.getRoll()) >= 14;
     }
     public boolean isLeveling() {
-        return Math.abs(_ahrs.getRoll()) <= 12.0;
+        return Math.abs(_ahrs.getRoll()) <= 11.5;
     }
 
     public boolean isTilting(){
